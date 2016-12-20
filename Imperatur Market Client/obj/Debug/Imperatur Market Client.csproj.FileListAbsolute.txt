@@ -1,0 +1,17 @@
+F:\visualstudioprojects\Imperatur\imperatur_market\Imperatur Market Client\bin\Debug\Imperatur Market Client.exe.config
+F:\visualstudioprojects\Imperatur\imperatur_market\Imperatur Market Client\bin\Debug\Imperatur Market Client.exe
+F:\visualstudioprojects\Imperatur\imperatur_market\Imperatur Market Client\bin\Debug\Imperatur Market Client.pdb
+F:\visualstudioprojects\Imperatur\imperatur_market\Imperatur Market Client\bin\Debug\Imperatur_v2.dll
+F:\visualstudioprojects\Imperatur\imperatur_market\Imperatur Market Client\bin\Debug\Ninject.dll
+F:\visualstudioprojects\Imperatur\imperatur_market\Imperatur Market Client\bin\Debug\Newtonsoft.Json.dll
+F:\visualstudioprojects\Imperatur\imperatur_market\Imperatur Market Client\bin\Debug\Imperatur_v2.pdb
+F:\visualstudioprojects\Imperatur\imperatur_market\Imperatur Market Client\bin\Debug\Ninject.xml
+F:\visualstudioprojects\Imperatur\imperatur_market\Imperatur Market Client\bin\Debug\Newtonsoft.Json.xml
+F:\visualstudioprojects\Imperatur\imperatur_market\Imperatur Market Client\obj\Debug\Imperatur Market Client.csprojResolveAssemblyReference.cache
+F:\visualstudioprojects\Imperatur\imperatur_market\Imperatur Market Client\obj\Debug\Imperatur_Market_Client.dialog.System_Load.resources
+F:\visualstudioprojects\Imperatur\imperatur_market\Imperatur Market Client\obj\Debug\Imperatur_Market_Client.Properties.Resources.resources
+F:\visualstudioprojects\Imperatur\imperatur_market\Imperatur Market Client\obj\Debug\Imperatur Market Client.csproj.GenerateResource.Cache
+F:\visualstudioprojects\Imperatur\imperatur_market\Imperatur Market Client\obj\Debug\Imperatur Market Client.exe
+F:\visualstudioprojects\Imperatur\imperatur_market\Imperatur Market Client\obj\Debug\Imperatur Market Client.pdb
+F:\visualstudioprojects\Imperatur\imperatur_market\Imperatur Market Client\obj\Debug\Imperatur_Market_Client.dialog.NewSystem.resources
+F:\visualstudioprojects\Imperatur\imperatur_market\Imperatur Market Client\obj\Debug\Imperatur_Market_Client.MainForm.resources

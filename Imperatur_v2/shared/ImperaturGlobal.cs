@@ -8,6 +8,8 @@ using Imperatur_v2.monetary;
 using Imperatur_v2.securites;
 using System.IO;
 using System.Reflection;
+using Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
 
 namespace Imperatur_v2.shared
 {
@@ -57,21 +59,21 @@ namespace Imperatur_v2.shared
             if (!GlobalCachingProvider.Instance.FindItem(ImperaturGlobal.CountryCache))
                 GlobalCachingProvider.Instance.AddItem(ImperaturGlobal.CountryCache, new CountryCache());
 
-            //BuildCurrencyExchangeCache(BFS);
-
         }
-        //CurrencyTools.GetCurrencies().ToArray()
 
         private static List<Instrument> ReadInstrumentsFromAssembly()
         {
             var assembly = Assembly.GetExecutingAssembly();
-            var resourceName = "Imperatur_v2.cache.instrument.json";
+            var resourceName = "Imperatur_v2.cache.instruments.json";
             List<Instrument> oInstruments;
+            string JsonInstrumentdata;
             using (Stream stream = assembly.GetManifestResourceStream(resourceName))
             using (StreamReader reader = new StreamReader(stream))
             {
-                oInstruments = (List<Instrument>)json.DeserializeJSON.DeserializeObject(reader.ReadToEnd());
+                JsonInstrumentdata = reader.ReadToEnd();
             }
+            JArray oJsonData = JArray.Parse(JsonInstrumentdata);
+            oInstruments = oJsonData.ToObject<List<Instrument>>();
             return oInstruments;
         }
 

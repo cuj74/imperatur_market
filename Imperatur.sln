@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Imperatur_Test", "Imperatur
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Imperatur_v2", "Imperatur_v2\Imperatur_v2.csproj", "{5700C234-AFDA-4B4A-B59C-A36EC1DB0424}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Imperatur Market Client", "Imperatur Market Client\Imperatur Market Client.csproj", "{8DC0A9FF-7687-4E7E-A865-595169AA9A6D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{5700C234-AFDA-4B4A-B59C-A36EC1DB0424}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5700C234-AFDA-4B4A-B59C-A36EC1DB0424}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5700C234-AFDA-4B4A-B59C-A36EC1DB0424}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8DC0A9FF-7687-4E7E-A865-595169AA9A6D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8DC0A9FF-7687-4E7E-A865-595169AA9A6D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8DC0A9FF-7687-4E7E-A865-595169AA9A6D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8DC0A9FF-7687-4E7E-A865-595169AA9A6D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

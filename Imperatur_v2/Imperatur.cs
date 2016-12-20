@@ -31,7 +31,7 @@ namespace Imperatur_v2
             var kernel = new StandardKernel();
             kernel.Load(Assembly.GetExecutingAssembly());
 
-            var FundContainer = kernel.Get<IImperaturMarket>(
+            var ImpertaturContainer = kernel.Get<IImperaturMarket>(
                 new Ninject.Parameters.ConstructorArgument("SystemLocation", SystemLocation)
                 /*
                 new Ninject.Parameters.ConstructorArgument("BFSDataHandler", BFSDataHandler),
@@ -39,8 +39,25 @@ namespace Imperatur_v2
                 new Ninject.Parameters.ConstructorArgument("DisplayCurrency", DisplayCurrencyCode)*/
                 );
 
-            return FundContainer;
+            return ImpertaturContainer;
         }
+        public static IImperaturMarket BuildImperaturContainer(ImperaturData NewSystemData)
+        {
+            //Ninject bindings
+            var kernel = new StandardKernel();
+            kernel.Load(Assembly.GetExecutingAssembly());
+
+            var ImpertaturContainer = kernel.Get<IImperaturMarket>(
+                new Ninject.Parameters.ConstructorArgument("SystemData", NewSystemData)
+                /*
+                new Ninject.Parameters.ConstructorArgument("BFSDataHandler", BFSDataHandler),
+                new Ninject.Parameters.ConstructorArgument("SQLConnection", SQLConnection),
+                new Ninject.Parameters.ConstructorArgument("DisplayCurrency", DisplayCurrencyCode)*/
+                );
+
+            return ImpertaturContainer;
+        }
+
     }
     /// <summary>
     /// IOC of Fund Administration
@@ -54,13 +71,14 @@ namespace Imperatur_v2
         /// </summary>
         /// <returns>string</returns>
         string GetLastErrorMessage();
+        ImperaturData GetSystemData();
         
     }
 
 
     //public delegate void RefreshEventHandler(object sender, EventArgs e);
 
-    public class Imperatur : IImperaturMarket
+    public class ImperaturMarket : IImperaturMarket
     {
         private IAccountHandlerInterface m_oAccountHandler;
         private ICurrency m_oDisplayCurrency;
@@ -77,7 +95,7 @@ namespace Imperatur_v2
         #endregion
 
         #region constructor
-        public Imperatur(ImperaturData SystemData)
+        public ImperaturMarket(ImperaturData SystemData)
         {
             //create the system based on the data
             if (!Directory.Exists(SystemData.SystemDirectory))
@@ -86,13 +104,18 @@ namespace Imperatur_v2
             }
             CreateImperaturMarket(SystemData);
         }
-        public Imperatur(string SystemLocation)
+        public ImperaturMarket(string SystemLocation)
         {
             CreateImperaturMarket(ReadImperaturDataFromSystemLocation(SystemLocation));
         }
         #endregion
 
         #region public methods
+        public ImperaturData GetSystemData()
+        {
+            return m_oImperaturData;
+        }
+
         public IAccountHandlerInterface GetAccountHandler()
         {
             if (m_oAccountHandler == null)
@@ -167,8 +190,9 @@ namespace Imperatur_v2
         {
             InitiateNinjectKernel();
             m_oImperaturData = SystemData;
-            m_oDisplayCurrency = m_oKernel.Get<ICurrency>(new Ninject.Parameters.ConstructorArgument("CurrencyCode", m_oImperaturData.SystemCurrency));
             ImperaturGlobal.Initialize(m_oImperaturData);
+            m_oDisplayCurrency = m_oKernel.Get<ICurrency>(new Ninject.Parameters.ConstructorArgument("CurrencyCode", m_oImperaturData.SystemCurrency));
+            
 
             /*
             m_oAccountHandler = m_oKernel.Get<IAccountHandlerInterface>(

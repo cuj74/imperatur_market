@@ -7,3 +7,12 @@ C:\temp\dev\imperatur_market\Imperatur_v2\bin\Debug\Ninject.xml
 C:\temp\dev\imperatur_market\Imperatur_v2\obj\Debug\Imperatur_v2.csprojResolveAssemblyReference.cache
 C:\temp\dev\imperatur_market\Imperatur_v2\obj\Debug\Imperatur_v2.dll
 C:\temp\dev\imperatur_market\Imperatur_v2\obj\Debug\Imperatur_v2.pdb
+F:\visualstudioprojects\Imperatur\imperatur_market\Imperatur_v2\bin\Debug\Imperatur_v2.dll
+F:\visualstudioprojects\Imperatur\imperatur_market\Imperatur_v2\bin\Debug\Imperatur_v2.pdb
+F:\visualstudioprojects\Imperatur\imperatur_market\Imperatur_v2\bin\Debug\Newtonsoft.Json.dll
+F:\visualstudioprojects\Imperatur\imperatur_market\Imperatur_v2\bin\Debug\Ninject.dll
+F:\visualstudioprojects\Imperatur\imperatur_market\Imperatur_v2\bin\Debug\Newtonsoft.Json.xml
+F:\visualstudioprojects\Imperatur\imperatur_market\Imperatur_v2\bin\Debug\Ninject.xml
+F:\visualstudioprojects\Imperatur\imperatur_market\Imperatur_v2\obj\Debug\Imperatur_v2.csprojResolveAssemblyReference.cache
+F:\visualstudioprojects\Imperatur\imperatur_market\Imperatur_v2\obj\Debug\Imperatur_v2.dll
+F:\visualstudioprojects\Imperatur\imperatur_market\Imperatur_v2\obj\Debug\Imperatur_v2.pdb

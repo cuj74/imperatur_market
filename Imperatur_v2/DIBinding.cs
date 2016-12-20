@@ -15,7 +15,7 @@ namespace Imperatur_v2
         public override void Load()
         {
             Bind<ICurrency>().To<Currency>();
-            Bind<ICurrency>().To<Currency>();
+            Bind<IImperaturMarket>().To<ImperaturMarket>();
             /*
             Bind<IBFSDataHandler>().To<BFSDataHandler>();
             Bind<IFundAdministration>().To<FundAdministration>();
