@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Imperatur_test_form", "Impe
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Imperatur_Test", "Imperatur_Test\Imperatur_Test.csproj", "{FD3A01E0-E0EF-49B1-A10E-9FDE846BB0B6}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Imperatur_v2", "Imperatur_v2\Imperatur_v2.csproj", "{5700C234-AFDA-4B4A-B59C-A36EC1DB0424}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{FD3A01E0-E0EF-49B1-A10E-9FDE846BB0B6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FD3A01E0-E0EF-49B1-A10E-9FDE846BB0B6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FD3A01E0-E0EF-49B1-A10E-9FDE846BB0B6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5700C234-AFDA-4B4A-B59C-A36EC1DB0424}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5700C234-AFDA-4B4A-B59C-A36EC1DB0424}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5700C234-AFDA-4B4A-B59C-A36EC1DB0424}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5700C234-AFDA-4B4A-B59C-A36EC1DB0424}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

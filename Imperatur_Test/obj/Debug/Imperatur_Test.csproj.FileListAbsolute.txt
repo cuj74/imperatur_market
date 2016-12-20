@@ -18,3 +18,13 @@ F:\visualstudioprojects\Imperatur\Imperatur_Test\bin\Debug\Newtonsoft.Json.dll
 F:\visualstudioprojects\Imperatur\Imperatur_Test\bin\Debug\Imperatur.pdb
 F:\visualstudioprojects\Imperatur\Imperatur_Test\bin\Debug\Newtonsoft.Json.xml
 F:\visualstudioprojects\Imperatur\Imperatur_Test\obj\Debug\Imperatur_Test.csprojResolveAssemblyReference.cache
+C:\temp\dev\imperatur_market\Imperatur_Test\bin\Debug\Imperatur_Test.exe.config
+C:\temp\dev\imperatur_market\Imperatur_Test\obj\Debug\Imperatur_Test.exe
+C:\temp\dev\imperatur_market\Imperatur_Test\obj\Debug\Imperatur_Test.pdb
+C:\temp\dev\imperatur_market\Imperatur_Test\bin\Debug\Imperatur_Test.exe
+C:\temp\dev\imperatur_market\Imperatur_Test\bin\Debug\Imperatur_Test.pdb
+C:\temp\dev\imperatur_market\Imperatur_Test\bin\Debug\Imperatur.dll
+C:\temp\dev\imperatur_market\Imperatur_Test\bin\Debug\Newtonsoft.Json.dll
+C:\temp\dev\imperatur_market\Imperatur_Test\bin\Debug\Imperatur.pdb
+C:\temp\dev\imperatur_market\Imperatur_Test\bin\Debug\Newtonsoft.Json.xml
+C:\temp\dev\imperatur_market\Imperatur_Test\obj\Debug\Imperatur_Test.csprojResolveAssemblyReference.cache
