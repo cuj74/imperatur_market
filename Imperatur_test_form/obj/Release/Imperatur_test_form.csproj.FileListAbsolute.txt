@@ -1,0 +1,14 @@
+C:\Users\urbajoha\Documents\Visual Studio 2015\Projects\Imperatur\Imperatur_test_form\bin\Release\Imperatur_test_form.exe.config
+C:\Users\urbajoha\Documents\Visual Studio 2015\Projects\Imperatur\Imperatur_test_form\bin\Release\Imperatur_test_form.exe
+C:\Users\urbajoha\Documents\Visual Studio 2015\Projects\Imperatur\Imperatur_test_form\bin\Release\Imperatur_test_form.pdb
+C:\Users\urbajoha\Documents\Visual Studio 2015\Projects\Imperatur\Imperatur_test_form\bin\Release\Imperatur.dll
+C:\Users\urbajoha\Documents\Visual Studio 2015\Projects\Imperatur\Imperatur_test_form\bin\Release\Newtonsoft.Json.dll
+C:\Users\urbajoha\Documents\Visual Studio 2015\Projects\Imperatur\Imperatur_test_form\bin\Release\Imperatur.pdb
+C:\Users\urbajoha\Documents\Visual Studio 2015\Projects\Imperatur\Imperatur_test_form\bin\Release\Newtonsoft.Json.xml
+C:\Users\urbajoha\Documents\Visual Studio 2015\Projects\Imperatur\Imperatur_test_form\obj\Release\Imperatur_test_form.csprojResolveAssemblyReference.cache
+C:\Users\urbajoha\Documents\Visual Studio 2015\Projects\Imperatur\Imperatur_test_form\obj\Release\Imperatur_test_form.Form1.resources
+C:\Users\urbajoha\Documents\Visual Studio 2015\Projects\Imperatur\Imperatur_test_form\obj\Release\Imperatur_test_form.Form_imperaturclient.resources
+C:\Users\urbajoha\Documents\Visual Studio 2015\Projects\Imperatur\Imperatur_test_form\obj\Release\Imperatur_test_form.Properties.Resources.resources
+C:\Users\urbajoha\Documents\Visual Studio 2015\Projects\Imperatur\Imperatur_test_form\obj\Release\Imperatur_test_form.csproj.GenerateResource.Cache
+C:\Users\urbajoha\Documents\Visual Studio 2015\Projects\Imperatur\Imperatur_test_form\obj\Release\Imperatur_test_form.exe
+C:\Users\urbajoha\Documents\Visual Studio 2015\Projects\Imperatur\Imperatur_test_form\obj\Release\Imperatur_test_form.pdb

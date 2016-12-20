@@ -1,0 +1,20 @@
+C:\Users\urbajoha\Documents\Visual Studio 2015\Projects\Imperatur\Imperatur_Test\bin\Debug\Imperatur_Test.exe.config
+C:\Users\urbajoha\Documents\Visual Studio 2015\Projects\Imperatur\Imperatur_Test\bin\Debug\Imperatur_Test.exe
+C:\Users\urbajoha\Documents\Visual Studio 2015\Projects\Imperatur\Imperatur_Test\bin\Debug\Imperatur_Test.pdb
+C:\Users\urbajoha\Documents\Visual Studio 2015\Projects\Imperatur\Imperatur_Test\obj\Debug\Imperatur_Test.csprojResolveAssemblyReference.cache
+C:\Users\urbajoha\Documents\Visual Studio 2015\Projects\Imperatur\Imperatur_Test\obj\Debug\Imperatur_Test.exe
+C:\Users\urbajoha\Documents\Visual Studio 2015\Projects\Imperatur\Imperatur_Test\obj\Debug\Imperatur_Test.pdb
+C:\Users\urbajoha\Documents\Visual Studio 2015\Projects\Imperatur\Imperatur_Test\bin\Debug\Imperatur.dll
+C:\Users\urbajoha\Documents\Visual Studio 2015\Projects\Imperatur\Imperatur_Test\bin\Debug\Newtonsoft.Json.dll
+C:\Users\urbajoha\Documents\Visual Studio 2015\Projects\Imperatur\Imperatur_Test\bin\Debug\Imperatur.pdb
+C:\Users\urbajoha\Documents\Visual Studio 2015\Projects\Imperatur\Imperatur_Test\bin\Debug\Newtonsoft.Json.xml
+F:\visualstudioprojects\Imperatur\Imperatur_Test\bin\Debug\Imperatur_Test.exe.config
+F:\visualstudioprojects\Imperatur\Imperatur_Test\obj\Debug\Imperatur_Test.exe
+F:\visualstudioprojects\Imperatur\Imperatur_Test\obj\Debug\Imperatur_Test.pdb
+F:\visualstudioprojects\Imperatur\Imperatur_Test\bin\Debug\Imperatur_Test.exe
+F:\visualstudioprojects\Imperatur\Imperatur_Test\bin\Debug\Imperatur_Test.pdb
+F:\visualstudioprojects\Imperatur\Imperatur_Test\bin\Debug\Imperatur.dll
+F:\visualstudioprojects\Imperatur\Imperatur_Test\bin\Debug\Newtonsoft.Json.dll
+F:\visualstudioprojects\Imperatur\Imperatur_Test\bin\Debug\Imperatur.pdb
+F:\visualstudioprojects\Imperatur\Imperatur_Test\bin\Debug\Newtonsoft.Json.xml
+F:\visualstudioprojects\Imperatur\Imperatur_Test\obj\Debug\Imperatur_Test.csprojResolveAssemblyReference.cache

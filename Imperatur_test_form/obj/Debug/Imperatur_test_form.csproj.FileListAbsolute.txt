@@ -1,0 +1,30 @@
+c:\users\urbajoha\documents\visual studio 2015\Projects\Imperatur\Imperatur_test_form\obj\Debug\Imperatur_test_form.csprojResolveAssemblyReference.cache
+c:\users\urbajoha\documents\visual studio 2015\Projects\Imperatur\Imperatur_test_form\obj\Debug\Imperatur_test_form.Form1.resources
+c:\users\urbajoha\documents\visual studio 2015\Projects\Imperatur\Imperatur_test_form\obj\Debug\Imperatur_test_form.Properties.Resources.resources
+c:\users\urbajoha\documents\visual studio 2015\Projects\Imperatur\Imperatur_test_form\obj\Debug\Imperatur_test_form.csproj.GenerateResource.Cache
+c:\users\urbajoha\documents\visual studio 2015\Projects\Imperatur\Imperatur_test_form\bin\Debug\Imperatur_test_form.exe.config
+c:\users\urbajoha\documents\visual studio 2015\Projects\Imperatur\Imperatur_test_form\bin\Debug\Imperatur_test_form.exe
+c:\users\urbajoha\documents\visual studio 2015\Projects\Imperatur\Imperatur_test_form\bin\Debug\Imperatur_test_form.pdb
+c:\users\urbajoha\documents\visual studio 2015\Projects\Imperatur\Imperatur_test_form\bin\Debug\Imperatur.dll
+c:\users\urbajoha\documents\visual studio 2015\Projects\Imperatur\Imperatur_test_form\bin\Debug\Imperatur.pdb
+c:\users\urbajoha\documents\visual studio 2015\Projects\Imperatur\Imperatur_test_form\obj\Debug\Imperatur_test_form.exe
+c:\users\urbajoha\documents\visual studio 2015\Projects\Imperatur\Imperatur_test_form\obj\Debug\Imperatur_test_form.pdb
+c:\users\urbajoha\documents\visual studio 2015\Projects\Imperatur\Imperatur_test_form\bin\Debug\Newtonsoft.Json.dll
+c:\users\urbajoha\documents\visual studio 2015\Projects\Imperatur\Imperatur_test_form\bin\Debug\Newtonsoft.Json.xml
+C:\Users\urbajoha\Documents\Visual Studio 2015\Projects\Imperatur\Imperatur_test_form\obj\Debug\Imperatur_test_form.Form_imperaturclient.resources
+C:\Users\urbajoha\Documents\Visual Studio 2015\Projects\Imperatur\Imperatur_test_form\obj\Debug\Imperatur_test_form.SellDialog.resources
+F:\visualstudioprojects\Imperatur\Imperatur_test_form\bin\Debug\Imperatur_test_form.exe.config
+F:\visualstudioprojects\Imperatur\Imperatur_test_form\bin\Debug\Imperatur_test_form.exe
+F:\visualstudioprojects\Imperatur\Imperatur_test_form\bin\Debug\Imperatur_test_form.pdb
+F:\visualstudioprojects\Imperatur\Imperatur_test_form\bin\Debug\Imperatur.dll
+F:\visualstudioprojects\Imperatur\Imperatur_test_form\bin\Debug\Newtonsoft.Json.dll
+F:\visualstudioprojects\Imperatur\Imperatur_test_form\bin\Debug\Imperatur.pdb
+F:\visualstudioprojects\Imperatur\Imperatur_test_form\bin\Debug\Newtonsoft.Json.xml
+F:\visualstudioprojects\Imperatur\Imperatur_test_form\obj\Debug\Imperatur_test_form.csprojResolveAssemblyReference.cache
+F:\visualstudioprojects\Imperatur\Imperatur_test_form\obj\Debug\Imperatur_test_form.Form1.resources
+F:\visualstudioprojects\Imperatur\Imperatur_test_form\obj\Debug\Imperatur_test_form.Form_imperaturclient.resources
+F:\visualstudioprojects\Imperatur\Imperatur_test_form\obj\Debug\Imperatur_test_form.Properties.Resources.resources
+F:\visualstudioprojects\Imperatur\Imperatur_test_form\obj\Debug\Imperatur_test_form.SellDialog.resources
+F:\visualstudioprojects\Imperatur\Imperatur_test_form\obj\Debug\Imperatur_test_form.csproj.GenerateResource.Cache
+F:\visualstudioprojects\Imperatur\Imperatur_test_form\obj\Debug\Imperatur_test_form.exe
+F:\visualstudioprojects\Imperatur\Imperatur_test_form\obj\Debug\Imperatur_test_form.pdb

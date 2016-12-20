@@ -1,0 +1,7 @@
+C:\Users\urbajoha\Documents\Visual Studio 2015\Projects\Imperatur\Imperatur\bin\Release\Imperatur.dll
+C:\Users\urbajoha\Documents\Visual Studio 2015\Projects\Imperatur\Imperatur\bin\Release\Imperatur.pdb
+C:\Users\urbajoha\Documents\Visual Studio 2015\Projects\Imperatur\Imperatur\bin\Release\Newtonsoft.Json.dll
+C:\Users\urbajoha\Documents\Visual Studio 2015\Projects\Imperatur\Imperatur\bin\Release\Newtonsoft.Json.xml
+C:\Users\urbajoha\Documents\Visual Studio 2015\Projects\Imperatur\Imperatur\obj\Release\Imperatur.csprojResolveAssemblyReference.cache
+C:\Users\urbajoha\Documents\Visual Studio 2015\Projects\Imperatur\Imperatur\obj\Release\Imperatur.dll
+C:\Users\urbajoha\Documents\Visual Studio 2015\Projects\Imperatur\Imperatur\obj\Release\Imperatur.pdb
