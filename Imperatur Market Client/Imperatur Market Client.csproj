@@ -59,11 +59,23 @@
     <Compile Include="control\AccountTab.Designer.cs">
       <DependentUpon>AccountTab.cs</DependentUpon>
     </Compile>
+    <Compile Include="control\Account_Holdings.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="control\Account_Holdings.Designer.cs">
+      <DependentUpon>Account_Holdings.cs</DependentUpon>
+    </Compile>
     <Compile Include="control\Account_Search.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="control\Account_Search.Designer.cs">
       <DependentUpon>Account_Search.cs</DependentUpon>
+    </Compile>
+    <Compile Include="control\Account_Trade.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="control\Account_Trade.Designer.cs">
+      <DependentUpon>Account_Trade.cs</DependentUpon>
     </Compile>
     <Compile Include="control\CreateControlFromObject.cs">
       <SubType>UserControl</SubType>
@@ -97,8 +109,14 @@
     <EmbeddedResource Include="control\AccountTab.resx">
       <DependentUpon>AccountTab.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="control\Account_Holdings.resx">
+      <DependentUpon>Account_Holdings.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="control\Account_Search.resx">
       <DependentUpon>Account_Search.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="control\Account_Trade.resx">
+      <DependentUpon>Account_Trade.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="dialog\NewSystem.resx">
       <DependentUpon>NewSystem.cs</DependentUpon>

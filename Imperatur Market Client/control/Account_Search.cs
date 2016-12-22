@@ -58,7 +58,7 @@ namespace Imperatur_Market_Client.control
             }
            
             if (listView_searchresult.Items.Count > 0)
-                listView_searchresult.Clear();
+                listView_searchresult.Items.Clear();
 
             //populate the account list
 

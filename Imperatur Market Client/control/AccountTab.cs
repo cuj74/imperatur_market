@@ -28,11 +28,17 @@ namespace Imperatur_Market_Client.control
 
         private void AccountTab_Load(object sender, EventArgs e)
         {
-            Account_Search oControl_Account_Search = new control.Account_Search(m_AccountHandler);
+            Account_Search oControl_Account_Search = new Account_Search(m_AccountHandler);
             oControl_Account_Search.SelectedAccount += OControl_Account_Search_SelectedAccount;
-            //AccountMainInfo = new UserControl();
-
             tlp_Account.Controls.Add(oControl_Account_Search, 0, 0);
+
+            Account_Holdings oControl_Account_Holdings = new Account_Holdings(m_AccountHandler);
+            Account_Trade oControl_Account_Trade = new Account_Trade(m_AccountHandler);
+
+            tlp_Account.Controls.Add(oControl_Account_Holdings, 2, 0);
+            tlp_Account.Controls.Add(oControl_Account_Trade, 3, 0);
+
+
         }
         private void OControl_Account_Search_SelectedAccount(object sender, SelectedAccountEventArg e)
         {

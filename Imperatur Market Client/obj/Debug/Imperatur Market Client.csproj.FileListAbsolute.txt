@@ -34,3 +34,5 @@ C:\temp\dev\imperatur_market\Imperatur Market Client\obj\Debug\Imperatur_Market_
 C:\temp\dev\imperatur_market\Imperatur Market Client\obj\Debug\Imperatur Market Client.csproj.GenerateResource.Cache
 C:\temp\dev\imperatur_market\Imperatur Market Client\obj\Debug\Imperatur_Market_Client.control.Account_Search.resources
 C:\temp\dev\imperatur_market\Imperatur Market Client\obj\Debug\Imperatur_Market_Client.control.AccountTab.resources
+C:\temp\dev\imperatur_market\Imperatur Market Client\obj\Debug\Imperatur_Market_Client.control.Account_Holdings.resources
+C:\temp\dev\imperatur_market\Imperatur Market Client\obj\Debug\Imperatur_Market_Client.control.Account_Trade.resources
