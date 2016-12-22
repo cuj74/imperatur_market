@@ -15,3 +15,22 @@ F:\visualstudioprojects\Imperatur\imperatur_market\Imperatur Market Client\obj\D
 F:\visualstudioprojects\Imperatur\imperatur_market\Imperatur Market Client\obj\Debug\Imperatur Market Client.pdb
 F:\visualstudioprojects\Imperatur\imperatur_market\Imperatur Market Client\obj\Debug\Imperatur_Market_Client.dialog.NewSystem.resources
 F:\visualstudioprojects\Imperatur\imperatur_market\Imperatur Market Client\obj\Debug\Imperatur_Market_Client.MainForm.resources
+C:\temp\dev\imperatur_market\Imperatur Market Client\bin\Debug\Imperatur Market Client.exe.config
+C:\temp\dev\imperatur_market\Imperatur Market Client\obj\Debug\Imperatur Market Client.exe
+C:\temp\dev\imperatur_market\Imperatur Market Client\obj\Debug\Imperatur Market Client.pdb
+C:\temp\dev\imperatur_market\Imperatur Market Client\bin\Debug\Imperatur Market Client.exe
+C:\temp\dev\imperatur_market\Imperatur Market Client\bin\Debug\Imperatur Market Client.pdb
+C:\temp\dev\imperatur_market\Imperatur Market Client\bin\Debug\Imperatur_v2.dll
+C:\temp\dev\imperatur_market\Imperatur Market Client\bin\Debug\Ninject.dll
+C:\temp\dev\imperatur_market\Imperatur Market Client\bin\Debug\Newtonsoft.Json.dll
+C:\temp\dev\imperatur_market\Imperatur Market Client\bin\Debug\Imperatur_v2.pdb
+C:\temp\dev\imperatur_market\Imperatur Market Client\bin\Debug\Ninject.xml
+C:\temp\dev\imperatur_market\Imperatur Market Client\bin\Debug\Newtonsoft.Json.xml
+C:\temp\dev\imperatur_market\Imperatur Market Client\obj\Debug\Imperatur Market Client.csprojResolveAssemblyReference.cache
+C:\temp\dev\imperatur_market\Imperatur Market Client\obj\Debug\Imperatur_Market_Client.dialog.NewSystem.resources
+C:\temp\dev\imperatur_market\Imperatur Market Client\obj\Debug\Imperatur_Market_Client.dialog.System_Load.resources
+C:\temp\dev\imperatur_market\Imperatur Market Client\obj\Debug\Imperatur_Market_Client.MainForm.resources
+C:\temp\dev\imperatur_market\Imperatur Market Client\obj\Debug\Imperatur_Market_Client.Properties.Resources.resources
+C:\temp\dev\imperatur_market\Imperatur Market Client\obj\Debug\Imperatur Market Client.csproj.GenerateResource.Cache
+C:\temp\dev\imperatur_market\Imperatur Market Client\obj\Debug\Imperatur_Market_Client.control.Account_Search.resources
+C:\temp\dev\imperatur_market\Imperatur Market Client\obj\Debug\Imperatur_Market_Client.control.AccountTab.resources

@@ -32,6 +32,9 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>ipm.ico</ApplicationIcon>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="Ninject, Version=3.2.0.0, Culture=neutral, PublicKeyToken=c7192dc5380945e7, processorArchitecture=MSIL">
       <HintPath>..\packages\Ninject.3.2.2.0\lib\net45-full\Ninject.dll</HintPath>
@@ -50,6 +53,27 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="control\AccountTab.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="control\AccountTab.Designer.cs">
+      <DependentUpon>AccountTab.cs</DependentUpon>
+    </Compile>
+    <Compile Include="control\Account_Search.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="control\Account_Search.Designer.cs">
+      <DependentUpon>Account_Search.cs</DependentUpon>
+    </Compile>
+    <Compile Include="control\CreateControlFromObject.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="control\Expander.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="control\Expander.Designer.cs">
+      <DependentUpon>Expander.cs</DependentUpon>
+    </Compile>
     <Compile Include="dialog\NewSystem.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -70,6 +94,12 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <EmbeddedResource Include="control\AccountTab.resx">
+      <DependentUpon>AccountTab.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="control\Account_Search.resx">
+      <DependentUpon>Account_Search.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="dialog\NewSystem.resx">
       <DependentUpon>NewSystem.cs</DependentUpon>
     </EmbeddedResource>
@@ -87,6 +117,7 @@
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
     </Compile>
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
@@ -108,6 +139,12 @@
       <Name>Imperatur_v2</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="ipm.ico" />
+    <None Include="Resources\Expand.png" />
+    <None Include="Resources\Collapse.png" />
+  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

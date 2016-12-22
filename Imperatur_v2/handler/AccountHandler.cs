@@ -6,17 +6,52 @@ using System.Threading.Tasks;
 using Imperatur_v2.monetary;
 using Imperatur_v2.account;
 using Imperatur_v2.trade;
+using Imperatur_v2.shared;
+using Ninject;
+using System.Reflection;
+using Imperatur_v2.cache;
+
 
 namespace Imperatur_v2.handler
 {
     public class AccountHandler : IAccountHandlerInterface
     {
-        private List<IAccountInterface> _Accounts;
+        private List<IAccountInterface> m_oAccounts;
         private string LastErrorMessage;
+        private ObjectMapping m_oObjectMapping;
+        public List<ITransactionInterface> m_oTransactions;
+        private readonly object Identifier;
+        private ObjectTextSearch m_oSearchObjects;
+
 
         public AccountHandler()
         {
             LastErrorMessage = "";
+            m_oObjectMapping = new ObjectMapping();
+            m_oSearchObjects = new ObjectTextSearch();
+        }
+        
+
+        public List<IAccountInterface> SearchAccount(string Search)
+        {
+            if (Search.Equals("*"))
+            {
+                return Accounts();
+            }
+            return Accounts().Select(a =>
+                new
+                {
+                    Hit = m_oSearchObjects.FindTextInObject(Search, a),
+                    Account = a
+                }
+                ).Where(a=>a.Hit).Select(a=>a.Account).ToList();
+
+/*
+            return Accounts().Where(
+                a => m_oSearchObjects FindTextInObject(Search, a.GetCustomer().FirstName)
+                ||
+                a.GetCustomer().LastName.Contains(Search)
+                ).ToList();*/
         }
 
         public bool AddHoldingToAccount(Guid Identifier, int Quantity, string Ticker)
@@ -34,9 +69,19 @@ namespace Imperatur_v2.handler
             throw new NotImplementedException();
         }
 
-        public bool CreateAccount(List<Account> oAccountsData)
+        public bool CreateAccount(List<IAccountInterface> oAccountData)
         {
-            throw new NotImplementedException();
+            if (m_oAccounts == null)
+                m_oAccounts = new List<IAccountInterface>();
+
+            m_oAccounts.AddRange(oAccountData);
+            /*
+                (List<Account>)GetMappingRowToObjects(typeof(Account), oAccountData.ToArray()).Select(
+                 item =>
+                 GetKernel().Get<IAccountInterface>()
+                 )
+                );*/
+            return true;
         }
 
         public bool DepositAmount(Guid Identifier, Money Deposit)
@@ -44,9 +89,9 @@ namespace Imperatur_v2.handler
             throw new NotImplementedException();
         }
 
-        public Account GetAccount(Guid Identifier)
+        public IAccountInterface GetAccount(Guid Identifier)
         {
-            throw new NotImplementedException();
+            return Accounts().Where(a => a.Identifier.Equals(Identifier)).FirstOrDefault();
         }
 
         public List<Holding> GetAccountHoldings(Guid Identifier)
@@ -61,7 +106,38 @@ namespace Imperatur_v2.handler
 
         public List<Money> GetDepositedAmountOnAccount(Guid Identifier)
         {
-            throw new NotImplementedException();
+            List<TransactionType> TransferWithdraw = new List<TransactionType>();
+            TransferWithdraw.Add(TransactionType.Transfer);
+            TransferWithdraw.Add(TransactionType.Withdrawal);
+
+            var Transactions = GetMappingRowToObjects(typeof(Transaction), m_oTransactions.ToArray()).Select(
+             item =>
+             GetKernel().Get<ITransactionInterface>()
+             ).ToList();
+
+            //minus
+            var DebitQuery =
+                from t in Transactions
+                where t.DebitAccount.Equals(this.Identifier)
+                join tb in TransferWithdraw on t.TransactionType equals tb
+                select t;
+
+            //plus
+            var CreditQuery =
+                from t in m_oTransactions
+                where t.CreditAccount.Equals(this.Identifier) && t.TransactionType.Equals(TransactionType.Transfer)
+                select t;
+
+            List<Money> SumMoney = new List<Money>();
+            SumMoney.AddRange(DebitQuery.Select(m => m.DebitAmount.SwitchSign()));
+            SumMoney.AddRange(CreditQuery.Select(m => m.CreditAmount));
+
+
+            return (List<Money>)(from p in SumMoney
+                                 group p.Amount by p.CurrencyCode into g
+                                 select new Money(g.ToList().Sum(), g.Key.ToString())).ToList();
+
+
         }
 
         public List<Account> GetHouseAccounts()
@@ -86,7 +162,9 @@ namespace Imperatur_v2.handler
 
         public bool SaveAccounts()
         {
-            throw new NotImplementedException();
+            json.SerializeJSONdata.SerializeObject(Accounts(),
+                string.Format(@"{0}\{1}\{2}", ImperaturGlobal.SystemData.SystemDirectory, ImperaturGlobal.SystemData.AcccountDirectory, ImperaturGlobal.SystemData.AccountFile));
+            return true;
         }
 
         public bool SellHoldingFromAccount(Guid Identifier, int Quantity, string Ticker)
@@ -96,8 +174,40 @@ namespace Imperatur_v2.handler
 
         public List<IAccountInterface> Accounts()
         {
-
-            throw new NotImplementedException();
+            //TODO lägg till en try
+            if (m_oAccounts == null)
+            {
+                try
+                {
+                    
+                    CurrencyCodeCache oC = (CurrencyCodeCache)GlobalCachingProvider.Instance.GetItem(ImperaturGlobal.CurrencyCodeCache);
+                    string dfd = oC.GetCache().Select(i => i.Item1).First();
+                    string ff = ImperaturGlobal.SystemData.AccountFile;
+                    //BusinessAccountCache oBA = (BusinessAccountCache)GlobalCachingProvider.Instance.GetItem(ImperaturGlobal.BusinessAccountCache);
+                    m_oAccounts = (List<IAccountInterface>)json.DeserializeJSON.DeserializeObjectFromFile(@ImperaturGlobal.SystemData.AccountFile);
+                }
+                catch(Exception ex)
+                {
+                    m_oAccounts = new List<IAccountInterface>();
+                }
+            }
+            return m_oAccounts;
         }
+
+        private StandardKernel GetKernel()
+        {
+            var kernel = new StandardKernel();
+            kernel.Load(Assembly.GetExecutingAssembly());
+            return kernel;
+        }
+
+        private List<object> GetMappingRowToObjects(Type TypeOfObject, object[] oR)
+        {
+            return (
+                from r in oR
+                select m_oObjectMapping.GetMappingToObject(Activator.CreateInstance(TypeOfObject), r)
+                ).ToList();
+        }
+
     }
 }

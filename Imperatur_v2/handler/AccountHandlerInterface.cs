@@ -15,17 +15,18 @@ namespace Imperatur_v2.handler
         List<Money> GetDepositedAmountOnAccount(Guid Identifier);
         bool DepositAmount(Guid Identifier, Money Deposit);
         List<Holding> GetAccountHoldings(Guid Identifier);
-        Account GetAccount(Guid Identifier);
+        IAccountInterface GetAccount(Guid Identifier);
         Money CalculateHoldingSell(Guid Identifier, int Quantity, string Ticker);
         bool SellHoldingFromAccount(Guid Identifier, int Quantity, string Ticker);
         bool AddHoldingToAccount(Guid Identifier, int Quantity, string Ticker);
         bool AddTransactionToAccount(Guid Identifier, monetary.Transaction NewTransaction);
         List<Account> GetBankAccounts();
         List<Account> GetHouseAccounts();
-        bool CreateAccount(List<Account> oAccountsData);
+        bool CreateAccount(List<IAccountInterface> oAccountData);
         bool SaveAccounts();
         List<Money> GetTotalFundsOfAccount(Guid Identifier);
         List<Guid> GetHouseAndBankAccountsGuid();
         List<IAccountInterface> Accounts();
+        List<IAccountInterface> SearchAccount(string Search);
     }
 }

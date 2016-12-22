@@ -39,6 +39,30 @@ namespace Imperatur_v2.monetary
             get { return _CreditAmount; }
         }
 
+        Guid ITransactionInterface.DebitAccount
+        {
+            get
+            {
+                return _DebitAccount;
+            }
+        }
+
+        Guid ITransactionInterface.CreditAccount
+        {
+            get
+            {
+                return _CreditAccount;
+            }
+        }
+
+        TransactionType ITransactionInterface.TransactionType
+        {
+            get
+            {
+                return _TransactionType;
+            }
+        }
+
         public Transaction(Money DebitAmount, Money CreditAmount, Guid DebitAccount, Guid CreditAccount, TransactionType TransactionType, Trade SecurtiesTrade)
         {
             _DebitAmount = DebitAmount;

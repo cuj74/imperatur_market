@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 using Ninject.Modules;
 using Imperatur_v2.shared;
 using Imperatur_v2.monetary;
+using Imperatur_v2.account;
+using Imperatur_v2.handler;
+
 
 
 namespace Imperatur_v2
@@ -16,6 +19,10 @@ namespace Imperatur_v2
         {
             Bind<ICurrency>().To<Currency>();
             Bind<IImperaturMarket>().To<ImperaturMarket>();
+            Bind<ITransactionInterface>().To<Transaction>();
+            Bind<IMoney>().To<Money>();
+            Bind<IAccountInterface>().To<Account>();
+            Bind<IAccountHandlerInterface>().To<AccountHandler>();
             /*
             Bind<IBFSDataHandler>().To<BFSDataHandler>();
             Bind<IFundAdministration>().To<FundAdministration>();

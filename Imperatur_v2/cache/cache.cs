@@ -150,7 +150,7 @@ namespace Imperatur_v2.cache
 
         public List<Tuple<string, string, string>> GetCache()
         {
-            throw new NotImplementedException();
+            return m_oInstruments;
         }
         public InstrumentCache(Instrument[] ListofInstruments)
         {
@@ -167,6 +167,31 @@ namespace Imperatur_v2.cache
             );
         }
     }
+
+    public class BusinessAccountCache : ICache
+    {
+        private List<Tuple<string, string, string>> m_oBusinessAccount;
+
+        public List<Tuple<string, string, string>> GetCache()
+        {
+            return m_oBusinessAccount;
+        }
+        public BusinessAccountCache(account.AccountCacheType[] ListofBusinessAccount)
+        {
+            m_oBusinessAccount = new List<Tuple<string, string, string>>();
+            m_oBusinessAccount.AddRange(
+            (
+                       from i in ListofBusinessAccount
+                       select Tuple.Create(
+                            i.Identifier.ToString(),
+                            i.AccountType.ToString(),
+                            ""
+                           )
+                       ).ToArray()
+            );
+        }
+    }
+
 
     public class CurrencyCodeCache : ICache
     {

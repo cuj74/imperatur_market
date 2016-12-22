@@ -11,20 +11,17 @@ using Ninject;
 using System.Reflection;
 using System.IO;
 using Imperatur_v2.json;
-
-
+using Newtonsoft.Json.Linq;
 
 namespace Imperatur_v2
 {
     public static class ImperaturContainer
     {
-        /// <summary>
-        /// Get the Fund Administration Container
-        /// </summary>
-        /// <param name="BFSDataHandler">The BFS Data handler</param>
-        /// <param name="SQLConnection">The connection string to the SQL database, like Server=myServerName\myInstanceName;Database=myDataBase;User Id=myUsername;Password=myPassword;</param>
-        /// <param name="DisplayCurrencyCode">The preferred currency to display amounts in</param>
-        /// <returns></returns>
+/// <summary>
+/// Build the Imperatur Market Container
+/// </summary>
+/// <param name="SystemLocation">The directory of the system</param>
+/// <returns></returns>
         public static IImperaturMarket BuildImperaturContainer(string SystemLocation)
         {
             //Ninject bindings
@@ -60,7 +57,7 @@ namespace Imperatur_v2
 
     }
     /// <summary>
-    /// IOC of Fund Administration
+    /// IOC of Imperatur Market
     /// </summary>
     public interface IImperaturMarket
     {
@@ -72,7 +69,9 @@ namespace Imperatur_v2
         /// <returns>string</returns>
         string GetLastErrorMessage();
         ImperaturData GetSystemData();
-        
+        IAccountHandlerInterface GetAccountHandler();
+
+
     }
 
 
@@ -83,7 +82,7 @@ namespace Imperatur_v2
         private IAccountHandlerInterface m_oAccountHandler;
         private ICurrency m_oDisplayCurrency;
         private string m_oLastErrorMessage;
-        private StandardKernel m_oKernel;
+        //private StandardKernel m_oKernel;
         private ImperaturData m_oImperaturData;
         private readonly string SystemDataFile = "imperatursettings.json";
 
@@ -120,7 +119,7 @@ namespace Imperatur_v2
         {
             if (m_oAccountHandler == null)
             {
-                m_oAccountHandler = m_oKernel.Get<IAccountHandlerInterface>();
+                m_oAccountHandler = ImperaturGlobal.Kernel.Get<IAccountHandlerInterface>();
             }
             return m_oAccountHandler;
         }
@@ -129,7 +128,19 @@ namespace Imperatur_v2
         #region private methods
         private ImperaturData ReadImperaturDataFromSystemLocation(string SystemLocation)
         {
-            return (ImperaturData)DeserializeJSON.DeserializeObject(string.Format(@"{0}\{1}", SystemLocation, SystemDataFile));
+            ImperaturData oD = new ImperaturData();
+            try
+            {
+                JObject oJ = (JObject)DeserializeJSON.DeserializeObjectFromFile(string.Format(@"{0}\{1}", SystemLocation, SystemDataFile));
+                oD = oJ.ToObject<ImperaturData>();
+               // oD = (ImperaturData)DeserializeJSON.DeserializeObjectFromFile(string.Format(@"{0}\{1}", SystemLocation, SystemDataFile));
+            }
+            catch(Exception ex)
+            {
+                int ff = 0;
+            }
+            return oD;
+            //return (ImperaturData)DeserializeJSON.DeserializeObjectFromFile(string.Format(@"{0}\{1}", SystemLocation, SystemDataFile));
         }
         private bool CreateImperaturDataFromSystemData(ImperaturData Systemdata)
         {
@@ -174,12 +185,13 @@ namespace Imperatur_v2
             }
         }
 
-        private void InitiateNinjectKernel()
+        private StandardKernel InitiateNinjectKernel()
         {
             try
             {
-                m_oKernel = new StandardKernel();
-                m_oKernel.Load(Assembly.GetExecutingAssembly());
+                StandardKernel kernel = new StandardKernel();
+                kernel.Load(Assembly.GetExecutingAssembly());
+                return kernel;
             }
             catch (Exception ex)
             {
@@ -188,10 +200,19 @@ namespace Imperatur_v2
         }
         private void CreateImperaturMarket(ImperaturData SystemData)
         {
-            InitiateNinjectKernel();
             m_oImperaturData = SystemData;
-            ImperaturGlobal.Initialize(m_oImperaturData);
-            m_oDisplayCurrency = m_oKernel.Get<ICurrency>(new Ninject.Parameters.ConstructorArgument("CurrencyCode", m_oImperaturData.SystemCurrency));
+            ImperaturGlobal.Initialize(m_oImperaturData, InitiateNinjectKernel(), null);
+            List<account.AccountCacheType> BusinessAccounts = new List<account.AccountCacheType>();
+            BusinessAccounts = GetAccountHandler().Accounts().Where(a => !a.GetAccountType().Equals(account.AccountType.Customer)).
+                Select(b =>
+                new account.AccountCacheType
+                {
+                    AccountType = b.GetAccountType(),
+                    Identifier = b.Identifier
+                }).ToList();
+            ImperaturGlobal.InitializeBusinessAccount(BusinessAccounts);
+
+            m_oDisplayCurrency = ImperaturGlobal.Kernel.Get<ICurrency>(new Ninject.Parameters.ConstructorArgument("CurrencyCode", m_oImperaturData.SystemCurrency));
             
 
             /*

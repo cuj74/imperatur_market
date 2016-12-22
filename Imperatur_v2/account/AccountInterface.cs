@@ -5,16 +5,21 @@ using System.Text;
 using System.Threading.Tasks;
 using Imperatur_v2.monetary;
 using Imperatur_v2.trade;
+using Imperatur_v2.customer;
 
 namespace Imperatur_v2.account
 {
     public interface IAccountInterface
     {
-        List<Money> GetCurrentAmount();
-        List<Money> GetDepositedAmount();
-        bool AddTransaction(Transaction oTrans);
+        Guid Identifier { get; }
+
+        List<IMoney> GetCurrentAmount();
+        List<IMoney> GetDepositedAmount();
+        bool AddTransaction(ITransactionInterface oTrans);
         List<Holding> GetHoldings();
-        List<Money> GetAvailableFunds();
+        List<IMoney> GetAvailableFunds();
+        Customer GetCustomer();
+        AccountType GetAccountType();
 
     }
 }

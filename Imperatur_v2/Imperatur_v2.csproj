@@ -52,7 +52,9 @@
     <Compile Include="account\Account.cs" />
     <Compile Include="account\AccountInterface.cs" />
     <Compile Include="cache\cache.cs" />
+    <Compile Include="customer\Customer.cs" />
     <Compile Include="DIBinding.cs" />
+    <Compile Include="event\Sharedevents.cs" />
     <Compile Include="handler\AccountHandler.cs" />
     <Compile Include="handler\AccountHandlerInterface.cs" />
     <Compile Include="handler\TradeHandler.cs" />
@@ -73,6 +75,9 @@
     <Compile Include="securites\Quote.cs" />
     <Compile Include="securites\Security.cs" />
     <Compile Include="shared\ImperaturGlobal.cs" />
+    <Compile Include="shared\ObjectMapping.cs" />
+    <Compile Include="shared\ObjectReflection.cs" />
+    <Compile Include="shared\ObjectTextSearch.cs" />
     <Compile Include="trade\Holding.cs" />
     <Compile Include="trade\Trade.cs" />
     <Compile Include="trade\TradeInterface.cs" />
@@ -81,9 +86,7 @@
     <EmbeddedResource Include="cache\instruments.json" />
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="customer\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

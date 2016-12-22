@@ -10,6 +10,7 @@ using System.IO;
 using System.Reflection;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
+using Ninject;
 
 namespace Imperatur_v2.shared
 {
@@ -26,13 +27,26 @@ namespace Imperatur_v2.shared
         public static string CountryCache = "COUNTRYCACHE";
         public static string CurrencyExchangeCache = "CURRENCYEXCHANGECACHE";
         public static string InstrumentCache = "INSTRUMENTCACHE";
+        public static string BusinessAccountCache = "BUSINESSACCOUNTCACHE";
         public static ImperaturData SystemData;
         public static List<Instrument> Instruments;
+        private static StandardKernel m_oKernel;
         #endregion
 
         #region Init
 
         static ICurrencyExhangeHandler _CurrencyExchangeHandler = null;
+        public static StandardKernel Kernel
+        {
+            get {
+                if (m_oKernel == null)
+                {
+                    m_oKernel = new StandardKernel();
+                    m_oKernel.Load(Assembly.GetExecutingAssembly());
+                }
+                return m_oKernel;
+            }
+        }
 
         internal static ICurrencyExhangeHandler CurrencyExchangeHandler
         {
@@ -46,7 +60,7 @@ namespace Imperatur_v2.shared
             }
         }
 
-        internal static void Initialize(ImperaturData SystemDataToCache)
+        internal static void Initialize(ImperaturData SystemDataToCache, StandardKernel NinjectKernel, List<account.AccountCacheType> BusinessAccounts)
         {
             if (SystemData == null)
                 SystemData = SystemDataToCache;
@@ -54,13 +68,28 @@ namespace Imperatur_v2.shared
             if (Instruments == null)
                 Instruments = ReadInstrumentsFromAssembly();
 
+            if (m_oKernel == null)
+                m_oKernel = NinjectKernel;
+
             BuildCurrencyCodeCache();
+
+            InitializeBusinessAccount(BusinessAccounts);
+
 
             if (!GlobalCachingProvider.Instance.FindItem(ImperaturGlobal.CountryCache))
                 GlobalCachingProvider.Instance.AddItem(ImperaturGlobal.CountryCache, new CountryCache());
 
         }
-
+        internal static void InitializeBusinessAccount(List<account.AccountCacheType> BusinessAccounts)
+        {
+            if (BusinessAccounts != null)
+            {
+                if (!GlobalCachingProvider.Instance.FindItem(ImperaturGlobal.BusinessAccountCache))
+                    GlobalCachingProvider.Instance.AddItem(ImperaturGlobal.BusinessAccountCache, new BusinessAccountCache(
+                        BusinessAccounts.ToArray()
+                        ));
+            }
+        }
         private static List<Instrument> ReadInstrumentsFromAssembly()
         {
             var assembly = Assembly.GetExecutingAssembly();
@@ -96,6 +125,8 @@ namespace Imperatur_v2.shared
                         }).ToArray()
                     ));
         }
+
+
 
         private static void BuildCurrencyExchangeCache()
         {
