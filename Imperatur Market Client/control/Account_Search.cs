@@ -11,6 +11,7 @@ using Imperatur_v2.handler;
 using Imperatur_v2;
 using Imperatur_v2.account;
 using Imperatur_v2.events;
+using Imperatur_Market_Client.events;
 
 namespace Imperatur_Market_Client.control
 {
@@ -18,6 +19,7 @@ namespace Imperatur_Market_Client.control
     {
         private IAccountHandlerInterface m_oAh;
         public event MainForm.SelectedAccountEventHandler SelectedAccount;
+        public event MainForm.ToggleSearchDialogHandler ToggleSearchDialog;
 
         public Account_Search(IAccountHandlerInterface AccountHandler)
         {
@@ -29,8 +31,25 @@ namespace Imperatur_Market_Client.control
             listView_searchresult.Columns.Add("Name");
             listView_searchresult.Columns.Add("Amount");
             listView_searchresult.Columns.Add("Current");
+            this.textBox_Search.KeyDown += TextBox_Search_KeyDown;
 
         }
+
+        private void TextBox_Search_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                button_search_Click(this, null);
+            }
+        }
+
+        protected virtual void OnToggleSearchDialog(ToggleSearchEvents e)
+        {
+            if (ToggleSearchDialog != null)
+                ToggleSearchDialog(this, e);
+        }
+
+
         protected virtual void OnSelectedAccount(SelectedAccountEventArg e)
         {
             if (SelectedAccount != null)
@@ -76,6 +95,14 @@ namespace Imperatur_Market_Client.control
                 listView_searchresult.Items.Add(oSearchResultRow);
             }
             listView_searchresult.Refresh();
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            OnToggleSearchDialog(new ToggleSearchEvents()
+            {
+                Collapse = true
+            });
         }
     }
 }

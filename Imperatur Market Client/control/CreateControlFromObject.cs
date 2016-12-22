@@ -19,7 +19,7 @@ namespace Imperatur_Market_Client.control
             this.Dock = DockStyle.Fill;
             GroupBox oB = CreateGroupBox(GroupBoxCaption);
             this.Controls.Add(oB);
-            Dictionary<string, string> ObjectData = GetDataFromMembers(ObjectTemplate, ObjectNamesToShow);
+            Dictionary<string, string> ObjectData = GetDataFromMembers(ObjectTemplate);//, ObjectNamesToShow);
 
             TableLayoutPanel tlp = CreateTableLayoutPanel(ObjectData.Count);
             int i = 0;
@@ -30,11 +30,11 @@ namespace Imperatur_Market_Client.control
                     Text = pair.Value,
                     Name = pair.Key,
                     Anchor = AnchorStyles.Left,
-                    Width = 300,
-                    AutoSize = true,
+                    Width = 200,
+                    //AutoSize = true,
                     ReadOnly = true
-                }, 0, i);
-                tlp.Controls.Add(new Label() { Text = pair.Key, Anchor = AnchorStyles.Left, AutoSize = true }, 1, i);
+                }, 1, i);
+                tlp.Controls.Add(new Label() { Text = pair.Key, Anchor = AnchorStyles.Left, AutoSize = true }, 0, i);
                 i++;
             }
            
@@ -104,6 +104,89 @@ namespace Imperatur_Market_Client.control
                             {
                                 Value = oFieldInfo.GetValue(ReflectedObject).ToString();
                                 Name = oFieldInfo.Name;
+                            }
+                            break;
+                        case MemberTypes.Method:
+                            break;
+                        case MemberTypes.Property:
+                            PropertyInfo oPropertyInfo = ReflectedObject.GetType().GetProperties(oOR.BindingFlags).Where(f => f.Name.Equals(oM.Name)).FirstOrDefault();
+                            if (oPropertyInfo.GetValue(ReflectedObject) != null)
+                            {
+                                Value = oPropertyInfo.GetValue(ReflectedObject).ToString();
+                                Name = oPropertyInfo.Name;
+                            }
+                            break;
+                        case MemberTypes.TypeInfo:
+                            break;
+                        case MemberTypes.Custom:
+                            break;
+                        case MemberTypes.NestedType:
+                            break;
+                        case MemberTypes.All:
+                            break;
+                        default:
+                            break;
+                    }
+                    if (Name != "")
+                    {
+                        ObjectValues.Add(Name, Value);
+                    }
+                }
+
+            }
+            return ObjectValues;
+        }
+        private Dictionary<string, string> GetDataFromMembers(Object ReflectedObject)
+        {
+            Dictionary<string, string> ObjectValues = new Dictionary<string, string>();
+            var DReflectedAttribute = ReflectedObject.GetType().GetCustomAttributes(typeof(DesignAttribute),false).FirstOrDefault() as DesignAttribute;
+            if (DReflectedAttribute == null) 
+            {
+                return ObjectValues;
+            }
+            else if(!DReflectedAttribute.VisibleAtPresentation)
+            {
+                return ObjectValues;
+            }
+            string Value = "";
+            string Name = "";
+            ObjectReflection oOR = new ObjectReflection();
+            foreach (MemberInfo oM in oOR.GetMemberInfo(ReflectedObject))
+            {
+                DesignAttribute oDa = (DesignAttribute)Attribute.GetCustomAttribute(oM, typeof(DesignAttribute));
+
+                if (oDa != null && oDa.VisibleAtPresentation)
+                {
+                    Value = "";
+                    Name = "";
+                    switch (oM.MemberType)
+                    {
+                        case MemberTypes.Constructor:
+                            break;
+                        case MemberTypes.Event:
+                            break;
+                        case MemberTypes.Field:
+                            FieldInfo oFieldInfo = ReflectedObject.GetType().GetFields(oOR.BindingFlags).Where(f => f.Name.Equals(oM.Name)).FirstOrDefault();
+                            if (oDa.Expand && oFieldInfo.GetValue(ReflectedObject) != null)
+                            {
+                                //get the underlying object to show;
+                                foreach (KeyValuePair<string, string> oRec in GetDataFromMembers(oFieldInfo.GetValue(ReflectedObject)))
+                                {
+                                    ObjectValues.Add(
+                                        oRec.Key,
+                                        oRec.Value
+                                        );
+                                    // do something with entry.Value or entry.Key
+                                }
+
+                            }
+                            else
+                            {
+                                if (oFieldInfo.GetValue(ReflectedObject) != null)
+                                {
+                                    Value = oFieldInfo.GetValue(ReflectedObject).ToString();
+                                    Name = oFieldInfo.Name;
+                                }
                             }
                             break;
                         case MemberTypes.Method:

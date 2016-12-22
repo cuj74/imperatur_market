@@ -12,6 +12,7 @@ using Ninject;
 using System.Reflection;
 using Imperatur_Market_Client.control;
 using Imperatur_v2.events;
+using Imperatur_Market_Client.events;
 
 using System.IO;
 
@@ -24,6 +25,7 @@ namespace Imperatur_Market_Client
         StandardKernel m_oKernel;
         private readonly string SystemLocationCacheFile = "systemlocation.imp";
         public delegate void SelectedAccountEventHandler(object sender, SelectedAccountEventArg e);
+        public delegate void ToggleSearchDialogHandler(object sender, ToggleSearchEvents e);
 
         public MainForm()
         {

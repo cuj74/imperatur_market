@@ -98,6 +98,7 @@
     <Compile Include="dialog\System_Load.Designer.cs">
       <DependentUpon>System_Load.cs</DependentUpon>
     </Compile>
+    <Compile Include="events\ShareEvents.cs" />
     <Compile Include="MainForm.cs">
       <SubType>Form</SubType>
     </Compile>

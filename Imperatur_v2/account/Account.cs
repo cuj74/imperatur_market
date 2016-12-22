@@ -9,15 +9,19 @@ using Imperatur_v2.customer;
 using Imperatur_v2.shared;
 using Imperatur_v2.cache;
 
+
 namespace Imperatur_v2.account
 {
+    [DesignAttribute(true)]
     public class Account : IAccountInterface
     {
         private Guid Identifier;
         private List<ITransactionInterface> Transactions;
         private AccountType AccountType;
         private Guid AccountOwner;
+        [DesignAttribute(true)]
         private string Name;
+        [DesignAttribute(true, true)]
         private Customer Customer;
 
         Guid IAccountInterface.Identifier

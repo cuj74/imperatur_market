@@ -74,6 +74,7 @@
     <Compile Include="rest\RestInterface.cs" />
     <Compile Include="securites\Quote.cs" />
     <Compile Include="securites\Security.cs" />
+    <Compile Include="shared\Attributes.cs" />
     <Compile Include="shared\ImperaturGlobal.cs" />
     <Compile Include="shared\ObjectMapping.cs" />
     <Compile Include="shared\ObjectReflection.cs" />
