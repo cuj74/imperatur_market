@@ -118,12 +118,7 @@ namespace Imperatur_v2.account
             SumMoney.AddRange(DebitQuery.Select(m => m.DebitAmount.SwitchSign()));
             SumMoney.AddRange(CreditQuery.Select(m => m.CreditAmount));
 
-            //här ska vi egentligen använda ninject kernel för att få tillbaka rätt typ av Money
-            //return (List<IMoney>)(from p in SumMoney
-            //                     group p.Amount() by p.CurrencyCode() into g
-            //                     select (IMoney)new Money(g.ToList().Sum(), new Currency(g.Key.ToString()))).ToList();
-
-            return (List<IMoney>)(from p in SumMoney
+            return (from p in SumMoney
                                   group p.Amount() by p.CurrencyCode() into g
                                   select
                                     ImperaturGlobal.GetMoney(g.ToList().Sum(), g.Key)).ToList();
@@ -136,7 +131,33 @@ namespace Imperatur_v2.account
 
         public List<IMoney> GetDepositedAmount()
         {
-            throw new NotImplementedException();
+            List<TransactionType> TransferWithdraw = new List<TransactionType>();
+            TransferWithdraw.Add(TransactionType.Transfer);
+            TransferWithdraw.Add(TransactionType.Withdrawal);
+
+            //minus
+            var DebitQuery =
+                from t in Transactions
+                where t.DebitAccount.Equals(this.Identifier)
+                join tb in TransferWithdraw on t.TransactionType equals tb
+                select t;
+
+            //plus
+            var CreditQuery =
+                from t in Transactions
+                where t.CreditAccount.Equals(this.Identifier) && t.TransactionType.Equals(TransactionType.Transfer)
+                select t;
+
+            List<IMoney> SumMoney = new List<IMoney>();
+            SumMoney.AddRange(DebitQuery.Select(m => m.DebitAmount.SwitchSign()));
+            SumMoney.AddRange(CreditQuery.Select(m => m.CreditAmount));
+
+
+            return (List<IMoney>)(from p in SumMoney
+                                 group p.Amount() by p.CurrencyCode() into g
+                                 select 
+                                 ImperaturGlobal.GetMoney(g.ToList().Sum(), g.Key)).ToList();
+  
         }
 
         public List<Holding> GetHoldings()

@@ -70,6 +70,7 @@ namespace Imperatur_v2
         string GetLastErrorMessage();
         ImperaturData GetSystemData();
         IAccountHandlerInterface GetAccountHandler();
+        IMoney GetMoney(decimal Amount, string CurrencyCode);
 
 
     }
@@ -93,6 +94,10 @@ namespace Imperatur_v2
         }
         #endregion
 
+        public IMoney GetMoney(decimal Amount, string CurrencyCode)
+        {
+            return ImperaturGlobal.GetMoney(Amount, CurrencyCode);
+        }
         #region constructor
         public ImperaturMarket(ImperaturData SystemData)
         {

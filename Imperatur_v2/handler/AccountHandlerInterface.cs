@@ -13,13 +13,13 @@ namespace Imperatur_v2.handler
     {
         string GetLastErrorMessage();
         List<IMoney> GetDepositedAmountOnAccount(Guid Identifier);
-        bool DepositAmount(Guid Identifier, Money Deposit);
+        bool DepositAmount(Guid Identifier, IMoney Deposit);
         List<Holding> GetAccountHoldings(Guid Identifier);
         IAccountInterface GetAccount(Guid Identifier);
         Money CalculateHoldingSell(Guid Identifier, int Quantity, string Ticker);
         bool SellHoldingFromAccount(Guid Identifier, int Quantity, string Ticker);
         bool AddHoldingToAccount(Guid Identifier, int Quantity, string Ticker);
-        bool AddTransactionToAccount(Guid Identifier, monetary.Transaction NewTransaction);
+        bool AddTransactionToAccount(Guid Identifier, ITransactionInterface NewTransaction);
         List<Account> GetBankAccounts();
         List<Account> GetHouseAccounts();
         bool CreateAccount(List<IAccountInterface> oAccountData);
@@ -27,6 +27,6 @@ namespace Imperatur_v2.handler
         List<Money> GetTotalFundsOfAccount(Guid Identifier);
         List<Guid> GetHouseAndBankAccountsGuid();
         List<IAccountInterface> Accounts();
-        List<IAccountInterface> SearchAccount(string Search);
+        List<IAccountInterface> SearchAccount(string Search, AccountType AccountTypeToSearch);
     }
 }

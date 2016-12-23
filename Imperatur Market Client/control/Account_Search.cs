@@ -81,13 +81,14 @@ namespace Imperatur_Market_Client.control
 
             //populate the account list
 
-            foreach (IAccountInterface oA in m_oAh.SearchAccount(this.textBox_Search.Text.Trim()))
+            foreach (IAccountInterface oA in m_oAh.SearchAccount(this.textBox_Search.Text.Trim(), AccountType.Customer))
             {
                 ListViewItem oSearchResultRow = new ListViewItem(
                     new string[]
                     {
-                        String.Format("{0} {1}", oA.GetCustomer().FirstName, oA.GetCustomer().LastName),
-                        "0",
+                        oA.GetCustomer().FullName,
+                        //String.Format("{0} {1}", oA.GetCustomer().FirstName, oA.GetCustomer().LastName),
+                        oA.GetAvailableFunds().First().ToString(),
                         "0",
                     }
                     );

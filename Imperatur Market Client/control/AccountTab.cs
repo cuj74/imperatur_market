@@ -21,6 +21,7 @@ namespace Imperatur_Market_Client.control
         //private UserControl AccountMainInfo;
         private Account_MainInfo oControl_Account_MainInfo;
         private Account_Search oControl_Account_Search;
+        private Account_Trade oControl_Account_Trade;
         private ColumnStyle InitalColumnStyle;
         private Button ExpandSearch;
         private System.Drawing.Size ExpandButtonSize;
@@ -47,7 +48,7 @@ namespace Imperatur_Market_Client.control
 
 
             Account_Holdings oControl_Account_Holdings = new Account_Holdings(m_AccountHandler);
-            Account_Trade oControl_Account_Trade = new Account_Trade(m_AccountHandler);
+            oControl_Account_Trade = new Account_Trade(m_AccountHandler);
 
             tlp_Account.Controls.Add(oControl_Account_MainInfo, 1, 0);
             tlp_Account.Controls.Add(oControl_Account_Holdings, 2, 0);
@@ -117,6 +118,7 @@ namespace Imperatur_Market_Client.control
         private void OControl_Account_Search_SelectedAccount(object sender, SelectedAccountEventArg e)
         {
             oControl_Account_MainInfo.UpdateAcountInfo(m_AccountHandler.GetAccount(e.Identifier));
+            oControl_Account_Trade.UpdateAcountInfo(m_AccountHandler.GetAccount(e.Identifier));
             /*
             try
             {

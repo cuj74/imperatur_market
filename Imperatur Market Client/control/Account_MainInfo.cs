@@ -54,6 +54,7 @@ namespace Imperatur_Market_Client.control
                 DataGridView AvilableFundsGrid = new DataGridView();
 
                 AvilableFundsGrid.AutoGenerateColumns = false;
+                AvilableFundsGrid.AllowUserToAddRows = false;
 
                 AvilableFundsGrid.Columns.Add(
                     new DataGridViewTextBoxColumn()
@@ -61,7 +62,8 @@ namespace Imperatur_Market_Client.control
                         CellTemplate = new DataGridViewTextBoxCell(),
                         Name = "Amount",
                         HeaderText = "Amount",
-                        DataPropertyName = "Amount"
+                        DataPropertyName = "Amount",
+                        ReadOnly = true
                     }
                 );
                 DataTable AvilableFundsDT = new DataTable();
@@ -75,6 +77,8 @@ namespace Imperatur_Market_Client.control
                     AvilableFundsDT.Rows.Add(row);
 
                 }
+                AvilableFundsGrid.DataSource = AvilableFundsDT;
+                AvilableFundsGrid.Dock = DockStyle.Top;
                 AccountMainAvailableFunds = new CreateDataGridControlFromObject(
                     new DataGridForControl
                     {

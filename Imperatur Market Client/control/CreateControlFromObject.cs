@@ -25,6 +25,7 @@ namespace Imperatur_Market_Client.control
             oB.Dock = DockStyle.Fill;
             oB.Controls.Add(NewDataGridData.DataGridViewToBuild);
             this.Dock = DockStyle.Fill;
+            this.Controls.Add(oB);
         }
     }
 

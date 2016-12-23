@@ -20,7 +20,7 @@ namespace Imperatur_v2.handler
         private string LastErrorMessage;
         private ObjectMapping m_oObjectMapping;
         public List<ITransactionInterface> m_oTransactions;
-        private readonly object Identifier;
+        //private readonly object Identifier;
         private ObjectTextSearch m_oSearchObjects;
 
 
@@ -32,13 +32,13 @@ namespace Imperatur_v2.handler
         }
         
 
-        public List<IAccountInterface> SearchAccount(string Search)
+        public List<IAccountInterface> SearchAccount(string Search, AccountType AccountTypeToSearch)
         {
             if (Search.Equals("*"))
             {
-                return Accounts();
+                return Accounts().Where(a=>a.GetAccountType().Equals(AccountTypeToSearch)).ToList();
             }
-            return Accounts().Select(a =>
+            return Accounts().Where(a => a.GetAccountType().Equals(AccountTypeToSearch)).Select(a =>
                 new
                 {
                     Hit = m_oSearchObjects.FindTextInObject(Search, a),
@@ -59,9 +59,10 @@ namespace Imperatur_v2.handler
             throw new NotImplementedException();
         }
 
-        public bool AddTransactionToAccount(Guid Identifier, Transaction NewTransaction)
+        public bool AddTransactionToAccount(Guid Identifier, ITransactionInterface NewTransaction)
         {
-            throw new NotImplementedException();
+            m_oAccounts.Single(a => a.Identifier.Equals(Identifier)).AddTransaction(NewTransaction);
+            return true;
         }
 
         public Money CalculateHoldingSell(Guid Identifier, int Quantity, string Ticker)
@@ -85,7 +86,7 @@ namespace Imperatur_v2.handler
             {
                 foreach (var account in oAccountData.Where(a => a.GetAccountType().Equals(AccountType.Customer)).ToList())
                 {
-                    ITradeInterface oTrade = ImperaturGlobal.Kernel.Get<ITradeInterface>();
+                    //ITradeInterface oTrade = ImperaturGlobal.Kernel.Get<ITradeInterface>();
                     account.AddTransaction(
                               ImperaturGlobal.Kernel.Get<ITransactionInterface>(
                               new Ninject.Parameters.ConstructorArgument("DebitAmount", ZeroBalance),
@@ -93,22 +94,9 @@ namespace Imperatur_v2.handler
                               new Ninject.Parameters.ConstructorArgument("DebitAccount", account.GetBankAccountsFromCache().First()),
                               new Ninject.Parameters.ConstructorArgument("CreditAccount", account.Identifier),
                               new Ninject.Parameters.ConstructorArgument("TransactionType", TransactionType.Transfer),
-                              new Ninject.Parameters.ConstructorArgument("SecurtiesTrade", oTrade)
+                              new Ninject.Parameters.ConstructorArgument("SecurtiesTrade", (object)null) //trade before
                              ));
                 }
-
-                /*
-                oAccountData.Where(a => a.GetAccountType().Equals(AccountType.Customer)).ToList().ForEach(a =>
-                          a.AddTransaction(
-                              ImperaturGlobal.Kernel.Get<ITransactionInterface>(
-                              new Ninject.Parameters.ConstructorArgument("DebitAmount", ZeroBalance),
-                              new Ninject.Parameters.ConstructorArgument("CreditAmount", ZeroBalance),
-                              new Ninject.Parameters.ConstructorArgument("DebitAccount", a.GetBankAccountsFromCache().First()),
-                              new Ninject.Parameters.ConstructorArgument("CreditAccount", a.Identifier),
-                              new Ninject.Parameters.ConstructorArgument("TransactionType", TransactionType.Transfer),
-                              null
-                             )
-                              ));*/
 
             }
             catch(Exception ex)
@@ -117,18 +105,31 @@ namespace Imperatur_v2.handler
             } 
             m_oAccounts.AddRange(oAccountData);
 
-            /*
-                (List<Account>)GetMappingRowToObjects(typeof(Account), oAccountData.ToArray()).Select(
-                 item =>
-                 GetKernel().Get<IAccountInterface>()
-                 )
-                );*/
             return true;
         }
 
-        public bool DepositAmount(Guid Identifier, Money Deposit)
+        public bool DepositAmount(Guid Identifier, IMoney Deposit)
         {
-            throw new NotImplementedException();
+            IAccountInterface oA = m_oAccounts.Single(a => a.Identifier.Equals(Identifier));
+            try
+            {
+                oA.AddTransaction(
+                          ImperaturGlobal.Kernel.Get<ITransactionInterface>(
+                                  new Ninject.Parameters.ConstructorArgument("DebitAmount", Deposit),
+                                  new Ninject.Parameters.ConstructorArgument("CreditAmount", Deposit),
+                                  new Ninject.Parameters.ConstructorArgument("DebitAccount", oA.GetBankAccountsFromCache().First()),
+                                  new Ninject.Parameters.ConstructorArgument("CreditAccount", oA.Identifier),
+                                  new Ninject.Parameters.ConstructorArgument("TransactionType", TransactionType.Transfer),
+                                  new Ninject.Parameters.ConstructorArgument("SecurtiesTrade", (object)null)
+                                                                            )
+                                    );
+            }
+            catch(Exception ex)
+            {
+                LastErrorMessage = ex.Message;
+                return false;
+            }
+            return true;
         }
 
         public IAccountInterface GetAccount(Guid Identifier)
@@ -146,8 +147,30 @@ namespace Imperatur_v2.handler
             throw new NotImplementedException();
         }
 
+        private List<Guid> GetBusinessAccountsFromCache()
+        {
+            BusinessAccountCache oBA = (BusinessAccountCache)GlobalCachingProvider.Instance.GetItem(ImperaturGlobal.BusinessAccountCache);
+            return oBA.GetCache().Select(b =>
+                new Guid(b.Item1)).ToList();
+        }
+        public List<Guid> GetBankAccountsFromCache()
+        {
+            BusinessAccountCache oBA = (BusinessAccountCache)GlobalCachingProvider.Instance.GetItem(ImperaturGlobal.BusinessAccountCache);
+            return oBA.GetCache().Where(b => b.Item2.Equals(AccountType.Bank.ToString())).Select(b =>
+                  new Guid(b.Item1)).ToList();
+        }
+
         public List<IMoney> GetDepositedAmountOnAccount(Guid Identifier)
         {
+            List<IMoney> oM = m_oAccounts.Single(a => a.Identifier.Equals(Identifier)).GetDepositedAmount();
+            if (oM.Count == 0)
+            {
+                return null;
+            }
+            //ugly and wrong but works right now!
+            return oM;
+
+            /*
             List<TransactionType> TransferWithdraw = new List<TransactionType>();
             TransferWithdraw.Add(TransactionType.Transfer);
             TransferWithdraw.Add(TransactionType.Withdrawal);
@@ -180,7 +203,7 @@ namespace Imperatur_v2.handler
                                  select 
                                  ImperaturGlobal.GetMoney(g.ToList().Sum(), g.Key.ToString())
                                  ).ToList();
-
+*/
         }
 
         public List<Account> GetHouseAccounts()

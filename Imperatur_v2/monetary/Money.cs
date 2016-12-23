@@ -12,6 +12,8 @@ namespace Imperatur_v2.monetary
     {
         private ICurrency m_oCurrencyCode;
         private Decimal m_oAmount;
+        private int v;
+        private Currency currency;
 
         public IMoney Add(IMoney Add)
         {
@@ -103,20 +105,26 @@ namespace Imperatur_v2.monetary
             this.m_oAmount = Amount;
             this.m_oCurrencyCode = Currency;
         }
-        /*
-        public Money()
-        {
 
-        }
-        public IMoney GetMoney(decimal Amount, string CurrencyCode)
+        public Money(int v, Currency currency)
         {
-            return ImperaturGlobal.Kernel.Get<IMoney>(
-                                  new Ninject.Parameters.ConstructorArgument("Amount", Amount),
-                                  new Ninject.Parameters.ConstructorArgument("Currency",
-                                    ImperaturGlobal.Kernel.Get<ICurrency>(
-                                    new Ninject.Parameters.ConstructorArgument("CurrencyCode", CurrencyCode))
-                                    ));
-        }*/
+            this.v = v;
+            this.currency = currency;
+        }
+        /*
+public Money()
+{
+
+}
+public IMoney GetMoney(decimal Amount, string CurrencyCode)
+{
+   return ImperaturGlobal.Kernel.Get<IMoney>(
+                         new Ninject.Parameters.ConstructorArgument("Amount", Amount),
+                         new Ninject.Parameters.ConstructorArgument("Currency",
+                           ImperaturGlobal.Kernel.Get<ICurrency>(
+                           new Ninject.Parameters.ConstructorArgument("CurrencyCode", CurrencyCode))
+                           ));
+}*/
 
     }
 }

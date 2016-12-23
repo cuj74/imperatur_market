@@ -279,6 +279,12 @@ namespace Imperatur_Market_Client
             {
                 string ff = "";
             }
+
+            m_Ic.GetAccountHandler().DepositAmount(m_Ic.GetAccountHandler().Accounts().Where(a => a.GetAccountType().Equals(AccountType.Customer)).First().Identifier, 
+                m_Ic.GetMoney(20000, "SEK"));
+
+            m_Ic.GetAccountHandler().DepositAmount(m_Ic.GetAccountHandler().Accounts().Where(a => a.GetAccountType().Equals(AccountType.Customer)).First().Identifier,
+                    m_Ic.GetMoney(7540, "EUR"));
         }
 
         private string[] ReadSystemLocationFromCache()
