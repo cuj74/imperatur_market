@@ -18,11 +18,14 @@ namespace Imperatur_Market_Client.control
     public partial class AccountTab : UserControl
     {
         private IAccountHandlerInterface m_AccountHandler;
-        private UserControl AccountMainInfo;
+        //private UserControl AccountMainInfo;
+        private Account_MainInfo oControl_Account_MainInfo;
         private Account_Search oControl_Account_Search;
         private ColumnStyle InitalColumnStyle;
         private Button ExpandSearch;
         private System.Drawing.Size ExpandButtonSize;
+
+
         public AccountTab(IAccountHandlerInterface AccountHandler)
         {
             InitializeComponent();
@@ -32,17 +35,24 @@ namespace Imperatur_Market_Client.control
 
         private void AccountTab_Load(object sender, EventArgs e)
         {
+            oControl_Account_MainInfo = new Account_MainInfo();
+            oControl_Account_MainInfo.Dock = DockStyle.Fill;
             ExpandButtonSize = new System.Drawing.Size(15, 23);
+
             oControl_Account_Search = new Account_Search(m_AccountHandler);
             oControl_Account_Search.SelectedAccount += OControl_Account_Search_SelectedAccount;
             oControl_Account_Search.ToggleSearchDialog += OControl_Account_Search_ToggleSearchDialog;
+            
             tlp_Account.Controls.Add(oControl_Account_Search, 0, 0);
+
 
             Account_Holdings oControl_Account_Holdings = new Account_Holdings(m_AccountHandler);
             Account_Trade oControl_Account_Trade = new Account_Trade(m_AccountHandler);
 
+            tlp_Account.Controls.Add(oControl_Account_MainInfo, 1, 0);
             tlp_Account.Controls.Add(oControl_Account_Holdings, 2, 0);
             tlp_Account.Controls.Add(oControl_Account_Trade, 3, 0);
+
             ExpandSearch = new Button();
             ExpandSearch.Image = global::Imperatur_Market_Client.Properties.Resources.Expand;
             ExpandSearch.ImageAlign = ContentAlignment.MiddleCenter;
@@ -106,9 +116,11 @@ namespace Imperatur_Market_Client.control
 
         private void OControl_Account_Search_SelectedAccount(object sender, SelectedAccountEventArg e)
         {
+            oControl_Account_MainInfo.UpdateAcountInfo(m_AccountHandler.GetAccount(e.Identifier));
+            /*
             try
             {
-                AccountMainInfo = new CreateControlFromObject(m_AccountHandler.GetAccount(e.Identifier),
+                AccountMainInfo = new CreateInfoControlFromObject(m_AccountHandler.GetAccount(e.Identifier),
                     "Account main info",
                     new string[]
                     {
@@ -117,7 +129,7 @@ namespace Imperatur_Market_Client.control
                     "Customer"
                     });
                 AccountMainInfo.Name = "AccountMainInfo";
-
+                //här behöver vi göra om...
                 if (!tlp_Account.Controls.ContainsKey(AccountMainInfo.Name))
                 {
                     tlp_Account.Controls.Add(AccountMainInfo, 1, 0);
@@ -134,6 +146,7 @@ namespace Imperatur_Market_Client.control
             }
             if (AccountMainInfo != null)
                 AccountMainInfo.Refresh();
+                */
         }
     }
 }

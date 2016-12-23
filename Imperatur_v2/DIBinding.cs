@@ -8,6 +8,7 @@ using Imperatur_v2.shared;
 using Imperatur_v2.monetary;
 using Imperatur_v2.account;
 using Imperatur_v2.handler;
+using Imperatur_v2.trade;
 
 
 
@@ -23,6 +24,7 @@ namespace Imperatur_v2
             Bind<IMoney>().To<Money>();
             Bind<IAccountInterface>().To<Account>();
             Bind<IAccountHandlerInterface>().To<AccountHandler>();
+            Bind<ITradeInterface>().To<Trade>();
             /*
             Bind<IBFSDataHandler>().To<BFSDataHandler>();
             Bind<IFundAdministration>().To<FundAdministration>();

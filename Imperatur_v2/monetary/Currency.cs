@@ -21,7 +21,8 @@ namespace Imperatur_v2.monetary
         /// Get the underlying data of the currency
         /// </summary>
         /// <returns>object of type Currency</returns>
-        Currency GetData();
+        //ICurrency GetData();
+        string GetCurrencyString();
     }
 
 
@@ -45,10 +46,14 @@ namespace Imperatur_v2.monetary
             AssertCurrency(CurrencyCode);
 
         }
-
-        public Currency GetData()
+      
+        //public ICurrency GetData()
+        //{
+        //    return this;
+        //}
+        public string GetCurrencyString()
         {
-            return this;
+            return _CurrencyCode;
         }
 
         public void AssertCurrency(string CurrencyToTest)

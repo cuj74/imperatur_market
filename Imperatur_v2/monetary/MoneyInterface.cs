@@ -8,16 +8,18 @@ namespace Imperatur_v2.monetary
 {
     public interface IMoney
     {
-        Money SwitchSign();
+        IMoney SwitchSign();
         string ToString();
         string ToString(bool WithSign, bool WithCurrencyCode);
   //      Money(decimal Amount, string CurrencyCode);
-        Money Multiply(Decimal Multiplier);
-        Money Divide(Decimal Divider);
-        Money Divide(Money Divider);
-        Money Add(Decimal Add);
-        Money Add(Money Add);
-        Money Subtract(Decimal Subtract);
-        Money Subtract(Money Subtract);
+        IMoney Multiply(Decimal Multiplier);
+        IMoney Divide(Decimal Divider);
+        IMoney Divide(IMoney Divider);
+        IMoney Add(Decimal Add);
+        IMoney Add(IMoney Add);
+        IMoney Subtract(Decimal Subtract);
+        IMoney Subtract(IMoney Subtract);
+        ICurrency CurrencyCode();
+        decimal Amount();
     }
 }

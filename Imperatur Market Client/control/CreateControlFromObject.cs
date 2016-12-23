@@ -6,14 +6,38 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using Imperatur_v2.shared;
 using System.Reflection;
+using System.Data;
 
 namespace Imperatur_Market_Client.control
 {
-    public class CreateControlFromObject : UserControl
+    public class DataGridForControl
+    {
+        public string GroupBoxCaption;
+        public DataGridView DataGridViewToBuild;
+    }
+
+    public class CreateDataGridControlFromObject : UserControl
+    {
+        public CreateDataGridControlFromObject(DataGridForControl NewDataGridData)
+        {
+            CreateInfoControlFromObject oC = new CreateInfoControlFromObject();
+            GroupBox oB = oC.CreateGroupBox(NewDataGridData.GroupBoxCaption);
+            oB.Dock = DockStyle.Fill;
+            oB.Controls.Add(NewDataGridData.DataGridViewToBuild);
+            this.Dock = DockStyle.Fill;
+        }
+    }
+
+    public class CreateInfoControlFromObject : UserControl
     {
 
         private string[] ObjectNamesToShow;
-        public CreateControlFromObject(object ObjectTemplate, string GroupBoxCaption, string[] ObjectNamesToShow)
+
+        public CreateInfoControlFromObject()
+        {
+
+        }
+        public CreateInfoControlFromObject(object ObjectTemplate, string GroupBoxCaption, string[] ObjectNamesToShow)
         {
             this.ObjectNamesToShow = ObjectNamesToShow;
             this.Dock = DockStyle.Fill;
@@ -41,7 +65,7 @@ namespace Imperatur_Market_Client.control
             oB.Controls.Add(tlp);
         }
 
-        private GroupBox CreateGroupBox(string Caption)
+        public GroupBox CreateGroupBox(string Caption)
         {
             return new GroupBox()
             {

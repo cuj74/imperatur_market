@@ -74,7 +74,49 @@ namespace Imperatur_v2.handler
             if (m_oAccounts == null)
                 m_oAccounts = new List<IAccountInterface>();
 
+            //for each Account add a zero balance transfer to get available funds
+
+            IMoney ZeroBalance = ImperaturGlobal.Kernel.Get<IMoney>(
+                new Ninject.Parameters.ConstructorArgument("Amount", 0m),
+                new Ninject.Parameters.ConstructorArgument("Currency", ImperaturGlobal.GetSystemCurrency())
+             );
+
+            try
+            {
+                foreach (var account in oAccountData.Where(a => a.GetAccountType().Equals(AccountType.Customer)).ToList())
+                {
+                    ITradeInterface oTrade = ImperaturGlobal.Kernel.Get<ITradeInterface>();
+                    account.AddTransaction(
+                              ImperaturGlobal.Kernel.Get<ITransactionInterface>(
+                              new Ninject.Parameters.ConstructorArgument("DebitAmount", ZeroBalance),
+                              new Ninject.Parameters.ConstructorArgument("CreditAmount", ZeroBalance),
+                              new Ninject.Parameters.ConstructorArgument("DebitAccount", account.GetBankAccountsFromCache().First()),
+                              new Ninject.Parameters.ConstructorArgument("CreditAccount", account.Identifier),
+                              new Ninject.Parameters.ConstructorArgument("TransactionType", TransactionType.Transfer),
+                              new Ninject.Parameters.ConstructorArgument("SecurtiesTrade", oTrade)
+                             ));
+                }
+
+                /*
+                oAccountData.Where(a => a.GetAccountType().Equals(AccountType.Customer)).ToList().ForEach(a =>
+                          a.AddTransaction(
+                              ImperaturGlobal.Kernel.Get<ITransactionInterface>(
+                              new Ninject.Parameters.ConstructorArgument("DebitAmount", ZeroBalance),
+                              new Ninject.Parameters.ConstructorArgument("CreditAmount", ZeroBalance),
+                              new Ninject.Parameters.ConstructorArgument("DebitAccount", a.GetBankAccountsFromCache().First()),
+                              new Ninject.Parameters.ConstructorArgument("CreditAccount", a.Identifier),
+                              new Ninject.Parameters.ConstructorArgument("TransactionType", TransactionType.Transfer),
+                              null
+                             )
+                              ));*/
+
+            }
+            catch(Exception ex)
+            {
+                int gsd = 0;
+            } 
             m_oAccounts.AddRange(oAccountData);
+
             /*
                 (List<Account>)GetMappingRowToObjects(typeof(Account), oAccountData.ToArray()).Select(
                  item =>
@@ -104,7 +146,7 @@ namespace Imperatur_v2.handler
             throw new NotImplementedException();
         }
 
-        public List<Money> GetDepositedAmountOnAccount(Guid Identifier)
+        public List<IMoney> GetDepositedAmountOnAccount(Guid Identifier)
         {
             List<TransactionType> TransferWithdraw = new List<TransactionType>();
             TransferWithdraw.Add(TransactionType.Transfer);
@@ -128,15 +170,16 @@ namespace Imperatur_v2.handler
                 where t.CreditAccount.Equals(this.Identifier) && t.TransactionType.Equals(TransactionType.Transfer)
                 select t;
 
-            List<Money> SumMoney = new List<Money>();
+            List<IMoney> SumMoney = new List<IMoney>();
             SumMoney.AddRange(DebitQuery.Select(m => m.DebitAmount.SwitchSign()));
             SumMoney.AddRange(CreditQuery.Select(m => m.CreditAmount));
 
 
-            return (List<Money>)(from p in SumMoney
-                                 group p.Amount by p.CurrencyCode into g
-                                 select new Money(g.ToList().Sum(), g.Key.ToString())).ToList();
-
+            return (List<IMoney>)(from p in SumMoney
+                                 group p.Amount() by p.CurrencyCode() into g
+                                 select 
+                                 ImperaturGlobal.GetMoney(g.ToList().Sum(), g.Key.ToString())
+                                 ).ToList();
 
         }
 

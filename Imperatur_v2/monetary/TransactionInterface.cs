@@ -10,13 +10,13 @@ namespace Imperatur_v2.monetary
     {
         Guid DebitAccount { get; }
         TransactionType TransactionType { get; }
-        Money DebitAmount { get; }
+        IMoney DebitAmount { get; }
         Guid CreditAccount { get; }
-        Money CreditAmount { get; }
+        IMoney CreditAmount { get; }
 
-        Money GetGAA();
+        IMoney GetGAA();
         Decimal GetQuantity();
-        Money GetCurrentValue();
-        Money GetTradeAmount();
+        IMoney GetCurrentValue();
+        IMoney GetTradeAmount();
     }
 }

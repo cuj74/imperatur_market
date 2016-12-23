@@ -3,52 +3,75 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Imperatur_v2.shared;
+using Ninject;
 
 namespace Imperatur_v2.monetary
 {
     public class Money : IMoney
     {
-        public Currency CurrencyCode;
-        public Decimal Amount;
+        private ICurrency m_oCurrencyCode;
+        private Decimal m_oAmount;
 
-        public Money Add(Money Add)
+        public IMoney Add(IMoney Add)
         {
-            throw new NotImplementedException();
+            if (m_oCurrencyCode != Add.CurrencyCode())
+                throw new Exception("Can't add two money objects with different currency");
+
+            if (Add.Amount().Equals(0))
+                return this;
+
+            return GetMoney(m_oAmount + Add.Amount(), m_oCurrencyCode);
         }
 
-        public Money Add(decimal Add)
+        public IMoney Add(decimal Add)
         {
-            throw new NotImplementedException();
+            return this.Add(GetMoney(Add, m_oCurrencyCode));
         }
 
-        public Money Divide(Money Divider)
+        public IMoney Divide(IMoney Divider)
         {
-            throw new NotImplementedException();
+            if (this.m_oCurrencyCode != Divider.CurrencyCode())
+                throw new Exception("Can't divide two money objects with different currency");
+            if (Divider.Amount() == 0)
+                throw new Exception("Can't divide by zero");
+
+            return GetMoney(m_oAmount / Divider.Amount(), m_oCurrencyCode);
         }
 
-        public Money Divide(decimal Divider)
+        public IMoney Divide(decimal Divider)
         {
-            throw new NotImplementedException();
+
+            return this.Divide(GetMoney(Divider, m_oCurrencyCode));
         }
 
-        public Money Multiply(decimal Multiplier)
+        public IMoney Multiply(decimal Multiplier)
         {
-            throw new NotImplementedException();
+            return GetMoney(this.m_oAmount * Multiplier, m_oCurrencyCode);
         }
 
-        public Money Subtract(Money Subtract)
+        public IMoney Subtract(IMoney Subtract)
         {
-            throw new NotImplementedException();
+            if (m_oCurrencyCode != Subtract.CurrencyCode())
+                throw new Exception("Can't add two money objects with different currency");
+            if (Subtract.Amount().Equals(0))
+                return this;
+
+            return GetMoney(m_oAmount - Subtract.Amount(), m_oCurrencyCode);
         }
 
-        public Money Subtract(decimal Subtract)
+        public IMoney Subtract(decimal Subtract)
         {
-            throw new NotImplementedException();
+            return this.Subtract(GetMoney(Subtract, m_oCurrencyCode));
         }
 
-        public Money SwitchSign()
+        private IMoney GetMoney(decimal Amount, ICurrency Currency)
         {
-            throw new NotImplementedException();
+            return ImperaturGlobal.GetMoney(Amount, Currency);
+        }
+        public IMoney SwitchSign()
+        {
+            return GetMoney(-this.m_oAmount, m_oCurrencyCode);
         }
 
         public override string ToString()
@@ -58,20 +81,42 @@ namespace Imperatur_v2.monetary
 
         public string ToString(bool WithSign, bool WithCurrencyCode)
         {
-            throw new NotImplementedException();
+            //no need add a minussign!
+            if (WithSign)
+                return string.Format("{0}{1} {2}", m_oAmount == 0 ? "" : m_oAmount > 0 ? "+" : "", Math.Round(m_oAmount, 2, MidpointRounding.AwayFromZero).ToString("#,0.00", System.Globalization.CultureInfo.GetCultureInfo("sv-SE")), WithCurrencyCode ? m_oCurrencyCode.GetCurrencyString().ToUpper().Trim() : "");
+            else
+                return string.Format("{0} {1}", Math.Round(m_oAmount, 2, MidpointRounding.AwayFromZero).ToString("#,0.00", System.Globalization.CultureInfo.GetCultureInfo("sv-SE")), WithCurrencyCode ? m_oCurrencyCode.GetCurrencyString().ToUpper().Trim() : "");
+
+        }
+        public ICurrency CurrencyCode()
+        {
+            return m_oCurrencyCode;
         }
 
-        public Money(decimal Amount, string CurrencyCode)
+        public decimal Amount()
         {
-            this.Amount = Amount;
-            this.CurrencyCode = new Currency(CurrencyCode);
+            return this.m_oAmount;
         }
 
-        public Money(decimal Amount, Currency CurrencyCode)
+        public Money(decimal Amount, ICurrency Currency)
         {
-            this.Amount = Amount;
-            this.CurrencyCode = CurrencyCode;
+            this.m_oAmount = Amount;
+            this.m_oCurrencyCode = Currency;
         }
+        /*
+        public Money()
+        {
+
+        }
+        public IMoney GetMoney(decimal Amount, string CurrencyCode)
+        {
+            return ImperaturGlobal.Kernel.Get<IMoney>(
+                                  new Ninject.Parameters.ConstructorArgument("Amount", Amount),
+                                  new Ninject.Parameters.ConstructorArgument("Currency",
+                                    ImperaturGlobal.Kernel.Get<ICurrency>(
+                                    new Ninject.Parameters.ConstructorArgument("CurrencyCode", CurrencyCode))
+                                    ));
+        }*/
 
     }
 }

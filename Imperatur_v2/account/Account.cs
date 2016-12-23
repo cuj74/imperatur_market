@@ -8,6 +8,7 @@ using Imperatur_v2.trade;
 using Imperatur_v2.customer;
 using Imperatur_v2.shared;
 using Imperatur_v2.cache;
+using Ninject;
 
 
 namespace Imperatur_v2.account
@@ -52,34 +53,24 @@ namespace Imperatur_v2.account
             * if withdrawal/transfer from customers account, the amount of availble funds must cover the amount of the transaction
             * if puchase of securites, the amount of availble funds must cover the amount of the transaction
             */
-           // BusinessAccountCache oBA = (BusinessAccountCache)GlobalCachingProvider.Instance.GetItem(ImperaturGlobal.BusinessAccountCache);
-            /*
+          
+            List<IMoney> AvailableFunds = GetAvailableFunds().Where(t => t.CurrencyCode().Equals(oTrans.DebitAmount.CurrencyCode())).ToList();
+            IMoney AvailableFundsCurrency = ImperaturGlobal.GetMoney(0m, oTrans.CreditAmount.CurrencyCode());
 
-            if (!oC.GetCache().Exists(c => c.Item1.Equals(CurrencyToTest)))
-            {
-                Exception ex = new Exception(string.Format("Value {0} is not an valid ISO currency code.", CurrencyToTest));
-                Logger.Instance.Info(string.Format("AssertCurrency", ex));
-                throw ex;
-            }
-            */
-            //List<Money> AvailableFunds = GetAvailableFunds().Where(t => t.CurrencyCode.Equals(oTrans.DebitAmount.CurrencyCode)).ToList();
-            /*
-            List<Money> AvailableFunds = GetAvailableFunds(HouseOrBanks).Where(t => t.CurrencyCode.Equals(oTrans.DebitAmount.CurrencyCode)).ToList();
-            Money AvailableFundsCurrency = new Money(0, oTrans.CreditAmount.CurrencyCode);
-            if (AvailableFunds.Where(a => a.CurrencyCode.Equals(oTrans.CreditAmount.CurrencyCode)).Count() > 0)
-                AvailableFundsCurrency = AvailableFunds.Where(a => a.CurrencyCode.Equals(oTrans.CreditAmount.CurrencyCode)).First();
+            if (AvailableFunds.Where(a => a.CurrencyCode().Equals(oTrans.CreditAmount.CurrencyCode())).Count() > 0)
+                AvailableFundsCurrency = AvailableFunds.Where(a => a.CurrencyCode().Equals(oTrans.CreditAmount.CurrencyCode())).First();
 
             if ((oTrans.TransactionType == TransactionType.Withdrawal || oTrans.TransactionType == TransactionType.Transfer || oTrans.TransactionType == TransactionType.Buy)
-                &&
-                oTrans.DebitAccount == this.Identifier
-                &&
-                oTrans.DebitAmount.Amount > AvailableFundsCurrency.Amount
-                )
+               &&
+               oTrans.DebitAccount == this.Identifier
+               &&
+               oTrans.DebitAmount.Amount() > AvailableFundsCurrency.Amount()
+               )
             {
                 //abort transaction
                 throw new Exception("Not enough available funds to cover this transaction!");
             }
-            */
+
             Transactions.Add(oTrans);
             return true;
         }
@@ -88,6 +79,12 @@ namespace Imperatur_v2.account
         {
             BusinessAccountCache oBA = (BusinessAccountCache)GlobalCachingProvider.Instance.GetItem(ImperaturGlobal.BusinessAccountCache);
             return oBA.GetCache().Select(b=>
+                new Guid(b.Item1)).ToList();
+        }
+        public List<Guid> GetBankAccountsFromCache()
+        {
+            BusinessAccountCache oBA = (BusinessAccountCache)GlobalCachingProvider.Instance.GetItem(ImperaturGlobal.BusinessAccountCache);
+            return oBA.GetCache().Where(b=>b.Item2.Equals(AccountType.Bank.ToString())).Select(b =>
                 new Guid(b.Item1)).ToList();
         }
 
@@ -117,16 +114,19 @@ namespace Imperatur_v2.account
                 join ts in TransferSell on t.TransactionType equals ts
                 select t;
 
-            List<Money> SumMoney = new List<Money>();
+            List<IMoney> SumMoney = new List<IMoney>();
             SumMoney.AddRange(DebitQuery.Select(m => m.DebitAmount.SwitchSign()));
             SumMoney.AddRange(CreditQuery.Select(m => m.CreditAmount));
 
             //här ska vi egentligen använda ninject kernel för att få tillbaka rätt typ av Money
+            //return (List<IMoney>)(from p in SumMoney
+            //                     group p.Amount() by p.CurrencyCode() into g
+            //                     select (IMoney)new Money(g.ToList().Sum(), new Currency(g.Key.ToString()))).ToList();
+
             return (List<IMoney>)(from p in SumMoney
-                                 group p.Amount by p.CurrencyCode into g
-                                 select (IMoney)new Money(g.ToList().Sum(), new Currency(g.Key.ToString()))).ToList();
-
-
+                                  group p.Amount() by p.CurrencyCode() into g
+                                  select
+                                    ImperaturGlobal.GetMoney(g.ToList().Sum(), g.Key)).ToList();
         }
 
         public List<IMoney> GetCurrentAmount()

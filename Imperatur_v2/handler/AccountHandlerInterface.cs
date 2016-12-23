@@ -12,7 +12,7 @@ namespace Imperatur_v2.handler
     public interface IAccountHandlerInterface
     {
         string GetLastErrorMessage();
-        List<Money> GetDepositedAmountOnAccount(Guid Identifier);
+        List<IMoney> GetDepositedAmountOnAccount(Guid Identifier);
         bool DepositAmount(Guid Identifier, Money Deposit);
         List<Holding> GetAccountHoldings(Guid Identifier);
         IAccountInterface GetAccount(Guid Identifier);

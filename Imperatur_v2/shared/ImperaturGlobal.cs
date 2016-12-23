@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Imperatur_v2.cache;
+using Imperatur_v2.shared;
 using Imperatur_v2.monetary;
 using Imperatur_v2.securites;
 using System.IO;
@@ -46,6 +47,33 @@ namespace Imperatur_v2.shared
                 }
                 return m_oKernel;
             }
+        }
+        public static ICurrency GetSystemCurrency()
+        {
+            return m_oKernel.Get<ICurrency>(
+                new Ninject.Parameters.ConstructorArgument("CurrencyCode", SystemData.SystemCurrency)
+                );
+        }
+
+        public static IMoney GetMoney(decimal Amount, string CurrencyCode)
+        {
+            return m_oKernel.Get<IMoney>(
+                                  new Ninject.Parameters.ConstructorArgument("Amount", Amount),
+                                  new Ninject.Parameters.ConstructorArgument("Currency",
+                                    m_oKernel.Get<ICurrency>(
+                                    new Ninject.Parameters.ConstructorArgument("CurrencyCode", CurrencyCode))
+                                    ));
+        }
+        public static IMoney GetMoney(decimal Amount, ICurrency Currency)
+        {
+            return GetMoney(Amount, Currency.GetCurrencyString());
+            /*
+            string t = Currency.ToString();
+            int g = 0;
+            return ImperaturGlobal.Kernel.Get<IMoney>(
+                                  new Ninject.Parameters.ConstructorArgument("Amount", Amount),
+                                  new Ninject.Parameters.ConstructorArgument("Currency", Currency)
+                                    );*/
         }
 
         internal static ICurrencyExhangeHandler CurrencyExchangeHandler

@@ -203,6 +203,15 @@ namespace Imperatur_v2
             m_oImperaturData = SystemData;
             ImperaturGlobal.Initialize(m_oImperaturData, InitiateNinjectKernel(), null);
             List<account.AccountCacheType> BusinessAccounts = new List<account.AccountCacheType>();
+            if (GetAccountHandler().Accounts().Where(a => !a.GetAccountType().Equals(account.AccountType.Bank)).Count() == 0)
+            {
+                //create internalbankaccount for balancetransactions
+                //start by create the bankaccount
+                List<account.IAccountInterface> oLAB = new List<Imperatur_v2.account.IAccountInterface>();
+                oLAB.Add(new account.Account(null, account.AccountType.Bank, "INTERNALBANK"));
+                GetAccountHandler().CreateAccount(oLAB);
+            }
+
             BusinessAccounts = GetAccountHandler().Accounts().Where(a => !a.GetAccountType().Equals(account.AccountType.Customer)).
                 Select(b =>
                 new account.AccountCacheType
@@ -214,201 +223,9 @@ namespace Imperatur_v2
 
             m_oDisplayCurrency = ImperaturGlobal.Kernel.Get<ICurrency>(new Ninject.Parameters.ConstructorArgument("CurrencyCode", m_oImperaturData.SystemCurrency));
             
-
-            /*
-            m_oAccountHandler = m_oKernel.Get<IAccountHandlerInterface>(
-    new Ninject.Parameters.ConstructorArgument("BFS", m_oBFS),
-    new Ninject.Parameters.ConstructorArgument("User", m_oUser),
-    new Ninject.Parameters.ConstructorArgument("DisplayCurrency", m_oDisplayCurrency)
-    );*/
         }
         #endregion
-        /*
-        private ICurrency m_oDisplayCurrency;
-        private IUserHandler m_oUser;
-        private IFundCompanyHandler m_oFundCompany;
-        private Dictionary<Type, Action> @SwitchObjectEvent;
-        private StandardKernel m_oKernel;
-        private ISQL m_oSQLHandler;
-
-        private string m_oLastErrorMessage;
-
-        private static Timer RefreshCurrencyExhangeCache;
-
-        #region General
-        public string GetLastErrorMessage()
-        {
-            return m_oLastErrorMessage ?? "";
-        }
-        #endregion
-
-        #region constructor
-        public FundAdministration(IBFSDataHandler BFSDataHandler, string SQLConnection, string DisplayCurrency)
-        {
-            try
-            {
-                m_oKernel = new StandardKernel();
-                m_oKernel.Load(Assembly.GetExecutingAssembly());
-                Logger.Initialize();
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(string.Format("Could not initiate Fund Administration application: {0}", ex.Message));
-            }
-            //Use
-
-            m_oBFS = BFSDataHandler;
-            if (!m_oBFS.InitClient())
-            {
-                throw new Exception(string.Format("Could not initiate BFS client: {0}", m_oBFS.GetLastException()));
-            }
-
-            Logger.Instance.Info(string.Format("Connected to BFS system {0}", m_oBFS.GetEndpoint()));
-            shared.FAMGlobal.Initialize(m_oBFS);
-            Logger.Instance.Info("Created cache");
-
-            m_oDisplayCurrency = m_oKernel.Get<ICurrency>(new Ninject.Parameters.ConstructorArgument("CurrencyCode", DisplayCurrency));
-
-            try
-            {
-                m_oSQLHandler =
-                  m_oKernel.Get<ISQL>(
-                new Ninject.Parameters.ConstructorArgument("SQLConnection", SQLConnection)
-                );
-
-
-                new SQLHandler(new System.Data.SqlClient.SqlConnection(SQLConnection));
-            }
-            catch (Exception ex)
-            {
-                Logger.Instance.Error(string.Format("Could not connect to SQL database {0}, {1}", m_oSQLHandler != null ? m_oSQLHandler.GetDatabaseName() : "<not stated>", ex.Message));
-                throw new Exception(ex.Message);
-            }
-            if (m_oSQLHandler != null)
-                Logger.Instance.Info(string.Format("Connected to SQL database {0}", m_oSQLHandler.GetDatabaseName()));
-
-
-            Logger.Instance.Info("Fund Administration started");
-        }
-        #endregion
-
-        /// <summary>
-        /// Handles the event of resfreshing data on the handler level. Different handlers will use the same method
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void Handler_OnNeedsRefresh(object sender, EventArgs e)
-        {
-            Type[] oInterfaceTypes = sender.GetType().GetInterfaces();
-            if (oInterfaceTypes != null && oInterfaceTypes.Count() == 1)
-            {
-                @SwitchObjectEvent[oInterfaceTypes[0]]();
-            }
-        }
-
-
-        public void LoginUser(string Username, string Password)
-        {
-
-            //populate User
-            m_oUser = m_oKernel.Get<IUserHandler>(
-                new Ninject.Parameters.ConstructorArgument("BFS", m_oBFS),
-                new Ninject.Parameters.ConstructorArgument("UserName", Username),
-                new Ninject.Parameters.ConstructorArgument("Password", Password)
-                );
-
-            //Return if no user is logged in
-            if (m_oUser.SignInManager() == null || !m_oUser.SignInManager().Result.Equals(SignInManager.SignInResult.Success))
-            {
-                return;
-            }
-
-            //Populate FundCompany
-            m_oFundCompany = m_oKernel.Get<IFundCompanyHandler>(
-                new Ninject.Parameters.ConstructorArgument("BFS", m_oBFS),
-                new Ninject.Parameters.ConstructorArgument("User", m_oUser),
-                new Ninject.Parameters.ConstructorArgument("DisplayCurrency", m_oDisplayCurrency)
-                );
-
-            //the dictionary for handling the refresh event
-            @SwitchObjectEvent = new Dictionary<Type, Action> {
-                { typeof(IFundEntityHandler), () => GetFundCompanyHandler().GetFundEntities().ForEach(fe=>fe.Refresh())},
-                { typeof(IFundCompanyHandler), () => GetFundCompanyHandler().Refresh()}
-            };
-
-            m_oFundCompany.GetFundEntities().ForEach(fe => fe.OnNeedsRefresh += Handler_OnNeedsRefresh);
-            m_oFundCompany.OnNeedsRefresh += Handler_OnNeedsRefresh;
-
-        }
-
-        public void LogoutUser()
-        {
-            m_oUser.LogOut();
-            m_oUser = null;
-            m_oFundCompany = null;
-            @SwitchObjectEvent = null;
-
-        }
-
-        #region read
-
-        public IUserHandler GetUserHandler()
-        {
-            return m_oUser;
-        }
-        public IFundCompanyHandler GetFundCompanyHandler()
-        {
-            if (m_oUser.SignInManager().Result == SignInManager.SignInResult.Success)
-                return m_oFundCompany;
-
-            return null;
-        }
-
-        public ICache GetCacheType(string TypeOfCache)
-        {
-
-            if (!GlobalCachingProvider.Instance.FindItem(TypeOfCache))
-                return null;
-
-            return (ICache)GlobalCachingProvider.Instance.GetItem(TypeOfCache);
-
-        }
-        #endregion
-
-        #region create
-
-        public FundCompany CreateFundCompany(FundCompany NewFundCompany)
-        {
-            FundCompany oFundCompany = m_oBFS.CreateFundCompany(NewFundCompany);
-            if (oFundCompany.Equals(null))
-            {
-                m_oLastErrorMessage = m_oBFS.GetLastException();
-                // TODO Add the recently created fund company to the current FundCompanyHandler
-                Handler_OnNeedsRefresh(this.GetFundCompanyHandler(), new EventArgs());
-                return null;
-            }
-            return oFundCompany;
-        }
-
-
-        public Instrument CreateInstrument(Instrument NewInstrument)
-        {
-            Instrument oInstrument = m_oBFS.CreateInstrument(NewInstrument);
-            if (oInstrument == null)
-            {
-                m_oLastErrorMessage = m_oBFS.GetLastException();
-                return null;
-            }
-            return oInstrument;
-        }
-        #endregion
-
-        #region PrivateMethods
-
-
-
-        #endregion
-        */
+        
 
     }
 }

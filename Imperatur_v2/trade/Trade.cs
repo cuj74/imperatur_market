@@ -10,13 +10,13 @@ namespace Imperatur_v2.trade
 {
     public class Trade : ITradeInterface
     {
-        public Money TradeAmount;
+        public IMoney TradeAmount;
         public Decimal Quantity;
-        public Money AverageAcquisitionValue;
+        public IMoney AverageAcquisitionValue;
         public DateTime TradeDateTime;
         public Security Security;
-        public Money Revenue;
-        public Money GetGAA()
+        public IMoney Revenue;
+        public IMoney GetGAA()
         {
             return TradeAmount.Divide(Quantity);
         }
@@ -24,7 +24,7 @@ namespace Imperatur_v2.trade
         {
             return Quantity;
         }
-        public Money GetTradeAmount()
+        public IMoney GetTradeAmount()
         {
             return TradeAmount;
         }

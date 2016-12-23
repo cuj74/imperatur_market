@@ -9,9 +9,9 @@ namespace Imperatur_v2.trade
 {
     interface ITradeInterface
     {
-        Money GetGAA();
+        IMoney GetGAA();
         Decimal GetQuantity();
-        Money GetTradeAmount();
+        IMoney GetTradeAmount();
 
     }
 }

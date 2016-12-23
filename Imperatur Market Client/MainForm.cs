@@ -15,6 +15,7 @@ using Imperatur_v2.events;
 using Imperatur_Market_Client.events;
 
 using System.IO;
+using Imperatur_v2.account;
 
 namespace Imperatur_Market_Client
 {
@@ -189,7 +190,10 @@ namespace Imperatur_Market_Client
 
         private void CreateTestData()
         {
-            List<Imperatur_v2.account.IAccountInterface> oLA = new List<Imperatur_v2.account.IAccountInterface>();
+
+     
+
+            List<IAccountInterface> oLA = new List<Imperatur_v2.account.IAccountInterface>();
             string[] CustomersFirstName = new string[] {
                 "Jenny",
                 "Zeinab",
@@ -256,7 +260,7 @@ namespace Imperatur_Market_Client
             };
 
             Imperatur_v2.customer.Customer oC;
-            Imperatur_v2.account.Account oA;
+            Account oA;
             for (int i = 0; i < CustomersFirstName.Count()-1; i++)
             {
                 oC = new Imperatur_v2.customer.Customer();

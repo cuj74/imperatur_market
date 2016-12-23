@@ -12,8 +12,8 @@ namespace Imperatur_v2.monetary
     {
         private Guid _DebitAccount; //reference to the accounts
         private Guid _CreditAccount;
-        private Money _DebitAmount;
-        private Money _CreditAmount;
+        private IMoney _DebitAmount;
+        private IMoney _CreditAmount;
         private TransactionType _TransactionType;
         public Trade _SecuritiesTrade;
 
@@ -30,11 +30,11 @@ namespace Imperatur_v2.monetary
         {
             get { return _TransactionType; }
         }
-        public Money DebitAmount
+        public IMoney DebitAmount
         {
             get { return _DebitAmount; }
         }
-        public Money CreditAmount
+        public IMoney CreditAmount
         {
             get { return _CreditAmount; }
         }
@@ -63,7 +63,7 @@ namespace Imperatur_v2.monetary
             }
         }
 
-        public Transaction(Money DebitAmount, Money CreditAmount, Guid DebitAccount, Guid CreditAccount, TransactionType TransactionType, Trade SecurtiesTrade)
+        public Transaction(IMoney DebitAmount, IMoney CreditAmount, Guid DebitAccount, Guid CreditAccount, TransactionType TransactionType, Trade SecurtiesTrade)
         {
             _DebitAmount = DebitAmount;
             _CreditAmount = CreditAmount;
@@ -71,12 +71,12 @@ namespace Imperatur_v2.monetary
             _CreditAccount = CreditAccount;
             _TransactionType = TransactionType;
             _SecuritiesTrade = SecurtiesTrade;
-            if (!DebitAmount.Amount.Equals(CreditAmount.Amount))
+            if (!_DebitAmount.Amount().Equals(_CreditAmount.Amount()))
             {
                 throw new Exception("Amount is not equal");
             }
         }
-        public Money GetGAA()
+        public IMoney GetGAA()
         {
             NoTransferOnlySecurites();
             return _SecuritiesTrade.GetGAA();
@@ -86,12 +86,12 @@ namespace Imperatur_v2.monetary
             NoTransferOnlySecurites();
             return _SecuritiesTrade.GetQuantity();
         }
-        public Money GetCurrentValue()
+        public IMoney GetCurrentValue()
         {
             NoTransferOnlySecurites();
             return _SecuritiesTrade.GetTradeAmount();
         }
-        public Money GetTradeAmount()
+        public IMoney GetTradeAmount()
         {
             NoTransferOnlySecurites();
             return _SecuritiesTrade.GetTradeAmount();

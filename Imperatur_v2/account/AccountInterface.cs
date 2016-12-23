@@ -12,7 +12,6 @@ namespace Imperatur_v2.account
     public interface IAccountInterface
     {
         Guid Identifier { get; }
-
         List<IMoney> GetCurrentAmount();
         List<IMoney> GetDepositedAmount();
         bool AddTransaction(ITransactionInterface oTrans);
@@ -20,6 +19,7 @@ namespace Imperatur_v2.account
         List<IMoney> GetAvailableFunds();
         Customer GetCustomer();
         AccountType GetAccountType();
+        List<Guid> GetBankAccountsFromCache();
 
     }
 }

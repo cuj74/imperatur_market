@@ -65,6 +65,12 @@
     <Compile Include="control\Account_Holdings.Designer.cs">
       <DependentUpon>Account_Holdings.cs</DependentUpon>
     </Compile>
+    <Compile Include="control\Account_MainInfo.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="control\Account_MainInfo.Designer.cs">
+      <DependentUpon>Account_MainInfo.cs</DependentUpon>
+    </Compile>
     <Compile Include="control\Account_Search.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -77,9 +83,7 @@
     <Compile Include="control\Account_Trade.Designer.cs">
       <DependentUpon>Account_Trade.cs</DependentUpon>
     </Compile>
-    <Compile Include="control\CreateControlFromObject.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
+    <Compile Include="control\CreateControlFromObject.cs" />
     <Compile Include="control\Expander.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -112,6 +116,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="control\Account_Holdings.resx">
       <DependentUpon>Account_Holdings.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="control\Account_MainInfo.resx">
+      <DependentUpon>Account_MainInfo.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="control\Account_Search.resx">
       <DependentUpon>Account_Search.cs</DependentUpon>
