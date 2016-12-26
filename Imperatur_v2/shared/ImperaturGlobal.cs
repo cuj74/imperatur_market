@@ -31,6 +31,7 @@ namespace Imperatur_v2.shared
         public static string BusinessAccountCache = "BUSINESSACCOUNTCACHE";
         public static ImperaturData SystemData;
         public static List<Instrument> Instruments;
+        public static List<Quote> Quotes;
         private static StandardKernel m_oKernel;
         #endregion
 

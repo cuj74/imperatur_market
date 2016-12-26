@@ -11,12 +11,12 @@ namespace Imperatur_v2.securites
     {
         public DateTime Loggedat;
         public string Symbol;
-        public Money Low;
-        public Money High;
-        public Money Last;
+        public IMoney Low;
+        public IMoney High;
+        public IMoney Last;
         public Decimal Change;
         public Decimal ChangePercent;
-        public Money Dividend;
-        public Money DividendYield;
+        public IMoney Dividend;
+        public IMoney DividendYield;
     }
 }

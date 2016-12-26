@@ -25,6 +25,7 @@ namespace Imperatur_v2
             Bind<IAccountInterface>().To<Account>();
             Bind<IAccountHandlerInterface>().To<AccountHandler>();
             Bind<ITradeInterface>().To<Trade>();
+            Bind<ITradeHandlerInterface>().To<TradeHandler>();
             /*
             Bind<IBFSDataHandler>().To<BFSDataHandler>();
             Bind<IFundAdministration>().To<FundAdministration>();

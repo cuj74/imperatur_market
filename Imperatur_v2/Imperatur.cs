@@ -70,6 +70,7 @@ namespace Imperatur_v2
         string GetLastErrorMessage();
         ImperaturData GetSystemData();
         IAccountHandlerInterface GetAccountHandler();
+        ITradeHandlerInterface GetTradeHandler();
         IMoney GetMoney(decimal Amount, string CurrencyCode);
 
 
@@ -81,6 +82,7 @@ namespace Imperatur_v2
     public class ImperaturMarket : IImperaturMarket
     {
         private IAccountHandlerInterface m_oAccountHandler;
+        private ITradeHandlerInterface m_oTradeHandler;
         private ICurrency m_oDisplayCurrency;
         private string m_oLastErrorMessage;
         //private StandardKernel m_oKernel;
@@ -225,12 +227,21 @@ namespace Imperatur_v2
                     Identifier = b.Identifier
                 }).ToList();
             ImperaturGlobal.InitializeBusinessAccount(BusinessAccounts);
+            ImperaturGlobal.Quotes = GetTradeHandler().GetQuotes();
 
             m_oDisplayCurrency = ImperaturGlobal.Kernel.Get<ICurrency>(new Ninject.Parameters.ConstructorArgument("CurrencyCode", m_oImperaturData.SystemCurrency));
             
         }
+
+        public ITradeHandlerInterface GetTradeHandler()
+        {
+            if (m_oTradeHandler == null)
+                m_oTradeHandler = ImperaturGlobal.Kernel.Get<ITradeHandlerInterface>();
+
+            return m_oTradeHandler;
+        }
         #endregion
-        
+
 
     }
 }

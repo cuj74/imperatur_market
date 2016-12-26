@@ -18,12 +18,12 @@ namespace Imperatur_v2.handler
 
         public Quote GetQuote(string Symbol)
         {
-            throw new NotImplementedException();
+            return ReadQuotes().Where(q => q.Symbol.Equals(Symbol)).First();
         }
 
         public List<Quote> GetQuotes()
         {
-            throw new NotImplementedException();
+            return ReadQuotes();
         }
 
         private List<Quote> ReadQuotes()
@@ -76,6 +76,12 @@ namespace Imperatur_v2.handler
 
 
             return QuotesRet;
+        }
+
+        public bool ForceUpdate()
+        {
+            m_oQuotes = null; //next read will update the quote list
+            return true;
         }
     }
     

@@ -169,6 +169,39 @@ namespace Imperatur_v2.account
         {
             return AccountType;
         }
+
+        public bool AddHoldingToAccount(int Quantity, string Symbol)
+        {
+            // Quote oHoldingTicker = _Quotes.Where(q => q.Symbol.Equals(Ticker)).First();
+            /*
+            Trade oNewTrade = new Imperatur.trade.Trade
+            {
+                TradeAmount = oHoldingTicker.Dividend.Multiply(Quantity),
+                Quantity = Quantity,
+                AverageAcquisitionValue = oHoldingTicker.Dividend,
+                Security = (securities.Securities)oHoldingTicker,
+                TradeDateTime = DateTime.Now
+            };
+
+            Transaction oT = new Transaction(
+                oHoldingTicker.Dividend.Multiply(Quantity),
+                oHoldingTicker.Dividend.Multiply(Quantity),
+                Identifier,
+                HouseAccounts[0].Identifier,
+                TransactionType.Buy,
+                oNewTrade
+                );
+            try
+            {
+                AddTransactionToAccount(Identifier, oT);
+            }
+            catch (Exception ex)
+            {
+                LastErrorMessage = ex.Message;
+                return false;
+            }*/
+            return true;
+        }
     }
 
     public enum AccountType

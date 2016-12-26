@@ -12,5 +12,6 @@ namespace Imperatur_v2.handler
     {
         List<Quote> GetQuotes();
         Quote GetQuote(string Symbol);
+        bool ForceUpdate();
     }
 }

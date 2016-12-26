@@ -20,6 +20,7 @@ namespace Imperatur_v2.account
         Customer GetCustomer();
         AccountType GetAccountType();
         List<Guid> GetBankAccountsFromCache();
+        bool AddHoldingToAccount(int Quantity, string Symbol);
 
     }
 }

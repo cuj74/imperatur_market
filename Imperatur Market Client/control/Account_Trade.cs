@@ -33,6 +33,15 @@ namespace Imperatur_Market_Client.control
             comboBox_Symbols.AutoCompleteCustomSource = list;
             comboBox_Symbols.DataSource = ImperaturGlobal.Instruments.Select(i => i.Symbol).ToList();
             comboBox_Symbols.Text = "";
+            comboBox_Symbols.SelectedIndexChanged += ComboBox_Symbols_SelectedIndexChanged;
+        }
+
+        private void ComboBox_Symbols_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (this.comboBox_Symbols.SelectedItem != null)
+            {
+                label_instrument_info.Text = ImperaturGlobal.Quotes.Where(q => q.Symbol.Equals(comboBox_Symbols.SelectedItem.ToString())).First().Dividend.ToString();
+            }
         }
 
         public void UpdateAcountInfo(IAccountInterface AccountData)
@@ -43,6 +52,11 @@ namespace Imperatur_Market_Client.control
                                    select i.Symbol;
             comboBox_Symbols.DataSource = newSymbolsToShow.ToList();
             comboBox_Symbols.Refresh();
+        }
+
+        private void button_BuySecurity_Click(object sender, EventArgs e)
+        {
+            //m_oAccountData.
         }
     }
 }
