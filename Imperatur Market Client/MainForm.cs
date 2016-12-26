@@ -38,10 +38,10 @@ namespace Imperatur_Market_Client
 
         public object resources { get; private set; }
 
-        private void Form1_Load(object sender, EventArgs e)
+        private bool ShowSystemLoad()
         {
-            ImperaturData oNewSystem = null;
             bool CreateNewSystem = false;
+            //bool bShowAgain = false;
             using (var form = new dialog.System_Load(ReadSystemLocationFromCache()))
             {
                 form.Icon = this.Icon;
@@ -51,7 +51,29 @@ namespace Imperatur_Market_Client
                     SystemLocation = form.SystemLocation;
                     CreateNewSystem = form.CreateNewSystem;
                 }
+                if (result == DialogResult.None)
+                    return ShowSystemLoad();
             }
+
+            return CreateNewSystem;
+
+        }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+            ImperaturData oNewSystem = null;
+            bool CreateNewSystem = ShowSystemLoad();
+            /*
+            using (var form = new dialog.System_Load(ReadSystemLocationFromCache()))
+            {
+                form.Icon = this.Icon;
+                var result = form.ShowDialog();
+                if (result == DialogResult.OK)
+                {
+                    SystemLocation = form.SystemLocation;
+                    CreateNewSystem = form.CreateNewSystem;
+                }
+            }*/
             if (CreateNewSystem)
             {
                 oNewSystem = CreateNewImperaturMarket(oNewSystem);

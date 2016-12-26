@@ -59,7 +59,8 @@ namespace Imperatur_Market_Client.dialog
                 SystemLocation = SuggestedSystemToLoad;
                 if (oDr.Equals(DialogResult.No))
                 {
-                    this.Close();
+                    this.DialogResult = DialogResult.None;
+                    return;
                 }
                 if (oDr.Equals(DialogResult.Yes))
                 {

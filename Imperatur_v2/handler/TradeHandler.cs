@@ -9,6 +9,7 @@ using Imperatur_v2.shared;
 using Imperatur_v2.cache;
 using Newtonsoft.Json.Linq;
 using Imperatur_v2.monetary;
+using System.IO;
 
 namespace Imperatur_v2.handler
 {
@@ -28,16 +29,33 @@ namespace Imperatur_v2.handler
 
         private List<Quote> ReadQuotes()
         {
-            if (m_oQuotes != null)
+            if (m_oQuotes == null)
             {
                 //first try to read the file
-                try {
-                    m_oQuotes = (List<Quote>)DeserializeJSON.DeserializeObjectFromFile(string.Format(@"{0}\{1}\{2}{3}", ImperaturGlobal.SystemData.SystemDirectory, ImperaturGlobal.SystemData.QuoteDirectory, ImperaturGlobal.SystemData.QuoteFile, DateTime.Now.ToShortDateString()));
+                try
+                {
+                    //get file younger than 15 min
+                    var files = from file in Directory.EnumerateFiles(string.Format(@"{0}\{1}\", ImperaturGlobal.SystemData.QuoteDirectory, ImperaturGlobal.SystemData.QuoteFile),
+                        string.Format("{0}.*", ImperaturGlobal.SystemData.QuoteFile), SearchOption.TopDirectoryOnly)
+                                from f in file
+                                where Convert.ToDateTime(f.ToString().Replace(ImperaturGlobal.SystemData.QuoteFile, "")) > DateTime.Now.AddMinutes(-15)
+                                select f;
+
+                    if (files.Count() > 0)
+                    {
+                        m_oQuotes = (List<Quote>)DeserializeJSON.DeserializeObjectFromFile(@files.First().ToString());
+                    }
+                    //m_oQuotes = (List<Quote>)DeserializeJSON.DeserializeObjectFromFile(string.Format(@"{0}\{1}\{2}{3}", ImperaturGlobal.SystemData.SystemDirectory, ImperaturGlobal.SystemData.QuoteDirectory, ImperaturGlobal.SystemData.QuoteFile, DateTime.Now.ToShortDateString()));
                 }
                 catch
                 {
                     //read from external source
                     m_oQuotes = GetQuotesFromExternalSource(ImperaturGlobal.SystemData.ULR_Quotes);
+                    //save if results obtained
+                    if (m_oQuotes.Count() > 0)
+                    {
+                        SerializeJSONdata.SerializeObject(m_oQuotes, string.Format(@"{0}\{1}\{2}{3}{4}", ImperaturGlobal.SystemData.SystemDirectory, ImperaturGlobal.SystemData.QuoteDirectory, ImperaturGlobal.SystemData.QuoteFile, DateTime.Now.ToShortDateString(), DateTime.Now.ToShortTimeString()));
+                    }
                 }
 
             }
