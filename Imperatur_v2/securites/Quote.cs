@@ -9,14 +9,15 @@ namespace Imperatur_v2.securites
 {
     public class Quote
     {
-        public DateTime Loggedat;
+        public DateTime InternalLoggedat;
         public string Symbol;
-        public IMoney Low;
-        public IMoney High;
-        public IMoney Last;
-        public Decimal Change;
+        public string Index;
+        public IMoney LastTradePrice;
+        public DateTime LastTradeDateTime;
+        public int LastTradeSize;
+        public IMoney Change;
         public Decimal ChangePercent;
-        public IMoney Dividend;
-        public IMoney DividendYield;
+        public IMoney PreviousClosePrice;
+
     }
 }

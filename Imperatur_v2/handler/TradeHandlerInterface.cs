@@ -10,6 +10,7 @@ namespace Imperatur_v2.handler
 {
     public interface ITradeHandlerInterface
     {
+        ITradeInterface GetTrade(string Symbol, decimal Quantity);
         List<Quote> GetQuotes();
         Quote GetQuote(string Symbol);
         bool ForceUpdate();

@@ -18,6 +18,7 @@ namespace Imperatur_Market_Client.control
     public partial class AccountTab : UserControl
     {
         private IAccountHandlerInterface m_AccountHandler;
+        private ITradeHandlerInterface m_oTradeHandler;
         //private UserControl AccountMainInfo;
         private Account_MainInfo oControl_Account_MainInfo;
         private Account_Search oControl_Account_Search;
@@ -27,10 +28,11 @@ namespace Imperatur_Market_Client.control
         private System.Drawing.Size ExpandButtonSize;
 
 
-        public AccountTab(IAccountHandlerInterface AccountHandler)
+        public AccountTab(IAccountHandlerInterface AccountHandler, ITradeHandlerInterface TradeHandler)
         {
             InitializeComponent();
             m_AccountHandler = AccountHandler;
+            m_oTradeHandler = TradeHandler;
             typeof(TableLayoutPanel).GetProperty("DoubleBuffered", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).SetValue(tlp_Account, true, null);
         }
 
@@ -43,12 +45,15 @@ namespace Imperatur_Market_Client.control
             oControl_Account_Search = new Account_Search(m_AccountHandler);
             oControl_Account_Search.SelectedAccount += OControl_Account_Search_SelectedAccount;
             oControl_Account_Search.ToggleSearchDialog += OControl_Account_Search_ToggleSearchDialog;
+
             
             tlp_Account.Controls.Add(oControl_Account_Search, 0, 0);
 
 
             Account_Holdings oControl_Account_Holdings = new Account_Holdings(m_AccountHandler);
-            oControl_Account_Trade = new Account_Trade(m_AccountHandler);
+            oControl_Account_Trade = new Account_Trade(m_AccountHandler, m_oTradeHandler);
+
+            oControl_Account_Trade.SelectedAccount += OControl_Account_Trade_SelectedAccount;
 
             tlp_Account.Controls.Add(oControl_Account_MainInfo, 1, 0);
             tlp_Account.Controls.Add(oControl_Account_Holdings, 2, 0);
@@ -68,6 +73,13 @@ namespace Imperatur_Market_Client.control
             ExpandSearch.MouseEnter += ExpandSearch_MouseEnter;
             ExpandSearch.MouseLeave += ExpandSearch_MouseLeave;
 
+        }
+
+        private void OControl_Account_Trade_SelectedAccount(object sender, SelectedAccountEventArg e)
+        {
+            //Update main info and holdings!
+            oControl_Account_MainInfo.UpdateAcountInfo(m_AccountHandler.GetAccount(e.Identifier));
+            //TODO: add update of holdings when done!
         }
 
         private void ExpandSearch_MouseLeave(object sender, EventArgs e)
@@ -118,7 +130,7 @@ namespace Imperatur_Market_Client.control
         private void OControl_Account_Search_SelectedAccount(object sender, SelectedAccountEventArg e)
         {
             oControl_Account_MainInfo.UpdateAcountInfo(m_AccountHandler.GetAccount(e.Identifier));
-            oControl_Account_Trade.UpdateAcountInfo(m_AccountHandler.GetAccount(e.Identifier));
+            oControl_Account_Trade.UpdateAccountInfo(m_AccountHandler.GetAccount(e.Identifier));
             /*
             try
             {

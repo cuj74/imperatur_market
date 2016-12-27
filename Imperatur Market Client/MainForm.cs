@@ -99,7 +99,7 @@ namespace Imperatur_Market_Client
             CreateTestData();
 
             //add the controls to the different areas
-            AccountTab oAccountTab = new AccountTab(m_Ic.GetAccountHandler());
+            AccountTab oAccountTab = new AccountTab(m_Ic.GetAccountHandler(), m_Ic.GetTradeHandler());
             oAccountTab.Dock = DockStyle.Fill;
             tabPage_account.Controls.Add(oAccountTab);
 

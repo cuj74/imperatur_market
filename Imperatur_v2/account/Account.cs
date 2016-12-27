@@ -9,13 +9,15 @@ using Imperatur_v2.customer;
 using Imperatur_v2.shared;
 using Imperatur_v2.cache;
 using Ninject;
-
+using Imperatur_v2.securites;
+using Imperatur_v2.handler;
 
 namespace Imperatur_v2.account
 {
     [DesignAttribute(true)]
     public class Account : IAccountInterface
     {
+        private string LastErrorMessage;
         private Guid Identifier;
         private List<ITransactionInterface> Transactions;
         private AccountType AccountType;
@@ -33,8 +35,17 @@ namespace Imperatur_v2.account
             }
         }
 
+        public string GetLastErrorMessage
+        {
+            get
+            {
+                return LastErrorMessage;
+            }
+        }
+
         public Account(Customer Customer, AccountType AccountType, string AccountName)
         {
+            LastErrorMessage = "";
             Identifier = Guid.NewGuid();
             this.Name = AccountName;
             this.AccountType = AccountType;
@@ -68,12 +79,28 @@ namespace Imperatur_v2.account
                )
             {
                 //abort transaction
+                LastErrorMessage = "Not enough available funds to cover this transaction!";
                 throw new Exception("Not enough available funds to cover this transaction!");
             }
 
             Transactions.Add(oTrans);
             return true;
         }
+
+
+        private ITransactionInterface CreateTransaction(IMoney NewTransaction, Guid DebitAccount, Guid CreditAccount, TransactionType TransactionType, ITradeInterface SecurtiesTrade)
+        {
+           return ImperaturGlobal.Kernel.Get<ITransactionInterface>(
+             new Ninject.Parameters.ConstructorArgument("DebitAmount", NewTransaction),
+             new Ninject.Parameters.ConstructorArgument("CreditAmount", NewTransaction),
+             new Ninject.Parameters.ConstructorArgument("DebitAccount", DebitAccount),
+             new Ninject.Parameters.ConstructorArgument("CreditAccount", CreditAccount),
+             new Ninject.Parameters.ConstructorArgument("TransactionType", TransactionType),
+             new Ninject.Parameters.ConstructorArgument("SecurtiesTrade", SecurtiesTrade)//(object)null) //trade before
+            );
+        }
+
+
 
         private List<Guid> GetBusinessAccountsFromCache()
         {
@@ -170,36 +197,28 @@ namespace Imperatur_v2.account
             return AccountType;
         }
 
-        public bool AddHoldingToAccount(int Quantity, string Symbol)
-        {
-            // Quote oHoldingTicker = _Quotes.Where(q => q.Symbol.Equals(Ticker)).First();
-            /*
-            Trade oNewTrade = new Imperatur.trade.Trade
-            {
-                TradeAmount = oHoldingTicker.Dividend.Multiply(Quantity),
-                Quantity = Quantity,
-                AverageAcquisitionValue = oHoldingTicker.Dividend,
-                Security = (securities.Securities)oHoldingTicker,
-                TradeDateTime = DateTime.Now
-            };
 
-            Transaction oT = new Transaction(
-                oHoldingTicker.Dividend.Multiply(Quantity),
-                oHoldingTicker.Dividend.Multiply(Quantity),
-                Identifier,
-                HouseAccounts[0].Identifier,
-                TransactionType.Buy,
-                oNewTrade
-                );
+
+        public bool AddHoldingToAccount(int Quantity, string Symbol, ITradeHandlerInterface TradeHandler)
+        {
+            ITradeInterface Trade = TradeHandler.GetTrade(Symbol, Quantity);
             try
             {
-                AddTransactionToAccount(Identifier, oT);
+                AddTransaction(
+                CreateTransaction(
+                    Trade.TradeAmount,
+                    this.Identifier,
+                    GetBankAccountsFromCache().First(),
+                    TransactionType.Buy,
+                    Trade
+                    )
+                    );
             }
             catch (Exception ex)
             {
                 LastErrorMessage = ex.Message;
                 return false;
-            }*/
+            }
             return true;
         }
     }

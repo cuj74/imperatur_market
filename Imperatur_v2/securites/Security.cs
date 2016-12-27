@@ -10,12 +10,7 @@ namespace Imperatur_v2.securites
     public class Security
     {
         public string Symbol;
-        public string Exchange;
-        public DateTime LastTradeDateTime;
-        public Decimal Change;
-        public Decimal ChangePercent;
-        public Money Dividend;
-        public Money DividendYield;
+        public IMoney Price;
 
     }
     public class Instrument

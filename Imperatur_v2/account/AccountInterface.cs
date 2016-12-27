@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Imperatur_v2.monetary;
 using Imperatur_v2.trade;
 using Imperatur_v2.customer;
+using Imperatur_v2.handler;
 
 namespace Imperatur_v2.account
 {
@@ -20,7 +21,8 @@ namespace Imperatur_v2.account
         Customer GetCustomer();
         AccountType GetAccountType();
         List<Guid> GetBankAccountsFromCache();
-        bool AddHoldingToAccount(int Quantity, string Symbol);
+        bool AddHoldingToAccount(int Quantity, string Symbol, ITradeHandlerInterface TradeHandler);
+        string GetLastErrorMessage { get; }
 
     }
 }

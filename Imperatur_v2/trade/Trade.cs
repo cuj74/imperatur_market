@@ -5,28 +5,86 @@ using System.Text;
 using System.Threading.Tasks;
 using Imperatur_v2.monetary;
 using Imperatur_v2.securites;
+using Imperatur_v2.shared;
 
 namespace Imperatur_v2.trade
 {
     public class Trade : ITradeInterface
     {
-        public IMoney TradeAmount;
-        public Decimal Quantity;
-        public IMoney AverageAcquisitionValue;
-        public DateTime TradeDateTime;
-        public Security Security;
-        public IMoney Revenue;
+        private IMoney m_oTradeAmount;
+        private Decimal m_oQuantity;
+        private IMoney m_oAverageAcquisitionValue;
+        private DateTime m_oTradeDateTime;
+        private Security m_oSecurity;
+        private IMoney m_oRevenue;
+
+        public IMoney TradeAmount
+        {
+            get
+            {
+                return m_oTradeAmount;
+            }
+        }
+
+        public decimal Quantity
+        {
+            get
+            {
+                return m_oQuantity;
+            }
+        }
+
+        public IMoney AverageAcquisitionValue
+        {
+            get
+            {
+                return m_oAverageAcquisitionValue;
+            }
+        }
+
+        public DateTime TradeDateTime
+        {
+            get
+            {
+                return m_oTradeDateTime;
+            }
+        }
+
+        public Security Security
+        {
+            get
+            {
+                return m_oSecurity;
+            }
+        }
+
+        public IMoney Revenue
+        {
+            get
+            {
+                return m_oRevenue;
+            }
+        }
+
         public IMoney GetGAA()
         {
-            return TradeAmount.Divide(Quantity);
+            return m_oTradeAmount.Divide(m_oQuantity);
         }
         public Decimal GetQuantity()
         {
-            return Quantity;
+            return m_oQuantity;
         }
         public IMoney GetTradeAmount()
         {
-            return TradeAmount;
+            return m_oTradeAmount;
+        }
+        public Trade(IMoney TradeAmount, Decimal Quantity, Security Security)
+        {
+            this.m_oTradeAmount = TradeAmount;
+            this.m_oQuantity = Quantity;
+            this.m_oSecurity = Security;
+            this.m_oAverageAcquisitionValue = Security.Price;
+            this.m_oTradeDateTime = DateTime.Now;
         }
     }
 }
