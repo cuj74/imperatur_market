@@ -49,9 +49,9 @@ namespace Imperatur_Market_Client.control
         {
             if (this.comboBox_Symbols.SelectedItem != null)
             {
-                if (ImperaturGlobal.Quotes.Where(q => q.Symbol.Equals(comboBox_Symbols.SelectedItem.ToString())).Count() > 0)
+                if (ImperaturGlobal.Quotes.Where(q => q.Symbol.Equals(comboBox_Symbols.SelectedItem.ToString().Replace(" ", "-"))).Count() > 0)
                 {
-                    label_instrument_info.Text = ImperaturGlobal.Quotes.Where(q => q.Symbol.Equals(comboBox_Symbols.SelectedItem.ToString())).First().LastTradePrice.ToString();
+                    label_instrument_info.Text = ImperaturGlobal.Quotes.Where(q => q.Symbol.Equals(comboBox_Symbols.SelectedItem.ToString().Replace(" ", "-"))).First().LastTradePrice.ToString();
                 }
                 else
                     label_instrument_info.Text = "N/A";

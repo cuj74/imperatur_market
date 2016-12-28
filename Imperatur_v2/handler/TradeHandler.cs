@@ -77,7 +77,7 @@ namespace Imperatur_v2.handler
             string json;
             rest.Rest oG = new rest.Rest();
             json = oG.GetResultFromURL(URL + string.Join(",",
-                                ImperaturGlobal.Instruments.Select(i => i.Symbol).ToArray()
+                                ImperaturGlobal.Instruments.Select(i => i.Symbol.Replace(" ", "-")).ToArray()
                                 ));
 
             //Google adds a comment before the json for some unknown reason, so we need to remove it
@@ -92,7 +92,7 @@ namespace Imperatur_v2.handler
                     try
                     {
                         if (i.SelectToken("t") != null &&
-                            ImperaturGlobal.Instruments.Where(ins => ins.Symbol.Equals(i.SelectToken("t").ToString())).Count() > 0)
+                            ImperaturGlobal.Instruments.Where(ins => ins.Symbol.Replace(" ", "-").Equals(i.SelectToken("t").ToString())).Count() > 0)
                         {
                             QuotesRet.Add(new Quote
                             {
