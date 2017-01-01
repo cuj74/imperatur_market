@@ -79,7 +79,9 @@
     <Compile Include="shared\ObjectMapping.cs" />
     <Compile Include="shared\ObjectReflection.cs" />
     <Compile Include="shared\ObjectTextSearch.cs" />
+    <Compile Include="shared\ObservableRangeCollection.cs" />
     <Compile Include="trade\Holding.cs" />
+    <Compile Include="trade\HoldingInterface.cs" />
     <Compile Include="trade\Trade.cs" />
     <Compile Include="trade\TradeInterface.cs" />
   </ItemGroup>

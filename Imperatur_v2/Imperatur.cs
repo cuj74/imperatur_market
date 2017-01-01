@@ -12,6 +12,7 @@ using System.Reflection;
 using System.IO;
 using Imperatur_v2.json;
 using Newtonsoft.Json.Linq;
+using Imperatur_v2.account;
 
 namespace Imperatur_v2
 {
@@ -77,15 +78,12 @@ namespace Imperatur_v2
     }
 
 
-    //public delegate void RefreshEventHandler(object sender, EventArgs e);
-
     public class ImperaturMarket : IImperaturMarket
     {
         private IAccountHandlerInterface m_oAccountHandler;
         private ITradeHandlerInterface m_oTradeHandler;
         private ICurrency m_oDisplayCurrency;
         private string m_oLastErrorMessage;
-        //private StandardKernel m_oKernel;
         private ImperaturData m_oImperaturData;
         private readonly string SystemDataFile = "imperatursettings.json";
 
@@ -214,8 +212,15 @@ namespace Imperatur_v2
             {
                 //create internalbankaccount for balancetransactions
                 //start by create the bankaccount
-                List<account.IAccountInterface> oLAB = new List<Imperatur_v2.account.IAccountInterface>();
-                oLAB.Add(new account.Account(null, account.AccountType.Bank, "INTERNALBANK"));
+                List<IAccountInterface> oLAB = new List<IAccountInterface>();
+
+                oLAB.Add(
+                    ImperaturGlobal.Kernel.Get<IAccountInterface>(
+                        new Ninject.Parameters.ConstructorArgument("Customer", (object)null),
+                        new Ninject.Parameters.ConstructorArgument("AccountType", AccountType.Bank),
+                        new Ninject.Parameters.ConstructorArgument("AccountName", "INTERNALBANK")
+                    )
+                    );
                 GetAccountHandler().CreateAccount(oLAB);
             }
 

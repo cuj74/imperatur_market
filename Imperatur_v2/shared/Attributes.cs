@@ -36,7 +36,23 @@ namespace Imperatur_v2.shared
             this.VisibleAtPresentation = visibleAtPresentation;
             this.Expand = false;
         }
+    }
 
-        //private string topic;
+    
+
+    [AttributeUsage(AttributeTargets.All)]
+    public class SerializeAttribute : System.Attribute
+    {
+        public readonly SerializeAttributeType SType;
+ 
+        public SerializeAttribute(SerializeAttributeType sType)  
+        {
+            this.SType = sType;
+        }
+    }
+
+    public enum SerializeAttributeType
+    {
+        DontSerialize
     }
 }

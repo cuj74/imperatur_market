@@ -10,25 +10,31 @@ using Imperatur_v2.shared;
 using Ninject;
 using System.Reflection;
 using Imperatur_v2.cache;
-
+using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+using Newtonsoft.Json;
+using System.IO;
 
 namespace Imperatur_v2.handler
 {
     public class AccountHandler : IAccountHandlerInterface
     {
-        private List<IAccountInterface> m_oAccounts;
+        private ObservableRangeCollection<IAccountInterface> m_oAccounts;
         private string LastErrorMessage;
         private ObjectMapping m_oObjectMapping;
-        public List<ITransactionInterface> m_oTransactions;
-        //private readonly object Identifier;
         private ObjectTextSearch m_oSearchObjects;
-
+        private bool TryLoadFromStorage;
+        
+        public delegate void SaveAccountEventHandler(object sender, events.SaveAccountEventArg e);
 
         public AccountHandler()
         {
+            TryLoadFromStorage = false;
             LastErrorMessage = "";
             m_oObjectMapping = new ObjectMapping();
             m_oSearchObjects = new ObjectTextSearch();
+            m_oAccounts = new ObservableRangeCollection<IAccountInterface>();
+            
         }
         
 
@@ -36,7 +42,7 @@ namespace Imperatur_v2.handler
         {
             if (Search.Equals("*"))
             {
-                return Accounts().Where(a=>a.GetAccountType().Equals(AccountTypeToSearch)).ToList();
+                return Accounts().Where(a => a.GetAccountType().Equals(AccountTypeToSearch)).ToList();
             }
             return Accounts().Where(a => a.GetAccountType().Equals(AccountTypeToSearch)).Select(a =>
                 new
@@ -72,40 +78,83 @@ namespace Imperatur_v2.handler
 
         public bool CreateAccount(List<IAccountInterface> oAccountData)
         {
-            if (m_oAccounts == null)
-                m_oAccounts = new List<IAccountInterface>();
-
             //for each Account add a zero balance transfer to get available funds
 
-            IMoney ZeroBalance = ImperaturGlobal.Kernel.Get<IMoney>(
-                new Ninject.Parameters.ConstructorArgument("Amount", 0m),
-                new Ninject.Parameters.ConstructorArgument("Currency", ImperaturGlobal.GetSystemCurrency())
-             );
+            //IMoney ZeroBalance = ImperaturGlobal.Kernel.Get<IMoney>(
+            //    new Ninject.Parameters.ConstructorArgument("m_oAmount", 0m),
+            //    new Ninject.Parameters.ConstructorArgument("m_oCurrencyCode", ImperaturGlobal.GetSystemCurrency())
+            // );
 
-            try
-            {
-                foreach (var account in oAccountData.Where(a => a.GetAccountType().Equals(AccountType.Customer)).ToList())
-                {
-                    //ITradeInterface oTrade = ImperaturGlobal.Kernel.Get<ITradeInterface>();
-                    account.AddTransaction(
-                              ImperaturGlobal.Kernel.Get<ITransactionInterface>(
-                              new Ninject.Parameters.ConstructorArgument("DebitAmount", ZeroBalance),
-                              new Ninject.Parameters.ConstructorArgument("CreditAmount", ZeroBalance),
-                              new Ninject.Parameters.ConstructorArgument("DebitAccount", account.GetBankAccountsFromCache().First()),
-                              new Ninject.Parameters.ConstructorArgument("CreditAccount", account.Identifier),
-                              new Ninject.Parameters.ConstructorArgument("TransactionType", TransactionType.Transfer),
-                              new Ninject.Parameters.ConstructorArgument("SecurtiesTrade", (object)null) //trade before
-                             ));
-                }
+            //try
+            //{
+            //    foreach (var account in oAccountData.Where(a => a.GetAccountType().Equals(AccountType.Customer)).ToList())
+            //    {
+            //        //ITradeInterface oTrade = ImperaturGlobal.Kernel.Get<ITradeInterface>();
+            //        account.AddTransaction(
+            //                  ImperaturGlobal.Kernel.Get<ITransactionInterface>(
+            //                  new Ninject.Parameters.ConstructorArgument("_DebitAmount", ZeroBalance),
+            //                  new Ninject.Parameters.ConstructorArgument("_CreditAmount", ZeroBalance),
+            //                  new Ninject.Parameters.ConstructorArgument("_DebitAccount", account.GetBankAccountsFromCache().First()),
+            //                  new Ninject.Parameters.ConstructorArgument("_CreditAccount", account.Identifier),
+            //                  new Ninject.Parameters.ConstructorArgument("_TransactionType", TransactionType.Transfer),
+            //                  new Ninject.Parameters.ConstructorArgument("_SecurtiesTrade", (object)null) //trade before
+            //                 ));
+            //    }
 
-            }
-            catch(Exception ex)
-            {
-                int gsd = 0;
-            } 
+            //}
+            //catch(Exception ex)
+            //{
+            //    int gsd = 0;
+            //}
+            m_oAccounts.CollectionChanged -= M_oAccounts_CollectionChanged;
+            m_oAccounts.CollectionChanged += M_oAccounts_CollectionChanged;
+
             m_oAccounts.AddRange(oAccountData);
 
             return true;
+        }
+
+        private void M_oAccounts_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            /*
+            if (e.Action == NotifyCollectionChangedAction.Remove)
+            {
+                foreach (IAccountInterface item in e.OldItems)
+                {
+                    //Removed items
+                    item.PropertyChanged -= AccountPropertyChanged;
+                }
+            }
+            else if (e.Action == NotifyCollectionChangedAction.Add)
+            {
+                foreach (IAccountInterface item in e.NewItems)
+                {
+                    //Added items
+                    item.PropertyChanged += AccountPropertyChanged; 
+                }
+            }
+            else if (e.Action == NotifyCollectionChangedAction.Reset)
+            {
+                foreach (IAccountInterface item in m_oAccounts)
+                {
+                    item.PropertyChanged -= AccountPropertyChanged;
+                    item.PropertyChanged += AccountPropertyChanged;
+                }
+            }*/
+
+            foreach (IAccountInterface item in m_oAccounts)
+            {
+                //item.SaveAccountEvent -= AccountPropertyChanged;
+                item.SaveAccountEvent -= Item_SaveAccountEvent;
+                item.SaveAccountEvent += Item_SaveAccountEvent;
+            }
+
+            SaveAccounts();
+        }
+
+        private void Item_SaveAccountEvent(object sender, events.SaveAccountEventArg e)
+        {
+            SaveAccount(e.Identifier);
         }
 
         public bool DepositAmount(Guid Identifier, IMoney Deposit)
@@ -115,12 +164,12 @@ namespace Imperatur_v2.handler
             {
                 oA.AddTransaction(
                           ImperaturGlobal.Kernel.Get<ITransactionInterface>(
-                                  new Ninject.Parameters.ConstructorArgument("DebitAmount", Deposit),
-                                  new Ninject.Parameters.ConstructorArgument("CreditAmount", Deposit),
-                                  new Ninject.Parameters.ConstructorArgument("DebitAccount", oA.GetBankAccountsFromCache().First()),
-                                  new Ninject.Parameters.ConstructorArgument("CreditAccount", oA.Identifier),
-                                  new Ninject.Parameters.ConstructorArgument("TransactionType", TransactionType.Transfer),
-                                  new Ninject.Parameters.ConstructorArgument("SecurtiesTrade", (object)null)
+                                  new Ninject.Parameters.ConstructorArgument("_DebitAmount", Deposit),
+                                  new Ninject.Parameters.ConstructorArgument("_CreditAmount", Deposit),
+                                  new Ninject.Parameters.ConstructorArgument("_DebitAccount", oA.GetBankAccountsFromCache().First()),
+                                  new Ninject.Parameters.ConstructorArgument("_CreditAccount", oA.Identifier),
+                                  new Ninject.Parameters.ConstructorArgument("_TransactionType", TransactionType.Transfer),
+                                  new Ninject.Parameters.ConstructorArgument("_SecurtiesTrade", (object)null)
                                                                             )
                                     );
             }
@@ -169,51 +218,7 @@ namespace Imperatur_v2.handler
             }
             //ugly and wrong but works right now!
             return oM;
-
-            /*
-            List<TransactionType> TransferWithdraw = new List<TransactionType>();
-            TransferWithdraw.Add(TransactionType.Transfer);
-            TransferWithdraw.Add(TransactionType.Withdrawal);
-
-            var Transactions = GetMappingRowToObjects(typeof(Transaction), m_oTransactions.ToArray()).Select(
-             item =>
-             GetKernel().Get<ITransactionInterface>()
-             ).ToList();
-
-            //minus
-            var DebitQuery =
-                from t in Transactions
-                where t.DebitAccount.Equals(this.Identifier)
-                join tb in TransferWithdraw on t.TransactionType equals tb
-                select t;
-
-            //plus
-            var CreditQuery =
-                from t in m_oTransactions
-                where t.CreditAccount.Equals(this.Identifier) && t.TransactionType.Equals(TransactionType.Transfer)
-                select t;
-
-            List<IMoney> SumMoney = new List<IMoney>();
-            SumMoney.AddRange(DebitQuery.Select(m => m.DebitAmount.SwitchSign()));
-            SumMoney.AddRange(CreditQuery.Select(m => m.CreditAmount));
-
-
-            return (List<IMoney>)(from p in SumMoney
-                                 group p.Amount() by p.CurrencyCode() into g
-                                 select 
-                                 ImperaturGlobal.GetMoney(g.ToList().Sum(), g.Key.ToString())
-                                 ).ToList();
-*/
-        }
-
-        public List<Account> GetHouseAccounts()
-        {
-            throw new NotImplementedException();
-        }
-
-        public List<Guid> GetHouseAndBankAccountsGuid()
-        {
-            throw new NotImplementedException();
+           
         }
 
         public string GetLastErrorMessage()
@@ -228,8 +233,45 @@ namespace Imperatur_v2.handler
 
         public bool SaveAccounts()
         {
+            foreach (IAccountInterface oA in m_oAccounts )
+            {
+                SaveSingleAccount(oA);
+            }
+            /*
             json.SerializeJSONdata.SerializeObject(Accounts(),
                 string.Format(@"{0}\{1}\{2}", ImperaturGlobal.SystemData.SystemDirectory, ImperaturGlobal.SystemData.AcccountDirectory, ImperaturGlobal.SystemData.AccountFile));
+            */        
+            return true;
+        }
+
+        private bool SaveSingleAccount(IAccountInterface oA)
+        {
+
+            //ImperaturGlobal.Kernel
+
+            //GetMappingRowToObjects(typeof(IAccountInterface), new object[] { oA })
+            //(IAccountInterface)oA.MemberwiseClone()
+
+            //Customer Customer, AccountType AccountType, string AccountName, ObservableRangeCollection<ITransactionInterface> Transactions, Guid Identifier)
+            //IAccountInterface Copy = ImperaturGlobal.Kernel.Get<IAccountInterface>(
+            //    new Ninject.Parameters.ConstructorArgument("Customer", oA.GetCustomer()),
+            //    new Ninject.Parameters.ConstructorArgument("AccountType", oA.GetAccountType()),
+            //    new Ninject.Parameters.ConstructorArgument("AccountName", oA.AccountName),
+            //    new Ninject.Parameters.ConstructorArgument("Transactions", oA.Transactions),
+            //    new Ninject.Parameters.ConstructorArgument("Identifier", oA.Identifier)
+            // );
+
+            json.SerializeJSONdata.SerializeObject((Account)oA,
+              string.Format(@"{0}\{1}\{2}.json", ImperaturGlobal.SystemData.SystemDirectory, ImperaturGlobal.SystemData.AcccountDirectory, oA.Identifier));
+            return true;
+        }
+
+        public bool SaveAccount(Guid Identifier)
+        {
+            foreach (IAccountInterface oA in m_oAccounts.Where(a=>a.Identifier.Equals(Identifier)))
+            {
+                SaveSingleAccount(oA);
+            }
             return true;
         }
 
@@ -241,31 +283,56 @@ namespace Imperatur_v2.handler
         public List<IAccountInterface> Accounts()
         {
             //TODO lägg till en try
-            if (m_oAccounts == null)
+            if (TryLoadFromStorage == false)
             {
                 try
                 {
-                    
-                    CurrencyCodeCache oC = (CurrencyCodeCache)GlobalCachingProvider.Instance.GetItem(ImperaturGlobal.CurrencyCodeCache);
-                    string dfd = oC.GetCache().Select(i => i.Item1).First();
-                    string ff = ImperaturGlobal.SystemData.AccountFile;
-                    //BusinessAccountCache oBA = (BusinessAccountCache)GlobalCachingProvider.Instance.GetItem(ImperaturGlobal.BusinessAccountCache);
-                    m_oAccounts = (List<IAccountInterface>)json.DeserializeJSON.DeserializeObjectFromFile(@ImperaturGlobal.SystemData.AccountFile);
+                    m_oAccounts = LoadAccounts();// (ObservableRangeCollection<IAccountInterface>)json.DeserializeJSON.DeserializeObjectFromFile(@ImperaturGlobal.SystemData.AccountFile);
                 }
                 catch(Exception ex)
                 {
-                    m_oAccounts = new List<IAccountInterface>();
+                    m_oAccounts = new ObservableRangeCollection<IAccountInterface>();
+
                 }
             }
-            return m_oAccounts;
+            TryLoadFromStorage = true;
+            return new List<IAccountInterface>((IEnumerable<IAccountInterface>)m_oAccounts); 
         }
 
-        private StandardKernel GetKernel()
+        private ObservableRangeCollection<IAccountInterface> LoadAccounts()
         {
-            var kernel = new StandardKernel();
-            kernel.Load(Assembly.GetExecutingAssembly());
-            return kernel;
+            ObservableRangeCollection<IAccountInterface> AccountFromFiles = new ObservableRangeCollection<IAccountInterface>();
+
+            string[] files = Directory.GetFiles(string.Format(@"{0}\{1}\", ImperaturGlobal.SystemData.SystemDirectory, ImperaturGlobal.SystemData.AcccountDirectory), "*.json", SearchOption.AllDirectories);
+
+            foreach(string Fa in files)
+            {
+                //Account a = JsonConvert.DeserializeObject<Account>(json.DeserializeJSON.DeserializeObjectFromFile(Fa).ToString());
+
+                //IAccountInterface a2 = JsonConvert.DeserializeObject<Account>(json.DeserializeJSON.DeserializeObjectFromFile(Fa).ToString());
+
+                //int gg = 0;
+                //object o = json.DeserializeJSON.DeserializeObjectFromFile(Fa);
+                AccountFromFiles.Add((IAccountInterface)json.DeserializeJSON.DeserializeObjectFromFile(Fa));
+                //var settings = new Newtonsoft.Json.JsonSerializerSettings() { ContractResolver = new json.AllFieldsContractResolver(), TypeNameHandling = TypeNameHandling.All };
+                //IAccountInterface oa =JsonConvert.DeserializeObject<IAccountInterface>(o.ToString(), settings);
+
+                //AccountFromFiles.Add((IAccountInterface)o);
+                //IAccountInterface oa = (IAccountInterface)o;
+
+                //AccountFromFiles.Add(JsonConvert.DeserializeObject<IAccountInterface>(json.DeserializeJSON.DeserializeObjectFromFile(Fa).ToString()));
+                /*
+                AccountFromFiles.Add(
+                    (IAccountInterface)Newtonsoft.Json.JsonConvert.DeserializeObject(
+                    json.DeserializeJSON.DeserializeObjectFromFile(Fa).ToString()
+                    ));
+                    */
+            }
+            return AccountFromFiles;
+
+
         }
+
 
         private List<object> GetMappingRowToObjects(Type TypeOfObject, object[] oR)
         {

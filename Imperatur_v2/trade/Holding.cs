@@ -7,16 +7,16 @@ using System.Threading.Tasks;
 
 namespace Imperatur_v2.trade
 {
-    public class Holding
+    public class Holding : IHoldingInterface
     {
         public string Name;
         public string Symbol;
         public string ISIN;
         public Decimal Quantity;
-        public Money Change;
+        public IMoney Change;
         public Decimal ChangePercent;
         public Decimal ChangeToday;
-        public Money PurchaseAmount;
-        public Money CurrentAmount;
+        public IMoney PurchaseAmount;
+        public IMoney CurrentAmount;
     }
 }

@@ -96,7 +96,7 @@ namespace Imperatur_Market_Client
             //kernel.Load(Assembly.GetExecutingAssembly());
 
 
-            CreateTestData();
+            //CreateTestData();
 
             //add the controls to the different areas
             AccountTab oAccountTab = new AccountTab(m_Ic.GetAccountHandler(), m_Ic.GetTradeHandler());

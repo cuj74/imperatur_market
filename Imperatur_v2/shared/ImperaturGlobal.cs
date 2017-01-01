@@ -12,6 +12,7 @@ using System.Reflection;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
 using Ninject;
+using Imperatur_v2.events;
 
 namespace Imperatur_v2.shared
 {
@@ -33,6 +34,7 @@ namespace Imperatur_v2.shared
         public static List<Instrument> Instruments;
         public static List<Quote> Quotes;
         private static StandardKernel m_oKernel;
+       // public delegate void SaveAccount(object sender, SaveAccountEventArg e);
         #endregion
 
         #region Init
@@ -59,8 +61,8 @@ namespace Imperatur_v2.shared
         public static IMoney GetMoney(decimal Amount, string CurrencyCode)
         {
             return m_oKernel.Get<IMoney>(
-                                  new Ninject.Parameters.ConstructorArgument("Amount", Amount),
-                                  new Ninject.Parameters.ConstructorArgument("Currency",
+                                  new Ninject.Parameters.ConstructorArgument("m_oAmount", Amount),
+                                  new Ninject.Parameters.ConstructorArgument("m_oCurrencyCode",
                                     m_oKernel.Get<ICurrency>(
                                     new Ninject.Parameters.ConstructorArgument("CurrencyCode", CurrencyCode))
                                     ));
@@ -109,6 +111,7 @@ namespace Imperatur_v2.shared
                 GlobalCachingProvider.Instance.AddItem(ImperaturGlobal.CountryCache, new CountryCache());
 
         }
+
         internal static void InitializeBusinessAccount(List<account.AccountCacheType> BusinessAccounts)
         {
             if (BusinessAccounts != null)

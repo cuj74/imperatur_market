@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Imperatur_v2.trade;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -13,6 +14,7 @@ namespace Imperatur_v2.monetary
         IMoney DebitAmount { get; }
         Guid CreditAccount { get; }
         IMoney CreditAmount { get; }
+        ITradeInterface SecuritiesTrade { get; }
 
         IMoney GetGAA();
         Decimal GetQuantity();

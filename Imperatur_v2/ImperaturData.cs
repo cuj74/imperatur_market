@@ -8,6 +8,7 @@ namespace Imperatur_v2
 {
     public class ImperaturData
     {
+        //TODO: add exhange
         public string SystemDirectory;
         public string AcccountDirectory;
         public string AccountFile;
@@ -29,6 +30,6 @@ namespace Imperatur_v2
         public static string CustomerDirectory = "customer";
         public static string CustomerFile = "customer.json";
         public static string SystemCurrency = "SEK";
-        public static string ULR_Quotes = "http://finance.google.com/finance/info?client=ig&q=NASDAQ%3A";
+        public static string ULR_Quotes = "http://finance.google.com/finance/info?client=ig&q=STO%3A";
     }
 }

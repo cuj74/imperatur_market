@@ -21,20 +21,21 @@ namespace Imperatur_Market_Client.dialog
             InitializeComponent();
             CreateNewSystem = false;
             SystemLocation = "";
+            string[] CheckedSystemLocations = AutoCompeleteSystemLocation.ToList().Where(x => Directory.Exists(x).Equals(true)).ToArray();
             if (AutoCompeleteSystemLocation != null && AutoCompeleteSystemLocation.Count() > 0)
             {
                 AutoCompleteStringCollection list = new AutoCompleteStringCollection();
-                list.AddRange(AutoCompeleteSystemLocation);
+                list.AddRange(CheckedSystemLocations);
                 comboBox_SystemDirectory.AutoCompleteMode = AutoCompleteMode.Suggest;
                 comboBox_SystemDirectory.AutoCompleteSource = AutoCompleteSource.CustomSource;
                 comboBox_SystemDirectory.AutoCompleteCustomSource = list;
-                comboBox_SystemDirectory.DataSource = AutoCompeleteSystemLocation.ToList();
+                comboBox_SystemDirectory.DataSource = CheckedSystemLocations.ToList();
             }
             if (AutoCompeleteSystemLocation != null && AutoCompeleteSystemLocation.Count() > 1)
             {
                 comboBox_SystemDirectory.Text = "";
             }
-            
+            comboBox_SystemDirectory.Focus();
         }
 
      

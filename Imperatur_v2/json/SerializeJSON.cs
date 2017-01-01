@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Newtonsoft;
 using System.Reflection;
 using System.IO;
+using Newtonsoft.Json;
 
 namespace Imperatur_v2.json
 {
@@ -27,7 +28,7 @@ namespace Imperatur_v2.json
     {
         public static string Dump(object o, bool indented = true)
         {
-            var settings = new Newtonsoft.Json.JsonSerializerSettings() { ContractResolver = new AllFieldsContractResolver() };
+            var settings = new Newtonsoft.Json.JsonSerializerSettings() { ContractResolver = new AllFieldsContractResolver(), TypeNameHandling = TypeNameHandling.All }; //, ReferenceLoopHandling = ReferenceLoopHandling.Ignore };
             if (indented)
             {
                 settings.Formatting = Newtonsoft.Json.Formatting.Indented;
@@ -40,13 +41,24 @@ namespace Imperatur_v2.json
     {
         protected override IList<Newtonsoft.Json.Serialization.JsonProperty> CreateProperties(Type type, Newtonsoft.Json.MemberSerialization memberSerialization)
         {
+
+            //var props = type
+            //    .GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
+            //    .Select(p => base.CreateProperty(p, memberSerialization))
+            //    .Union(type.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
+            //    .Select(f => base.CreateProperty(f, memberSerialization)))
+            //    .ToList();
+            //props.ForEach(p => { p.Writable = true; p.Readable = true; });
             var props = type
-                .GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
-                .Select(p => base.CreateProperty(p, memberSerialization))
-                .Union(type.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
-                .Select(f => base.CreateProperty(f, memberSerialization)))
-                .ToList();
+    //.GetProperties(BindingFlags.NonPublic | BindingFlags.Instance)
+    //.Select(p => base.CreateProperty(p, memberSerialization))
+     .GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
+        .Where(f=>!f.Name.Equals("SaveAccountEvent"))
+     // .Where(f=>!Attribute.IsDefined(f, typeof(SerializableAttribute)))
+     .Select(f => base.CreateProperty(f, memberSerialization))
+    .ToList();
             props.ForEach(p => { p.Writable = true; p.Readable = true; });
+
             return props;
         }
     }

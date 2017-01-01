@@ -20,12 +20,12 @@ namespace Imperatur_v2.handler
         bool SellHoldingFromAccount(Guid Identifier, int Quantity, string Ticker);
         bool AddHoldingToAccount(Guid Identifier, int Quantity, string Ticker);
         bool AddTransactionToAccount(Guid Identifier, ITransactionInterface NewTransaction);
-        List<Account> GetBankAccounts();
-        List<Account> GetHouseAccounts();
+        //List<Account> GetBankAccounts();
+        //List<Account> GetHouseAccounts();
         bool CreateAccount(List<IAccountInterface> oAccountData);
         bool SaveAccounts();
         List<Money> GetTotalFundsOfAccount(Guid Identifier);
-        List<Guid> GetHouseAndBankAccountsGuid();
+        //List<Guid> GetHouseAndBankAccountsGuid();
         List<IAccountInterface> Accounts();
         List<IAccountInterface> SearchAccount(string Search, AccountType AccountTypeToSearch);
     }

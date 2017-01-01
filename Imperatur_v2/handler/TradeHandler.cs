@@ -97,8 +97,8 @@ namespace Imperatur_v2.handler
                             QuotesRet.Add(new Quote
                             {
                                 InternalLoggedat = DateTime.Now,
-                                Symbol = i.SelectToken("t").ToString(),
-                                Index = i.SelectToken("e").ToString(),
+                                Symbol = i.SelectToken("t").ToString().Replace("-", " "),
+                                Exchange = i.SelectToken("e").ToString(),
                                 LastTradeDateTime = Convert.ToDateTime(i.SelectToken("lt_dts").ToString()),
                                 LastTradePrice = ImperaturGlobal.GetMoney(
                                 Convert.ToDecimal(i.SelectToken("l")), i.SelectToken("l_cur").ToString().Substring(0, 3)

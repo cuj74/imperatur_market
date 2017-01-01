@@ -11,7 +11,7 @@ namespace Imperatur_v2.securites
     {
         public DateTime InternalLoggedat;
         public string Symbol;
-        public string Index;
+        public string Exchange;
         public IMoney LastTradePrice;
         public DateTime LastTradeDateTime;
         public int LastTradeSize;

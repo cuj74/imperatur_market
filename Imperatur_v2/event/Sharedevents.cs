@@ -10,4 +10,9 @@ namespace Imperatur_v2.events
     {
         public Guid Identifier;
     }
+    
+    public class SaveAccountEventArg : EventArgs
+    {
+        public Guid Identifier;
+    }
 }

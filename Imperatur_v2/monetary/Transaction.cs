@@ -15,7 +15,7 @@ namespace Imperatur_v2.monetary
         private IMoney _DebitAmount;
         private IMoney _CreditAmount;
         private TransactionType _TransactionType;
-        public Trade _SecuritiesTrade;
+        public ITradeInterface _SecuritiesTrade;
 
         public Guid DebitAccount
         {
@@ -63,7 +63,30 @@ namespace Imperatur_v2.monetary
             }
         }
 
-        public Transaction(IMoney DebitAmount, IMoney CreditAmount, Guid DebitAccount, Guid CreditAccount, TransactionType TransactionType, Trade SecurtiesTrade)
+        public ITradeInterface SecuritiesTrade
+        {
+            get
+            {
+                return _SecuritiesTrade;
+            }
+        }
+
+        public Transaction(IMoney _DebitAmount, IMoney _CreditAmount, Guid _DebitAccount, Guid _CreditAccount, TransactionType _TransactionType, ITradeInterface _SecurtiesTrade)
+        {
+            this._DebitAmount = _DebitAmount;
+            this._CreditAmount = _CreditAmount;
+            this._DebitAccount = _DebitAccount;
+            this._CreditAccount = _CreditAccount;
+            this._TransactionType = _TransactionType;
+            this._SecuritiesTrade = _SecurtiesTrade;
+            if (!_DebitAmount.Amount().Equals(_CreditAmount.Amount()))
+            {
+                throw new Exception("Amount is not equal");
+            }
+        }
+
+        /*
+        public Transaction(IMoney DebitAmount, IMoney CreditAmount, Guid DebitAccount, Guid CreditAccount, TransactionType TransactionType, ITradeInterface SecurtiesTrade)
         {
             _DebitAmount = DebitAmount;
             _CreditAmount = CreditAmount;
@@ -75,7 +98,7 @@ namespace Imperatur_v2.monetary
             {
                 throw new Exception("Amount is not equal");
             }
-        }
+        }*/
         public IMoney GetGAA()
         {
             NoTransferOnlySecurites();
