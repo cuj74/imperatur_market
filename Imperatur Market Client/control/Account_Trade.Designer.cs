@@ -31,15 +31,17 @@
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.tableLayoutPanel_Trade = new System.Windows.Forms.TableLayoutPanel();
             this.panel1 = new System.Windows.Forms.Panel();
+            this.label_instrument_info = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
             this.textBox_Quantity = new System.Windows.Forms.TextBox();
             this.button_BuySecurity = new System.Windows.Forms.Button();
             this.comboBox_Symbols = new System.Windows.Forms.ComboBox();
-            this.label_instrument_info = new System.Windows.Forms.Label();
+            this.pictureBox_graph = new System.Windows.Forms.PictureBox();
             this.groupBox1.SuspendLayout();
             this.tableLayoutPanel_Trade.SuspendLayout();
             this.panel1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox_graph)).BeginInit();
             this.SuspendLayout();
             // 
             // groupBox1
@@ -47,9 +49,9 @@
             this.groupBox1.Controls.Add(this.tableLayoutPanel_Trade);
             this.groupBox1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.groupBox1.Location = new System.Drawing.Point(0, 0);
-            this.groupBox1.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.groupBox1.Margin = new System.Windows.Forms.Padding(2);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Padding = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.groupBox1.Padding = new System.Windows.Forms.Padding(2);
             this.groupBox1.Size = new System.Drawing.Size(407, 277);
             this.groupBox1.TabIndex = 0;
             this.groupBox1.TabStop = false;
@@ -61,9 +63,10 @@
             this.tableLayoutPanel_Trade.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.tableLayoutPanel_Trade.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 15F));
             this.tableLayoutPanel_Trade.Controls.Add(this.panel1, 0, 0);
+            this.tableLayoutPanel_Trade.Controls.Add(this.pictureBox_graph, 0, 1);
             this.tableLayoutPanel_Trade.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel_Trade.Location = new System.Drawing.Point(2, 15);
-            this.tableLayoutPanel_Trade.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.tableLayoutPanel_Trade.Margin = new System.Windows.Forms.Padding(2);
             this.tableLayoutPanel_Trade.Name = "tableLayoutPanel_Trade";
             this.tableLayoutPanel_Trade.RowCount = 3;
             this.tableLayoutPanel_Trade.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 33.33333F));
@@ -82,10 +85,18 @@
             this.panel1.Controls.Add(this.comboBox_Symbols);
             this.panel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panel1.Location = new System.Drawing.Point(2, 2);
-            this.panel1.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.panel1.Margin = new System.Windows.Forms.Padding(2);
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(399, 82);
             this.panel1.TabIndex = 0;
+            // 
+            // label_instrument_info
+            // 
+            this.label_instrument_info.AutoSize = true;
+            this.label_instrument_info.Location = new System.Drawing.Point(9, 57);
+            this.label_instrument_info.Name = "label_instrument_info";
+            this.label_instrument_info.Size = new System.Drawing.Size(0, 13);
+            this.label_instrument_info.TabIndex = 5;
             // 
             // label2
             // 
@@ -110,7 +121,7 @@
             // textBox_Quantity
             // 
             this.textBox_Quantity.Location = new System.Drawing.Point(128, 28);
-            this.textBox_Quantity.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.textBox_Quantity.Margin = new System.Windows.Forms.Padding(2);
             this.textBox_Quantity.Name = "textBox_Quantity";
             this.textBox_Quantity.Size = new System.Drawing.Size(76, 20);
             this.textBox_Quantity.TabIndex = 2;
@@ -118,7 +129,7 @@
             // button_BuySecurity
             // 
             this.button_BuySecurity.Location = new System.Drawing.Point(220, 27);
-            this.button_BuySecurity.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.button_BuySecurity.Margin = new System.Windows.Forms.Padding(2);
             this.button_BuySecurity.Name = "button_BuySecurity";
             this.button_BuySecurity.Size = new System.Drawing.Size(56, 19);
             this.button_BuySecurity.TabIndex = 1;
@@ -130,31 +141,33 @@
             // 
             this.comboBox_Symbols.FormattingEnabled = true;
             this.comboBox_Symbols.Location = new System.Drawing.Point(12, 28);
-            this.comboBox_Symbols.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.comboBox_Symbols.Margin = new System.Windows.Forms.Padding(2);
             this.comboBox_Symbols.Name = "comboBox_Symbols";
             this.comboBox_Symbols.Size = new System.Drawing.Size(92, 21);
             this.comboBox_Symbols.TabIndex = 0;
             // 
-            // label_instrument_info
+            // pictureBox_graph
             // 
-            this.label_instrument_info.AutoSize = true;
-            this.label_instrument_info.Location = new System.Drawing.Point(9, 57);
-            this.label_instrument_info.Name = "label_instrument_info";
-            this.label_instrument_info.Size = new System.Drawing.Size(0, 13);
-            this.label_instrument_info.TabIndex = 5;
+            this.pictureBox_graph.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.pictureBox_graph.Location = new System.Drawing.Point(3, 89);
+            this.pictureBox_graph.Name = "pictureBox_graph";
+            this.pictureBox_graph.Size = new System.Drawing.Size(397, 80);
+            this.pictureBox_graph.TabIndex = 1;
+            this.pictureBox_graph.TabStop = false;
             // 
             // Account_Trade
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.Controls.Add(this.groupBox1);
-            this.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.Margin = new System.Windows.Forms.Padding(2);
             this.Name = "Account_Trade";
             this.Size = new System.Drawing.Size(407, 277);
             this.groupBox1.ResumeLayout(false);
             this.tableLayoutPanel_Trade.ResumeLayout(false);
             this.panel1.ResumeLayout(false);
             this.panel1.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox_graph)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -170,5 +183,6 @@
         private System.Windows.Forms.TextBox textBox_Quantity;
         private System.Windows.Forms.Button button_BuySecurity;
         private System.Windows.Forms.Label label_instrument_info;
+        private System.Windows.Forms.PictureBox pictureBox_graph;
     }
 }

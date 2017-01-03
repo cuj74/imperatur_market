@@ -40,6 +40,7 @@ namespace Imperatur_Market_Client.control
             listView_holdings.Columns.Add("ChangePercent");
             listView_holdings.Columns.Add("CurrentValue");
             listView_holdings.Columns.Add("Action");
+            listView_holdings.Columns.Add("Info");
 
             ListViewExtender extender = new ListViewExtender(listView_holdings);
             ListViewButtonColumn buttonAction = new ListViewButtonColumn(6);
@@ -47,8 +48,117 @@ namespace Imperatur_Market_Client.control
             buttonAction.FixedWidth = true;
             extender.AddColumn(buttonAction);
 
+            //ListViewExtender extenderInfo = new ListViewExtender(listView_holdings);
+            ListViewButtonColumn buttonActionInfo = new ListViewButtonColumn(7);
+            buttonActionInfo.Click += ButtonActionInfo_Click;
+            buttonActionInfo.FixedWidth = true;
+            extender.AddColumn(buttonActionInfo);
+
 
         }
+
+        private void ButtonActionInfo_Click(object sender, ListViewColumnMouseEventArgs e)
+        {
+
+            if (m_oA == null)
+            {
+                return;
+            }
+            string Symbol = e.Item.Tag.ToString();
+
+            DataGridView TransactionGrid = new DataGridView();
+
+            TransactionGrid.AutoGenerateColumns = false;
+            TransactionGrid.AllowUserToAddRows = false;
+
+            TransactionGrid.Columns.Add(
+                new DataGridViewTextBoxColumn()
+                {
+                    CellTemplate = new DataGridViewTextBoxCell(),
+                    Name = "Amount",
+                    HeaderText = "Amount",
+                    DataPropertyName = "Amount",
+                    ReadOnly = true
+                }
+            );
+            TransactionGrid.Columns.Add(
+                new DataGridViewTextBoxColumn()
+                {
+                    CellTemplate = new DataGridViewTextBoxCell(),
+                    Name = "TransactionDate",
+                    HeaderText = "Date",
+                    DataPropertyName = "TransactionDate",
+                    ReadOnly = true
+                }
+            );
+            TransactionGrid.Columns.Add(
+                new DataGridViewTextBoxColumn()
+                {
+                    CellTemplate = new DataGridViewTextBoxCell(),
+                    Name = "TransactionType",
+                    HeaderText = "Type",
+                    DataPropertyName = "TransactionType",
+                    ReadOnly = true
+                }
+            );
+            TransactionGrid.Columns.Add(
+                new DataGridViewTextBoxColumn()
+                {
+                    CellTemplate = new DataGridViewTextBoxCell(),
+                    Name = "Symbol",
+                    HeaderText = "Symbol",
+                    DataPropertyName = "Symbol",
+                    ReadOnly = true
+                }
+            );
+            TransactionGrid.Columns.Add(
+                new DataGridViewTextBoxColumn()
+                {
+                    CellTemplate = new DataGridViewTextBoxCell(),
+                    Name = "Revenue",
+                    HeaderText = "Revenue",
+                    DataPropertyName = "Revenue",
+                    ReadOnly = true
+                }
+            );
+
+            DataTable TransactionsDT = new DataTable();
+            TransactionsDT.Columns.Add("Amount");
+            TransactionsDT.Columns.Add("TransactionDate");
+            TransactionsDT.Columns.Add("TransactionType");
+            TransactionsDT.Columns.Add("Symbol");
+            TransactionsDT.Columns.Add("Revenue");
+
+            DataRow row = null;
+            foreach (ITransactionInterface oT in m_oA.Transactions.Where(t=> t.SecuritiesTrade != null && t.SecuritiesTrade.Security.Symbol.Equals(Symbol)))
+            {
+                row = TransactionsDT.NewRow();
+                row["Amount"] = oT.DebitAccount.Equals(m_oA.Identifier) ? oT.DebitAmount.ToString() : oT.CreditAmount.ToString();
+                row["TransactionDate"] = oT.TransactionDate;
+                row["TransactionType"] = oT.TransactionType.ToString();
+                row["Symbol"] = oT.SecuritiesTrade != null ? oT.SecuritiesTrade.Security.Symbol : "";
+                row["Revenue"] = oT.SecuritiesTrade != null && oT.SecuritiesTrade.Revenue != null ? oT.SecuritiesTrade.Revenue.ToString() : "";
+                TransactionsDT.Rows.Add(row);
+
+            }
+            TransactionGrid.DataSource = TransactionsDT;
+            TransactionGrid.Dock = DockStyle.Fill;
+
+            UserControl TransactionControl = new CreateDataGridControlFromObject(
+            new DataGridForControl
+            {
+                DataGridViewToBuild = TransactionGrid,
+                GroupBoxCaption = string.Format("Transactions on {0} for {1}", m_oA.GetCustomer().FullName, Symbol)
+            }
+            );
+
+            Form Ftrans = new Form();
+            Ftrans.Controls.Add(TransactionControl);
+            Ftrans.ShowDialog();
+
+
+        }
+
         protected virtual void OnSelectedAccount(SelectedAccountEventArg e)
         {
             if (SelectedAccount != null)
@@ -80,7 +190,8 @@ namespace Imperatur_Market_Client.control
                         oH.Change.ToString(true, true),
                         Math.Round(oH.ChangePercent, 2, MidpointRounding.AwayFromZero).ToString() + " %",
                         oH.CurrentAmount.ToString(),
-                        "Sell"
+                        "Sell",
+                        "Info"
                     }
                     );
                 oHoldingRow.SubItems.Add(oH.Name);

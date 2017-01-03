@@ -14,6 +14,7 @@ using Imperatur_v2.events;
 using Imperatur_v2.shared;
 using Imperatur_Market_Client.events;
 using Imperatur_v2.monetary;
+using System.Net;
 
 namespace Imperatur_Market_Client.control
 {
@@ -82,6 +83,12 @@ namespace Imperatur_Market_Client.control
                 if (ImperaturGlobal.Quotes.Where(q => q.Symbol.Equals(comboBox_Symbols.SelectedItem.ToString())).Count() > 0)
                 {
                     label_instrument_info.Text = ImperaturGlobal.Quotes.Where(q => q.Symbol.Equals(comboBox_Symbols.SelectedItem.ToString())).First().LastTradePrice.ToString();
+                    using (WebClient webClient = new WebClient())
+                    {
+                        //webClient.DownloadFile("https://www.google.com/finance/getchart?q=" + comboBox_Symbols.SelectedItem.ToString(), "image.png");
+                        pictureBox_graph.Load("https://www.google.com/finance/getchart?q=" + comboBox_Symbols.SelectedItem.ToString().Replace(" ", "-"));
+                        pictureBox_graph.SizeMode = PictureBoxSizeMode.StretchImage;
+                    }
                 }
                 else
                     label_instrument_info.Text = "N/A";

@@ -41,8 +41,10 @@
             this.groupBox1.Controls.Add(this.tableLayoutPanel1);
             this.groupBox1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.groupBox1.Location = new System.Drawing.Point(0, 0);
+            this.groupBox1.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(462, 497);
+            this.groupBox1.Padding = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.groupBox1.Size = new System.Drawing.Size(346, 404);
             this.groupBox1.TabIndex = 0;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Holdings";
@@ -54,42 +56,47 @@
             this.tableLayoutPanel1.Controls.Add(this.listView_holdings, 0, 1);
             this.tableLayoutPanel1.Controls.Add(this.button_refresh, 0, 0);
             this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.tableLayoutPanel1.Location = new System.Drawing.Point(3, 18);
+            this.tableLayoutPanel1.Location = new System.Drawing.Point(2, 15);
+            this.tableLayoutPanel1.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
-            this.tableLayoutPanel1.RowCount = 3;
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 40F));
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 80F));
-            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 20F));
-            this.tableLayoutPanel1.Size = new System.Drawing.Size(456, 476);
+            this.tableLayoutPanel1.RowCount = 4;
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 32F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 60F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 15F));
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 25F));
+            this.tableLayoutPanel1.Size = new System.Drawing.Size(342, 387);
             this.tableLayoutPanel1.TabIndex = 0;
             // 
             // listView_holdings
             // 
             this.listView_holdings.Dock = System.Windows.Forms.DockStyle.Fill;
             this.listView_holdings.FullRowSelect = true;
-            this.listView_holdings.Location = new System.Drawing.Point(3, 43);
+            this.listView_holdings.Location = new System.Drawing.Point(2, 34);
+            this.listView_holdings.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.listView_holdings.Name = "listView_holdings";
-            this.listView_holdings.Size = new System.Drawing.Size(450, 342);
+            this.listView_holdings.Size = new System.Drawing.Size(338, 209);
             this.listView_holdings.TabIndex = 0;
             this.listView_holdings.UseCompatibleStateImageBehavior = false;
             this.listView_holdings.View = System.Windows.Forms.View.Details;
             // 
             // button_refresh
             // 
-            this.button_refresh.Location = new System.Drawing.Point(3, 3);
+            this.button_refresh.Location = new System.Drawing.Point(2, 2);
+            this.button_refresh.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.button_refresh.Name = "button_refresh";
-            this.button_refresh.Size = new System.Drawing.Size(75, 23);
+            this.button_refresh.Size = new System.Drawing.Size(56, 19);
             this.button_refresh.TabIndex = 1;
             this.button_refresh.Text = "refresh";
             this.button_refresh.UseVisualStyleBackColor = true;
             // 
             // Account_Holdings
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.Controls.Add(this.groupBox1);
+            this.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.Name = "Account_Holdings";
-            this.Size = new System.Drawing.Size(462, 497);
+            this.Size = new System.Drawing.Size(346, 404);
             this.groupBox1.ResumeLayout(false);
             this.tableLayoutPanel1.ResumeLayout(false);
             this.ResumeLayout(false);
