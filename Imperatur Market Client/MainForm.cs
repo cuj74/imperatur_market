@@ -13,7 +13,7 @@ using System.Reflection;
 using Imperatur_Market_Client.control;
 using Imperatur_v2.events;
 using Imperatur_Market_Client.events;
-
+using Imperatur_v2.shared;
 using System.IO;
 using Imperatur_v2.account;
 
@@ -28,6 +28,9 @@ namespace Imperatur_Market_Client
         public delegate void SelectedAccountEventHandler(object sender, SelectedAccountEventArg e);
         public delegate void ToggleSearchDialogHandler(object sender, ToggleSearchEvents e);
 
+        private AccountTab m_oAccountTab;
+        delegate void RefreshQuotes();
+
         public MainForm()
         {
             InitializeComponent();
@@ -36,7 +39,7 @@ namespace Imperatur_Market_Client
             m_oKernel.Load(Assembly.GetExecutingAssembly());
         }
 
-        public object resources { get; private set; }
+        //public object resources { get; private set; }
 
         private bool ShowSystemLoad()
         {
@@ -63,17 +66,7 @@ namespace Imperatur_Market_Client
         {
             ImperaturData oNewSystem = null;
             bool CreateNewSystem = ShowSystemLoad();
-            /*
-            using (var form = new dialog.System_Load(ReadSystemLocationFromCache()))
-            {
-                form.Icon = this.Icon;
-                var result = form.ShowDialog();
-                if (result == DialogResult.OK)
-                {
-                    SystemLocation = form.SystemLocation;
-                    CreateNewSystem = form.CreateNewSystem;
-                }
-            }*/
+
             if (CreateNewSystem)
             {
                 oNewSystem = CreateNewImperaturMarket(oNewSystem);
@@ -90,7 +83,9 @@ namespace Imperatur_Market_Client
             //SystemLocationCacheFile
             SaveSystemLocationToCache(oNewSystem);
 
-            this.toolStripStatusLabel_system.Text = m_Ic.GetSystemData().SystemDirectory;
+            this.toolStripStatusLabel_system.Text =
+                string.Format("{0} | {1}", m_Ic.GetSystemData().SystemDirectory, m_Ic.GetSystemData().SystemCurrency);
+                
 
             //StandardKernel kernel = new StandardKernel();
             //kernel.Load(Assembly.GetExecutingAssembly());
@@ -99,17 +94,32 @@ namespace Imperatur_Market_Client
             //CreateTestData();
 
             //add the controls to the different areas
-            AccountTab oAccountTab = new AccountTab(m_Ic.GetAccountHandler(), m_Ic.GetTradeHandler());
-            oAccountTab.Dock = DockStyle.Fill;
-            tabPage_account.Controls.Add(oAccountTab);
-
-
-
+            m_oAccountTab = new AccountTab(m_Ic.GetAccountHandler(), m_Ic.GetTradeHandler());
+            m_oAccountTab.Dock = DockStyle.Fill;
+            tabPage_account.Controls.Add(m_oAccountTab);
+            m_Ic.QuoteUpdateEvent += M_Ic_QuoteUpdateEvent;
+            this.checkBox_automaticTrading.Checked = m_Ic.GetSystemData().IsAutomaticMaintained;
 
     }
 
+        private void M_Ic_QuoteUpdateEvent(object sender, EventArgs e)
+        {
+            
+            this.toolStripStatusLabel_system.Text =
+               string.Format("{0} | {1} | last update {2}", m_Ic.GetSystemData().SystemDirectory, m_Ic.GetSystemData().SystemCurrency, DateTime.Now.ToString());
+            //TODO: needs invoke
+            /*
+            if (m_oAccountTab.InvokeRequired)
+            {
+                RefreshQuotes d = new RefreshQuotes();
+                this.Invoke(d, new object[] { text });
+            }
+            this.Invoke(m_oAccountTab.RefreshSelectedAccountData());
+            */
 
-    private ImperaturData CreateNewImperaturMarket(ImperaturData oNewSystem)
+        }
+
+        private ImperaturData CreateNewImperaturMarket(ImperaturData oNewSystem)
         {
             using (var form = new dialog.NewSystem())
             {
@@ -148,19 +158,21 @@ namespace Imperatur_Market_Client
                 {
                     if (prop.Name != "")
                     {
-                        string Value = prop.Name.Equals("SystemDirectory") ? SystemLocation : typeof(ImperaturDataStandard).GetFields().FirstOrDefault(t => t.Name == prop.Name).GetValue(null).ToString();
-                        tlp.Controls.Add(new TextBox()
-                        {
-                            Text =
-                            Value
-                            ,
-                            Name = prop.Name,
-                            Anchor = AnchorStyles.Left,
-                            Width = 300,
-                            AutoSize = true,
-                            ReadOnly = prop.Name.Equals("SystemDirectory") && SystemLocation.Length > 0 ? true : false
-                        }, 1, indexcount);
-                        tlp.Controls.Add(new Label() { Text = prop.Name, Anchor = AnchorStyles.Left, AutoSize = true }, 0, indexcount);
+                        if (prop.FieldType.Equals(typeof(string))) {
+                            string Value = prop.Name.Equals("SystemDirectory") ? SystemLocation : typeof(ImperaturDataStandard).GetFields().FirstOrDefault(t => t.Name == prop.Name).GetValue(null).ToString();
+                            tlp.Controls.Add(new TextBox()
+                            {
+                                Text =
+                                Value
+                                ,
+                                Name = prop.Name,
+                                Anchor = AnchorStyles.Left,
+                                Width = 300,
+                                AutoSize = true,
+                                ReadOnly = prop.Name.Equals("SystemDirectory") && SystemLocation.Length > 0 ? true : false
+                            }, 1, indexcount);
+                            tlp.Controls.Add(new Label() { Text = prop.Name, Anchor = AnchorStyles.Left, AutoSize = true }, 0, indexcount);
+                        }
                     }
                     indexcount++;
                 }
@@ -191,31 +203,36 @@ namespace Imperatur_Market_Client
 
                 form.Height = tlp.Height;
 
+                
+                try
+                {
+                    var result = form.ShowDialog();
+                    while (!result.Equals(DialogResult.OK) && !result.Equals(DialogResult.Cancel))
+                    {
 
-                var result = form.ShowDialog();
-                while (!result.Equals(DialogResult.OK) && !result.Equals(DialogResult.Cancel))
-                {
+                    }
 
+                    if (result == DialogResult.OK)
+                    {
+                        oNewSystem = form.SystemData;
+                    }
+                    else
+                    {
+                        this.Close();
+                    }
                 }
-                if (result == DialogResult.OK)
+                catch (Exception ex)
                 {
-                    oNewSystem = form.SystemData;
-                }
-                else
-                {
-                    this.Close();
+                    int gg = 0;
                 }
             }
 
             return oNewSystem;
         }
-
+        
         private void CreateTestData()
         {
-
-     
-
-            List<IAccountInterface> oLA = new List<Imperatur_v2.account.IAccountInterface>();
+            //List<IAccountInterface> oLA = new List<Imperatur_v2.account.IAccountInterface>();
             string[] CustomersFirstName = new string[] {
                 "Jenny",
                 "Zeinab",
@@ -245,7 +262,7 @@ namespace Imperatur_Market_Client
                 "Sari Tuulikki",
                 "Emma",
                 "Patrick",
-                "grizelda"
+                "Grizelda"
             };
 
             string[] CustomersLastName = new string[] {
@@ -282,33 +299,28 @@ namespace Imperatur_Market_Client
             };
 
             Imperatur_v2.customer.Customer oC;
-            Account oA;
+            //Account oA;
             for (int i = 0; i < CustomersFirstName.Count()-1; i++)
             {
+
+
                 oC = new Imperatur_v2.customer.Customer();
                 oC.FirstName = CustomersFirstName[i];
-                oC.LastName = CustomersLastName[1];
+                oC.LastName = CustomersLastName[CustomersFirstName.Count() - 1-i];
                 oC.Idnumber = "7405255915";
-                oA = new Imperatur_v2.account.Account(oC, Imperatur_v2.account.AccountType.Customer, string.Format("{0} konto", oC.FirstName));
-                oLA.Add((Imperatur_v2.account.IAccountInterface)oA);
+                m_Ic.GetAccountHandler().CreateAccount(oC, Imperatur_v2.account.AccountType.Customer, string.Format("{0} konto", oC.FirstName));
+
+              
             }
 
-            try
+            foreach (IAccountInterface oAdeposit in m_Ic.GetAccountHandler().Accounts().Where(a=>a.GetAccountType().Equals(AccountType.Customer)))
             {
-                m_Ic.GetAccountHandler().CreateAccount(oLA);
-            }
-            catch (Exception ex)
-            {
-                string ff = "";
-            }
+                m_Ic.GetAccountHandler().DepositAmount(oAdeposit.Identifier,
+                   m_Ic.GetMoney(200000, "SEK"));
+             }
 
-            m_Ic.GetAccountHandler().DepositAmount(m_Ic.GetAccountHandler().Accounts().Where(a => a.GetAccountType().Equals(AccountType.Customer)).First().Identifier, 
-                m_Ic.GetMoney(20000, "SEK"));
-
-            m_Ic.GetAccountHandler().DepositAmount(m_Ic.GetAccountHandler().Accounts().Where(a => a.GetAccountType().Equals(AccountType.Customer)).First().Identifier,
-                    m_Ic.GetMoney(7540, "EUR"));
         }
-
+        
         private string[] ReadSystemLocationFromCache()
         {
             string SystemLocationCacheFilePath = AppDomain.CurrentDomain.BaseDirectory + @"\" + this.SystemLocationCacheFile;
@@ -368,7 +380,7 @@ namespace Imperatur_Market_Client
             Button ob = (Button)sender;
             foreach (var prop in typeof(ImperaturData).GetFields())
             {
-                if (prop.Name != "")
+                if (prop.Name != "" && prop.FieldType.Equals(typeof(string)))
                 {
                     SystemData.Add(prop.Name, ((TextBox)ob.Parent.Controls[prop.Name]).Text);
 
@@ -385,14 +397,15 @@ namespace Imperatur_Market_Client
                 QuoteFile = SystemData.FirstOrDefault(t => t.Key == "QuoteFile").Value,
                 SystemCurrency = SystemData.FirstOrDefault(t => t.Key == "SystemCurrency").Value,
                 SystemDirectory = SystemData.FirstOrDefault(t => t.Key == "SystemDirectory").Value,
-                ULR_Quotes = SystemData.FirstOrDefault(t => t.Key == "ULR_Quotes").Value
+                ULR_Quotes = SystemData.FirstOrDefault(t => t.Key == "ULR_Quotes").Value,
+                QuoteRefreshTime = SystemData.FirstOrDefault(t => t.Key == "QuoteRefreshTime").Value
 
             };
             //all fields must be filled in!
             bool AllFieldsOk = true; 
             foreach (var prop in typeof(ImperaturData).GetFields())
             {
-                if (prop.Name != "" 
+                if (prop.Name != "" && prop.FieldType.Equals(typeof(string))
                     &&
                     (
                     typeof(ImperaturData).GetFields().FirstOrDefault(t => t.Name == prop.Name).GetValue(oNewSystem.SystemData) != null
@@ -415,6 +428,21 @@ namespace Imperatur_Market_Client
             }
             else
                 oNewSystem.DialogResult = DialogResult.None;
+        }
+
+        private void checkBox_automaticTrading_CheckedChanged(object sender, EventArgs e)
+        {
+            m_Ic.SetAutomaticTrading(checkBox_automaticTrading.Checked);
+            if (checkBox_automaticTrading.Checked)
+            {
+                if (m_Ic.GetAccountHandler().Accounts().Where(a=>a.GetAccountType().Equals(AccountType.Customer)).Count() == 0)
+                {
+                    if (MessageBox.Show("Create test accounts?", "Create test accounts?", MessageBoxButtons.YesNo) == DialogResult.Yes)
+                    {
+                        CreateTestData();
+                    }
+                }
+            }
         }
     }
 }

@@ -90,6 +90,13 @@
     <Compile Include="control\Expander.Designer.cs">
       <DependentUpon>Expander.cs</DependentUpon>
     </Compile>
+    <Compile Include="control\ListViewExpander.cs" />
+    <Compile Include="control\SellDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="control\SellDialog.Designer.cs">
+      <DependentUpon>SellDialog.cs</DependentUpon>
+    </Compile>
     <Compile Include="dialog\NewSystem.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -125,6 +132,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="control\Account_Trade.resx">
       <DependentUpon>Account_Trade.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="control\SellDialog.resx">
+      <DependentUpon>SellDialog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="dialog\NewSystem.resx">
       <DependentUpon>NewSystem.cs</DependentUpon>

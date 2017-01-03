@@ -37,10 +37,10 @@ namespace Imperatur_v2.monetary
             if (m_oCurrencyCode != Add.CurrencyCode)
                 throw new Exception("Can't add two money objects with different currency");
 
-            if (Add.Amount().Equals(0))
+            if (Add.Amount.Equals(0))
                 return this;
 
-            return GetMoney(m_oAmount + Add.Amount(), m_oCurrencyCode);
+            return GetMoney(m_oAmount + Add.Amount, m_oCurrencyCode);
         }
 
         public IMoney Add(decimal Add)
@@ -50,12 +50,12 @@ namespace Imperatur_v2.monetary
 
         public IMoney Divide(IMoney Divider)
         {
-            if (this.m_oCurrencyCode != Divider.CurrencyCode)
+            if (!this.m_oCurrencyCode.Equals(Divider.CurrencyCode))
                 throw new Exception("Can't divide two money objects with different currency");
-            if (Divider.Amount() == 0)
+            if (Divider.Amount.Equals(0m))
                 throw new Exception("Can't divide by zero");
 
-            return GetMoney(m_oAmount / Divider.Amount(), m_oCurrencyCode);
+            return GetMoney(m_oAmount / Divider.Amount, m_oCurrencyCode);
         }
 
         public IMoney Divide(decimal Divider)
@@ -73,10 +73,10 @@ namespace Imperatur_v2.monetary
         {
             if (!m_oCurrencyCode.Equals(Subtract.CurrencyCode))
                 throw new Exception("Can't add two money objects with different currency");
-            if (Subtract.Amount().Equals(0))
+            if (Subtract.Amount.Equals(0))
                 return this;
 
-            return GetMoney(m_oAmount - Subtract.Amount(), m_oCurrencyCode);
+            return GetMoney(m_oAmount - Subtract.Amount, m_oCurrencyCode);
         }
 
         public IMoney Subtract(decimal Subtract)
@@ -118,9 +118,13 @@ namespace Imperatur_v2.monetary
             }
         }
 
-        public decimal Amount()
+        public decimal Amount
         {
-            return this.m_oAmount;
+            get
+            {
+                return this.m_oAmount;
+            }
+            
         }
 
 

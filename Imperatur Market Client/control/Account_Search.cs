@@ -8,10 +8,11 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Imperatur_v2.handler;
-using Imperatur_v2;
+using Imperatur_v2.shared;
 using Imperatur_v2.account;
 using Imperatur_v2.events;
 using Imperatur_Market_Client.events;
+using Imperatur_v2.monetary;
 
 namespace Imperatur_Market_Client.control
 {
@@ -29,8 +30,10 @@ namespace Imperatur_Market_Client.control
             m_oAh = AccountHandler;
             listView_searchresult.View = View.Details;
             listView_searchresult.Columns.Add("Name");
-            listView_searchresult.Columns.Add("Amount");
+            listView_searchresult.Columns.Add("Available");
             listView_searchresult.Columns.Add("Current");
+            listView_searchresult.Columns.Add("Change");
+            listView_searchresult.Columns.Add("Change%");
             this.textBox_Search.KeyDown += TextBox_Search_KeyDown;
 
         }
@@ -83,13 +86,25 @@ namespace Imperatur_Market_Client.control
 
             foreach (IAccountInterface oA in m_oAh.SearchAccount(this.textBox_Search.Text.Trim(), AccountType.Customer))
             {
+                List<ICurrency> FilterCurrency = new List<ICurrency>();
+                FilterCurrency.Add(ImperaturGlobal.GetSystemCurrency());
+
+                IMoney AvailableSystemAmount = oA.GetAvailableFunds(FilterCurrency).First();
+                IMoney TotalFunds = oA.GetTotalFunds(FilterCurrency).First();
+                IMoney TotalDeposit = oA.GetDepositedAmount(FilterCurrency).First();
+
+                //row["Change"] = oM.Subtract(TotalDeposit.Where(od => od.CurrencyCode.Equals(oM.CurrencyCode)).First()).ToString();
+                //row["ChangePercent"] = string.Format("{0}%", TotalDeposit.Where(od => od.CurrencyCode.Equals(oM.CurrencyCode)).First().Amount > 0 ? oM.Subtract(TotalDeposit.Where(od => od.CurrencyCode.Equals(oM.CurrencyCode)).First().Amount).Divide(TotalDeposit.Where(od => od.CurrencyCode.Equals(oM.CurrencyCode)).First().Amount).Multiply(100).ToString(true, false) : "0");
+
+
                 ListViewItem oSearchResultRow = new ListViewItem(
                     new string[]
                     {
                         oA.GetCustomer().FullName,
-                        //String.Format("{0} {1}", oA.GetCustomer().FirstName, oA.GetCustomer().LastName),
-                        oA.GetAvailableFunds().First().ToString(),
-                        "0",
+                        AvailableSystemAmount.ToString(false, false),
+                        TotalFunds.ToString(false, false),
+                        TotalFunds.Subtract(TotalDeposit).ToString(false, false),
+                        string.Format("{0}%", TotalDeposit.Amount > 0 ? TotalFunds.Subtract(TotalDeposit.Amount).Divide(TotalDeposit.Amount).Multiply(100).ToString(true, false) : "0"),
                     }
                     );
                 oSearchResultRow.Tag = oA.Identifier.ToString();

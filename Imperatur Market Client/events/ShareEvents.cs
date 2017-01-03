@@ -10,4 +10,9 @@ namespace Imperatur_Market_Client.events
     {
         public bool Collapse;
     }
+
+    public class SelectedAccountEventArg : EventArgs
+    {
+        public Guid Identifier;
+    }
 }

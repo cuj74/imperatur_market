@@ -15,10 +15,11 @@ namespace Imperatur_v2.monetary
         Guid CreditAccount { get; }
         IMoney CreditAmount { get; }
         ITradeInterface SecuritiesTrade { get; }
-
+        DateTime TransactionDate { get; }
         IMoney GetGAA();
         Decimal GetQuantity();
         IMoney GetCurrentValue();
         IMoney GetTradeAmount();
+        
     }
 }

@@ -20,6 +20,16 @@ namespace Imperatur_v2.handler
 
         //TODO: move the quotes to an class by itself. Remember SOLID
         private List<Quote> m_oQuotes;
+        public event ImperaturMarket.QuoteUpdateHandler QuoteUpdateEvent;
+
+
+        #region proctectedMethods
+        protected virtual void OnQuoteUpdate(EventArgs e)
+        {
+            if (QuoteUpdateEvent != null)
+                QuoteUpdateEvent(this, e);
+        }
+        #endregion
 
         public Quote GetQuote(string Symbol)
         {
@@ -32,7 +42,7 @@ namespace Imperatur_v2.handler
             return ReadQuotes();
         }
 
-        private List<Quote> ReadQuotes()
+        private void UpdateQuotesFromExternalSource()
         {
             if (m_oQuotes == null)
             {
@@ -57,17 +67,19 @@ namespace Imperatur_v2.handler
                             SerializeJSONdata.SerializeObject(m_oQuotes, string.Format(@"{0}\{1}\{2}{3}{4}", ImperaturGlobal.SystemData.SystemDirectory, ImperaturGlobal.SystemData.QuoteDirectory, ImperaturGlobal.SystemData.QuoteFile, DateTime.Now.ToShortDateString(), DateTime.Now.ToShortTimeString().Replace(":", ";")));
                         }
                     }
-                    //m_oQuotes = (List<Quote>)DeserializeJSON.DeserializeObjectFromFile(string.Format(@"{0}\{1}\{2}{3}", ImperaturGlobal.SystemData.SystemDirectory, ImperaturGlobal.SystemData.QuoteDirectory, ImperaturGlobal.SystemData.QuoteFile, DateTime.Now.ToShortDateString()));
                 }
                 catch (Exception ex)
                 {
                     //read from external source
                     m_oQuotes = GetQuotesFromExternalSource(ImperaturGlobal.SystemData.ULR_Quotes);
                     //save if results obtained
-
                 }
-
             }
+        }
+
+        private List<Quote> ReadQuotes()
+        {
+            UpdateQuotesFromExternalSource();
             return m_oQuotes;
         }
 
@@ -76,9 +88,12 @@ namespace Imperatur_v2.handler
             List<Quote> QuotesRet = new List<Quote>();
             string json;
             rest.Rest oG = new rest.Rest();
-            json = oG.GetResultFromURL(URL + string.Join(",",
-                                ImperaturGlobal.Instruments.Select(i => i.Symbol.Replace(" ", "-")).ToArray()
-                                ));
+
+            //take only 10 at a time!
+
+            //ugly
+            URL = URL.Replace("{exchange}", "STO");
+            json = oG.GetResultFromURL(URL + string.Join(",",ImperaturGlobal.Instruments.Select(i => i.Symbol.Replace(" ", "-")).ToArray()));
 
             //Google adds a comment before the json for some unknown reason, so we need to remove it
             json = json.Replace("//", "");
@@ -125,11 +140,14 @@ namespace Imperatur_v2.handler
         public bool ForceUpdate()
         {
             m_oQuotes = null; //next read will update the quote list
+            OnQuoteUpdate(new EventArgs());
             return true;
         }
 
         public ITradeInterface GetTrade(string Symbol, decimal Quantity)
         {
+            return GetTrade(Symbol, Quantity, DateTime.Now, null);
+            /*
             Quote oHoldingTicker = GetQuote(Symbol);
             IMoney TradeAmount = oHoldingTicker.LastTradePrice.Multiply(Quantity);
             Security NewSecurity = new Security()
@@ -144,7 +162,33 @@ namespace Imperatur_v2.handler
              new Ninject.Parameters.ConstructorArgument("TradeAmount", TradeAmount)
              );
 
+            return oNewTrade;*/
+        }
+
+        public ITradeInterface GetTrade(string Symbol, decimal Quantity, DateTime TradeDateTime, IMoney Revenue)
+        {
+            Quote oHoldingTicker = GetQuote(Symbol);
+            IMoney TradeAmount = oHoldingTicker.LastTradePrice.Multiply(Quantity);
+            Security NewSecurity = new Security()
+            {
+                Price = oHoldingTicker.LastTradePrice,
+                Symbol = Symbol
+            };
+
+            ITradeInterface oNewTrade = ImperaturGlobal.Kernel.Get<ITradeInterface>(
+             new Ninject.Parameters.ConstructorArgument("m_oQuantity", Quantity),
+             new Ninject.Parameters.ConstructorArgument("m_oSecurity", NewSecurity),
+             new Ninject.Parameters.ConstructorArgument("m_oTradeAmount", TradeAmount),
+             new Ninject.Parameters.ConstructorArgument("m_oTradeDateTime", TradeDateTime),
+             new Ninject.Parameters.ConstructorArgument("m_oRevenue", Revenue)
+             );
+
             return oNewTrade;
+        }
+
+        public void CacheQuotes()
+        {
+            UpdateQuotesFromExternalSource();
         }
     }
 }

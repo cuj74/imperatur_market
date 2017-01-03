@@ -1,4 +1,5 @@
 ﻿using Imperatur_v2.trade;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,6 +17,7 @@ namespace Imperatur_v2.monetary
         private IMoney _CreditAmount;
         private TransactionType _TransactionType;
         public ITradeInterface _SecuritiesTrade;
+        private DateTime _TransactionDate;
 
         public Guid DebitAccount
         {
@@ -71,6 +73,29 @@ namespace Imperatur_v2.monetary
             }
         }
 
+        public DateTime TransactionDate
+        {
+            get
+            {
+                return _TransactionDate;
+            }
+        }
+        [JsonConstructor]
+        public Transaction(IMoney _DebitAmount, IMoney _CreditAmount, Guid _DebitAccount, Guid _CreditAccount, TransactionType _TransactionType, ITradeInterface _SecurtiesTrade,  DateTime _TransactionDate)
+        {
+            this._DebitAmount = _DebitAmount;
+            this._CreditAmount = _CreditAmount;
+            this._DebitAccount = _DebitAccount;
+            this._CreditAccount = _CreditAccount;
+            this._TransactionType = _TransactionType;
+            this._SecuritiesTrade = _SecurtiesTrade;
+            this._TransactionDate = _TransactionDate;
+            if (!_DebitAmount.Amount.Equals(_CreditAmount.Amount))
+            {
+                throw new Exception("Amount is not equal");
+            }
+        }
+
         public Transaction(IMoney _DebitAmount, IMoney _CreditAmount, Guid _DebitAccount, Guid _CreditAccount, TransactionType _TransactionType, ITradeInterface _SecurtiesTrade)
         {
             this._DebitAmount = _DebitAmount;
@@ -79,26 +104,13 @@ namespace Imperatur_v2.monetary
             this._CreditAccount = _CreditAccount;
             this._TransactionType = _TransactionType;
             this._SecuritiesTrade = _SecurtiesTrade;
-            if (!_DebitAmount.Amount().Equals(_CreditAmount.Amount()))
+            this._TransactionDate = DateTime.Now;
+            if (!_DebitAmount.Amount.Equals(_CreditAmount.Amount))
             {
                 throw new Exception("Amount is not equal");
             }
         }
 
-        /*
-        public Transaction(IMoney DebitAmount, IMoney CreditAmount, Guid DebitAccount, Guid CreditAccount, TransactionType TransactionType, ITradeInterface SecurtiesTrade)
-        {
-            _DebitAmount = DebitAmount;
-            _CreditAmount = CreditAmount;
-            _DebitAccount = DebitAccount;
-            _CreditAccount = CreditAccount;
-            _TransactionType = TransactionType;
-            _SecuritiesTrade = SecurtiesTrade;
-            if (!_DebitAmount.Amount().Equals(_CreditAmount.Amount()))
-            {
-                throw new Exception("Amount is not equal");
-            }
-        }*/
         public IMoney GetGAA()
         {
             NoTransferOnlySecurites();

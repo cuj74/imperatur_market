@@ -12,14 +12,18 @@ using Newtonsoft.Json;
 
 namespace Imperatur_v2.account
 {
-    public interface IAccountInterface //: INotifyPropertyChanged
+    public interface IAccountInterface 
     {
         Guid Identifier { get; }
         List<IMoney> GetCurrentAmount();
         List<IMoney> GetDepositedAmount();
+        List<IMoney> GetDepositedAmount(List<ICurrency> FilterCurrency);
         bool AddTransaction(ITransactionInterface oTrans);
         List<Holding> GetHoldings();
         List<IMoney> GetAvailableFunds();
+        List<IMoney> GetTotalFunds();
+        List<IMoney> GetAvailableFunds(List<ICurrency> FilterCurrency);
+        List<IMoney> GetTotalFunds(List<ICurrency> FilterCurrency);
         Customer GetCustomer();
         AccountType GetAccountType();
         List<Guid> GetBankAccountsFromCache();
@@ -28,6 +32,10 @@ namespace Imperatur_v2.account
         string AccountName { get; }
         List<ITransactionInterface> Transactions { get; }
         event AccountHandler.SaveAccountEventHandler SaveAccountEvent;
+        IMoney CalculateHoldingSell(int Quantity, string Ticker);
+        bool SellHoldingFromAccount(int Quantity, string Ticker, ITradeHandlerInterface TradeHandler);
+
+
 
     }
 }

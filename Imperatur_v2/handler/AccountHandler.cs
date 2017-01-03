@@ -14,6 +14,7 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using Newtonsoft.Json;
 using System.IO;
+using Imperatur_v2.customer;
 
 namespace Imperatur_v2.handler
 {
@@ -71,77 +72,21 @@ namespace Imperatur_v2.handler
             return true;
         }
 
-        public Money CalculateHoldingSell(Guid Identifier, int Quantity, string Ticker)
+        public IMoney CalculateHoldingSell(Guid Identifier, int Quantity, string Ticker)
         {
-            throw new NotImplementedException();
+            return m_oAccounts.Single(a => a.Identifier.Equals(Identifier)).CalculateHoldingSell(Quantity, Ticker);
         }
 
         public bool CreateAccount(List<IAccountInterface> oAccountData)
         {
-            //for each Account add a zero balance transfer to get available funds
-
-            //IMoney ZeroBalance = ImperaturGlobal.Kernel.Get<IMoney>(
-            //    new Ninject.Parameters.ConstructorArgument("m_oAmount", 0m),
-            //    new Ninject.Parameters.ConstructorArgument("m_oCurrencyCode", ImperaturGlobal.GetSystemCurrency())
-            // );
-
-            //try
-            //{
-            //    foreach (var account in oAccountData.Where(a => a.GetAccountType().Equals(AccountType.Customer)).ToList())
-            //    {
-            //        //ITradeInterface oTrade = ImperaturGlobal.Kernel.Get<ITradeInterface>();
-            //        account.AddTransaction(
-            //                  ImperaturGlobal.Kernel.Get<ITransactionInterface>(
-            //                  new Ninject.Parameters.ConstructorArgument("_DebitAmount", ZeroBalance),
-            //                  new Ninject.Parameters.ConstructorArgument("_CreditAmount", ZeroBalance),
-            //                  new Ninject.Parameters.ConstructorArgument("_DebitAccount", account.GetBankAccountsFromCache().First()),
-            //                  new Ninject.Parameters.ConstructorArgument("_CreditAccount", account.Identifier),
-            //                  new Ninject.Parameters.ConstructorArgument("_TransactionType", TransactionType.Transfer),
-            //                  new Ninject.Parameters.ConstructorArgument("_SecurtiesTrade", (object)null) //trade before
-            //                 ));
-            //    }
-
-            //}
-            //catch(Exception ex)
-            //{
-            //    int gsd = 0;
-            //}
+            m_oAccounts.AddRange(oAccountData);
             m_oAccounts.CollectionChanged -= M_oAccounts_CollectionChanged;
             m_oAccounts.CollectionChanged += M_oAccounts_CollectionChanged;
-
-            m_oAccounts.AddRange(oAccountData);
-
             return true;
         }
 
         private void M_oAccounts_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
-            /*
-            if (e.Action == NotifyCollectionChangedAction.Remove)
-            {
-                foreach (IAccountInterface item in e.OldItems)
-                {
-                    //Removed items
-                    item.PropertyChanged -= AccountPropertyChanged;
-                }
-            }
-            else if (e.Action == NotifyCollectionChangedAction.Add)
-            {
-                foreach (IAccountInterface item in e.NewItems)
-                {
-                    //Added items
-                    item.PropertyChanged += AccountPropertyChanged; 
-                }
-            }
-            else if (e.Action == NotifyCollectionChangedAction.Reset)
-            {
-                foreach (IAccountInterface item in m_oAccounts)
-                {
-                    item.PropertyChanged -= AccountPropertyChanged;
-                    item.PropertyChanged += AccountPropertyChanged;
-                }
-            }*/
-
             foreach (IAccountInterface item in m_oAccounts)
             {
                 //item.SaveAccountEvent -= AccountPropertyChanged;
@@ -288,6 +233,14 @@ namespace Imperatur_v2.handler
                 try
                 {
                     m_oAccounts = LoadAccounts();// (ObservableRangeCollection<IAccountInterface>)json.DeserializeJSON.DeserializeObjectFromFile(@ImperaturGlobal.SystemData.AccountFile);
+                    m_oAccounts.CollectionChanged -= M_oAccounts_CollectionChanged;
+                    m_oAccounts.CollectionChanged += M_oAccounts_CollectionChanged;
+
+                    foreach (IAccountInterface item in m_oAccounts)
+                    {
+                        item.SaveAccountEvent -= Item_SaveAccountEvent;
+                        item.SaveAccountEvent += Item_SaveAccountEvent;
+                    }
                 }
                 catch(Exception ex)
                 {
@@ -296,6 +249,7 @@ namespace Imperatur_v2.handler
                 }
             }
             TryLoadFromStorage = true;
+
             return new List<IAccountInterface>((IEnumerable<IAccountInterface>)m_oAccounts); 
         }
 
@@ -303,7 +257,7 @@ namespace Imperatur_v2.handler
         {
             ObservableRangeCollection<IAccountInterface> AccountFromFiles = new ObservableRangeCollection<IAccountInterface>();
 
-            string[] files = Directory.GetFiles(string.Format(@"{0}\{1}\", ImperaturGlobal.SystemData.SystemDirectory, ImperaturGlobal.SystemData.AcccountDirectory), "*.json", SearchOption.AllDirectories);
+            string[] files = Directory.GetFiles(string.Format(@"{0}\{1}\", ImperaturGlobal.SystemData.SystemDirectory, ImperaturGlobal.SystemData.AcccountDirectory), "*.json", SearchOption.TopDirectoryOnly);
 
             foreach(string Fa in files)
             {
@@ -342,5 +296,27 @@ namespace Imperatur_v2.handler
                 ).ToList();
         }
 
+        public bool CreateAccount(Customer customer, AccountType accountType, string AccountName)
+        {
+            try
+            {
+                int g = GetBankAccountsFromCache().Count();
+            }
+            catch
+            (Exception ex)
+            {
+                int fdfd = 0;
+            }
+            List<IAccountInterface> oNewList = new List<IAccountInterface>();
+            oNewList.Add(
+            ImperaturGlobal.Kernel.Get<IAccountInterface>(
+                        new Ninject.Parameters.ConstructorArgument("Customer", customer ?? (object)null),
+                        new Ninject.Parameters.ConstructorArgument("AccountType", accountType),
+                        new Ninject.Parameters.ConstructorArgument("AccountName", AccountName)
+                    ));
+            CreateAccount(oNewList);
+            return true;
+        
+        }
     }
 }

@@ -37,8 +37,10 @@
             this.tabPage_system = new System.Windows.Forms.TabPage();
             this.tabControl_Imperatur_main = new System.Windows.Forms.TabControl();
             this.tabPage_account = new System.Windows.Forms.TabPage();
+            this.checkBox_automaticTrading = new System.Windows.Forms.CheckBox();
             this.menuStrip1.SuspendLayout();
             this.statusStrip_imperatur.SuspendLayout();
+            this.tabPage_system.SuspendLayout();
             this.tabControl_Imperatur_main.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -89,6 +91,7 @@
             // 
             // tabPage_system
             // 
+            this.tabPage_system.Controls.Add(this.checkBox_automaticTrading);
             this.tabPage_system.Location = new System.Drawing.Point(4, 25);
             this.tabPage_system.Margin = new System.Windows.Forms.Padding(4);
             this.tabPage_system.Name = "tabPage_system";
@@ -122,6 +125,17 @@
             this.tabPage_account.Text = "Account";
             this.tabPage_account.UseVisualStyleBackColor = true;
             // 
+            // checkBox_automaticTrading
+            // 
+            this.checkBox_automaticTrading.AutoSize = true;
+            this.checkBox_automaticTrading.Location = new System.Drawing.Point(25, 21);
+            this.checkBox_automaticTrading.Name = "checkBox_automaticTrading";
+            this.checkBox_automaticTrading.Size = new System.Drawing.Size(140, 21);
+            this.checkBox_automaticTrading.TabIndex = 0;
+            this.checkBox_automaticTrading.Text = "Automatic trading";
+            this.checkBox_automaticTrading.UseVisualStyleBackColor = true;
+            this.checkBox_automaticTrading.CheckedChanged += new System.EventHandler(this.checkBox_automaticTrading_CheckedChanged);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
@@ -140,6 +154,8 @@
             this.menuStrip1.PerformLayout();
             this.statusStrip_imperatur.ResumeLayout(false);
             this.statusStrip_imperatur.PerformLayout();
+            this.tabPage_system.ResumeLayout(false);
+            this.tabPage_system.PerformLayout();
             this.tabControl_Imperatur_main.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
@@ -156,6 +172,7 @@
         private System.Windows.Forms.TabPage tabPage_system;
         private System.Windows.Forms.TabControl tabControl_Imperatur_main;
         private System.Windows.Forms.TabPage tabPage_account;
+        private System.Windows.Forms.CheckBox checkBox_automaticTrading;
     }
 }
 

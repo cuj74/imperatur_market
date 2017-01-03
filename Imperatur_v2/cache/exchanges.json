@@ -1,0 +1,262 @@
+[
+  {
+    "Region": "North & South America",
+    "ExchangeCode": "BCBA",
+    "Name": "Bolsa de Comercio de Buenos Aires"
+  },
+  {
+    "Region": "North & South America",
+    "ExchangeCode": "BMV",
+    "Name": "Bolsa Mexicana de Valores"
+  },
+  {
+    "Region": "North & South America",
+    "ExchangeCode": "BVMF",
+    "Name": "BM&F Bovespa"
+  },
+  {
+    "Region": "North & South America",
+    "ExchangeCode": "CNSX",
+    "Name": "Canadian Securities Exchange"
+  },
+  {
+    "Region": "North & South America",
+    "ExchangeCode": "CVE",
+    "Name": "Toronto TSX Ventures Exchange"
+  },
+  {
+    "Region": "North & South America",
+    "ExchangeCode": "NASDAQ",
+    "Name": "NASDAQ Last Sale"
+  },
+  {
+    "Region": "North & South America",
+    "ExchangeCode": "NYSE",
+    "Name": "NYSE"
+  },
+  {
+    "Region": "North & South America",
+    "ExchangeCode": "NYSEARCA",
+    "Name": "NYSE ARCA"
+  },
+  {
+    "Region": "North & South America",
+    "ExchangeCode": "NYSEMKT",
+    "Name": "NYSE MKT"
+  },
+  {
+    "Region": "North & South America",
+    "ExchangeCode": "OPRA",
+    "Name": "Options Pricing Authority Option Chains"
+  },
+  {
+    "Region": "North & South America",
+    "ExchangeCode": "OTCBB",
+    "Name": "FINRA OTC Bulletin Board"
+  },
+  {
+    "Region": "North & South America",
+    "ExchangeCode": "OTCMKTS",
+    "Name": "FINRA: andra OTC-börspapper"
+  },
+  {
+    "Region": "North & South America",
+    "ExchangeCode": "TSE",
+    "Name": "Toronto Stock Exchange"
+  },
+  {
+    "Region": "Europe",
+    "ExchangeCode": "AMS",
+    "Name": "Euronext Amsterdam"
+  },
+  {
+    "Region": "Europe",
+    "ExchangeCode": "BIT",
+    "Name": "Borsa Italiana Milan Stock Exchange"
+  },
+  {
+    "Region": "Europe",
+    "ExchangeCode": "BME",
+    "Name": "Bolsas y Mercados Españoles"
+  },
+  {
+    "Region": "Europe",
+    "ExchangeCode": "CPH",
+    "Name": "NASDAQ OMX Copenhagen"
+  },
+  {
+    "Region": "Europe",
+    "ExchangeCode": "EBR",
+    "Name": "Euronext Bryssel"
+  },
+  {
+    "Region": "Europe",
+    "ExchangeCode": "ELI",
+    "Name": "Euronext Lissabon"
+  },
+  {
+    "Region": "Europe",
+    "ExchangeCode": "EPA",
+    "Name": "Euronext Paris"
+  },
+  {
+    "Region": "Europe",
+    "ExchangeCode": "ETR",
+    "Name": "Deutsche Börse XETRA"
+  },
+  {
+    "Region": "Europe",
+    "ExchangeCode": "FRA",
+    "Name": "Deutsche Börse Frankfurt Stock Exchange"
+  },
+  {
+    "Region": "Europe",
+    "ExchangeCode": "HEL",
+    "Name": "NASDAQ OMX Helsinki"
+  },
+  {
+    "Region": "Europe",
+    "ExchangeCode": "ICE",
+    "Name": "NASDAQ OMX Iceland"
+  },
+  {
+    "Region": "Europe",
+    "ExchangeCode": "IST",
+    "Name": "Borsa Istanbul"
+  },
+  {
+    "Region": "Europe",
+    "ExchangeCode": "LON",
+    "Name": "London Stock Exchange"
+  },
+  {
+    "Region": "Europe",
+    "ExchangeCode": "MCX",
+    "Name": "Moscow Exchange"
+  },
+  {
+    "Region": "Europe",
+    "ExchangeCode": "RSE",
+    "Name": "NASDAQ OMX Riga"
+  },
+  {
+    "Region": "Europe",
+    "ExchangeCode": "STO",
+    "Name": "NASDAQ OMX Stockholm"
+  },
+  {
+    "Region": "Europe",
+    "ExchangeCode": "SWX, VTX",
+    "Name": "SIX Swiss Exchange"
+  },
+  {
+    "Region": "Europe",
+    "ExchangeCode": "TAL",
+    "Name": "NASDAQ OMX Tallinn"
+  },
+  {
+    "Region": "Europe",
+    "ExchangeCode": "VIE",
+    "Name": "Wiener Börse"
+  },
+  {
+    "Region": "Europe",
+    "ExchangeCode": "VSE",
+    "Name": "NASDAQ OMX Vilnius"
+  },
+  {
+    "Region": "Europe",
+    "ExchangeCode": "WSE",
+    "Name": "Warsaw Stock Exchange"
+  },
+  {
+    "Region": "Africa",
+    "ExchangeCode": "JSE",
+    "Name": "Johannesburg Stock Exchange"
+  },
+  {
+    "Region": "Middle East",
+    "ExchangeCode": "TADAWUL",
+    "Name": "Saudi Stock Exchange"
+  },
+  {
+    "Region": "Middle East",
+    "ExchangeCode": "TLV",
+    "Name": "Tel Aviv Stock Exchange"
+  },
+  {
+    "Region": "Asia",
+    "ExchangeCode": "BKK",
+    "Name": "Thailand Stock Exchange"
+  },
+  {
+    "Region": "Asia",
+    "ExchangeCode": "BOM",
+    "Name": "Bombay Stock Exchange Limited"
+  },
+  {
+    "Region": "Asia",
+    "ExchangeCode": "KLSE",
+    "Name": "Bursa Malaysia"
+  },
+  {
+    "Region": "Asia",
+    "ExchangeCode": "HKG",
+    "Name": "Hong Kong Stock Exchange"
+  },
+  {
+    "Region": "Asia",
+    "ExchangeCode": "IDX",
+    "Name": "Indonesia Stock Exchange"
+  },
+  {
+    "Region": "Asia",
+    "ExchangeCode": "KOSDAQ",
+    "Name": "KOSDAQ"
+  },
+  {
+    "Region": "Asia",
+    "ExchangeCode": "KRX",
+    "Name": "Korea Stock Exchange"
+  },
+  {
+    "Region": "Asia",
+    "ExchangeCode": "NSE",
+    "Name": "National Stock Exchange of India"
+  },
+  {
+    "Region": "Asia",
+    "ExchangeCode": "SGX",
+    "Name": "Singapore Exchange"
+  },
+  {
+    "Region": "Asia",
+    "ExchangeCode": "SHA",
+    "Name": "Shanghai Stock Exchange"
+  },
+  {
+    "Region": "Asia",
+    "ExchangeCode": "SHE",
+    "Name": "Shenzhen Stock Exchange"
+  },
+  {
+    "Region": "Asia",
+    "ExchangeCode": "TPE",
+    "Name": "Taiwan Stock Exchange"
+  },
+  {
+    "Region": "Asia",
+    "ExchangeCode": "TYO",
+    "Name": "Tokyo Stock Exchange"
+  },
+  {
+    "Region": "Oceania",
+    "ExchangeCode": "ASX",
+    "Name": "Australian Securities Exchange"
+  },
+  {
+    "Region": "Oceania",
+    "ExchangeCode": "NZE",
+    "Name": "New Zealand Stock Exchange"
+  }
+]

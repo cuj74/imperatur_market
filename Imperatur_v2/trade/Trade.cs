@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Imperatur_v2.monetary;
 using Imperatur_v2.securites;
 using Imperatur_v2.shared;
+using Newtonsoft.Json;
 
 namespace Imperatur_v2.trade
 {
@@ -85,6 +86,16 @@ namespace Imperatur_v2.trade
             this.m_oSecurity = Security;
             this.m_oAverageAcquisitionValue = Security.Price;
             this.m_oTradeDateTime = DateTime.Now;
+        }
+        [JsonConstructor]
+        public Trade(IMoney m_oTradeAmount, Decimal m_oQuantity, Security m_oSecurity, DateTime m_oTradeDateTime, IMoney m_oRevenue)
+        {
+            this.m_oTradeAmount = m_oTradeAmount;
+            this.m_oQuantity = m_oQuantity;
+            this.m_oSecurity = m_oSecurity;
+            this.m_oAverageAcquisitionValue = Security.Price;
+            this.m_oTradeDateTime = m_oTradeDateTime;
+            this.m_oRevenue = m_oRevenue;
         }
     }
 }

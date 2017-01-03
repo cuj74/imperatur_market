@@ -12,6 +12,8 @@ using Imperatur_v2;
 using Imperatur_v2.account;
 using Imperatur_v2.events;
 using Imperatur_v2.shared;
+using Imperatur_Market_Client.events;
+using Imperatur_v2.monetary;
 
 namespace Imperatur_Market_Client.control
 {
@@ -29,14 +31,42 @@ namespace Imperatur_Market_Client.control
             m_oAh = AccountHandler;
             m_oTradeHandler = TradeHandler;
             //comboBox_Symbols
-             AutoCompleteStringCollection list = new AutoCompleteStringCollection();
-            list.AddRange(ImperaturGlobal.Instruments.Select(i=>i.Symbol).ToArray());
+            AutoCompleteStringCollection list = new AutoCompleteStringCollection();
+            list.AddRange(ImperaturGlobal.Instruments.Select(i => i.Symbol).ToArray());
             comboBox_Symbols.AutoCompleteMode = AutoCompleteMode.Suggest;
             comboBox_Symbols.AutoCompleteSource = AutoCompleteSource.CustomSource;
             comboBox_Symbols.AutoCompleteCustomSource = list;
             comboBox_Symbols.DataSource = ImperaturGlobal.Instruments.Select(i => i.Symbol).ToList();
             comboBox_Symbols.Text = "";
             comboBox_Symbols.SelectedIndexChanged += ComboBox_Symbols_SelectedIndexChanged;
+            this.textBox_Quantity.KeyDown += TextBox_Quantity_KeyDown;
+        }
+
+        private void TextBox_Quantity_KeyDown(object sender, KeyEventArgs e)
+        {
+            int QuantityToBuy;
+            bool isNumeric = int.TryParse(textBox_Quantity.Text.Trim(), out QuantityToBuy);
+            if (m_oAccountData != null && isNumeric && comboBox_Symbols.SelectedItem.ToString().Length > 0)
+            {
+
+                IMoney MarketValue = ImperaturGlobal.Quotes.Where(q => q.Symbol.Equals(comboBox_Symbols.SelectedItem.ToString())).First().LastTradePrice.Multiply(Convert.ToDecimal(QuantityToBuy));
+                if (
+                    MarketValue.Amount >
+                    m_oAccountData.GetAvailableFunds().Where(m => m.CurrencyCode.Equals(MarketValue.CurrencyCode)).First().Amount
+                    )
+                {
+                    button_BuySecurity.Enabled = false;
+                    return;
+                }
+                else
+                    button_BuySecurity.Enabled = true;
+            }
+
+                if (e.KeyCode == Keys.Enter)
+            {
+                button_BuySecurity_Click(this, null);
+            }
+
         }
 
         protected virtual void OnSelectedAccount(SelectedAccountEventArg e)
@@ -74,19 +104,42 @@ namespace Imperatur_Market_Client.control
             bool isNumeric = int.TryParse(textBox_Quantity.Text.Trim(), out QuantityToBuy);
             if (m_oAccountData != null && isNumeric && comboBox_Symbols.SelectedItem.ToString().Length > 0)
             {
-                if (!m_oAccountData.AddHoldingToAccount(
+                /*
+                IMoney MarketValue = ImperaturGlobal.Quotes.Where(q => q.Symbol.Equals(comboBox_Symbols.SelectedItem.ToString())).First().LastTradePrice.Multiply(Convert.ToDecimal(QuantityToBuy));
+                if (
+                    MarketValue.Amount >
+                    m_oAccountData.GetAvailableFunds().Where(m=>m.CurrencyCode.Equals(MarketValue.CurrencyCode)).First().Amount
+                    )
+                {
+                    MessageBox.Show(string.Format
+                }*/
+                string sMessage = string.Format("Are you sure you want to buy {0} of {1} for {2}?",
                     QuantityToBuy,
                     comboBox_Symbols.SelectedItem.ToString(),
-                    m_oTradeHandler
-                    ))
+                    ImperaturGlobal.Quotes.Where(q => q.Symbol.Equals(comboBox_Symbols.SelectedItem.ToString())).First().LastTradePrice.Multiply(Convert.ToDecimal(QuantityToBuy)).ToString());
+                DialogResult dialogResult = MessageBox.Show(sMessage, "Buy stock?", MessageBoxButtons.YesNo);
+                if (dialogResult == DialogResult.Yes)
                 {
-                    MessageBox.Show(string.Format("Couldn't complete transaction! {0}", m_oAccountData.GetLastErrorMessage));
+                    if (!m_oAccountData.AddHoldingToAccount(
+                        QuantityToBuy,
+                        comboBox_Symbols.SelectedItem.ToString(),
+                        m_oTradeHandler
+                        ))
+                    {
+                        MessageBox.Show(string.Format("Couldn't complete transaction! {0}", m_oAccountData.GetLastErrorMessage));
+                    }
+                    else
+                    {
+                        //refresh current account and list!
+                        RefreshData();
+                    }
                 }
-                else
+                else if (dialogResult == DialogResult.No)
                 {
-                    //refresh current account and list!
-                    RefreshData();
+                    //do something else
                 }
+
+
             }
         }
 
@@ -95,7 +148,7 @@ namespace Imperatur_Market_Client.control
             OnSelectedAccount(new SelectedAccountEventArg()
             {
                 Identifier = m_oAccountData.Identifier
-             });
+            });
         }
     }
 }

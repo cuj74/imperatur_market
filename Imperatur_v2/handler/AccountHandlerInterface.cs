@@ -1,4 +1,5 @@
 ﻿using Imperatur_v2.account;
+using Imperatur_v2.customer;
 using Imperatur_v2.monetary;
 using Imperatur_v2.trade;
 using System;
@@ -16,13 +17,14 @@ namespace Imperatur_v2.handler
         bool DepositAmount(Guid Identifier, IMoney Deposit);
         List<Holding> GetAccountHoldings(Guid Identifier);
         IAccountInterface GetAccount(Guid Identifier);
-        Money CalculateHoldingSell(Guid Identifier, int Quantity, string Ticker);
+        IMoney CalculateHoldingSell(Guid Identifier, int Quantity, string Ticker);
         bool SellHoldingFromAccount(Guid Identifier, int Quantity, string Ticker);
         bool AddHoldingToAccount(Guid Identifier, int Quantity, string Ticker);
         bool AddTransactionToAccount(Guid Identifier, ITransactionInterface NewTransaction);
         //List<Account> GetBankAccounts();
         //List<Account> GetHouseAccounts();
         bool CreateAccount(List<IAccountInterface> oAccountData);
+        bool CreateAccount(Customer customer, AccountType accountType, string AccountName);
         bool SaveAccounts();
         List<Money> GetTotalFundsOfAccount(Guid Identifier);
         //List<Guid> GetHouseAndBankAccountsGuid();

@@ -19,8 +19,6 @@ namespace Imperatur_v2.trade
         IMoney Revenue { get; }
         #endregion
 
-
-
         IMoney GetGAA();
         Decimal GetQuantity();
         IMoney GetTradeAmount();

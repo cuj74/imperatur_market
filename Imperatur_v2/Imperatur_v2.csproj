@@ -87,6 +87,7 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="cache\instruments.json" />
+    <EmbeddedResource Include="cache\exchanges.json" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup />

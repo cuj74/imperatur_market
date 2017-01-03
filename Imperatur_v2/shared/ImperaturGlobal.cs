@@ -33,8 +33,9 @@ namespace Imperatur_v2.shared
         public static ImperaturData SystemData;
         public static List<Instrument> Instruments;
         public static List<Quote> Quotes;
+
         private static StandardKernel m_oKernel;
-       // public delegate void SaveAccount(object sender, SaveAccountEventArg e);
+    
         #endregion
 
         #region Init
@@ -51,6 +52,7 @@ namespace Imperatur_v2.shared
                 return m_oKernel;
             }
         }
+
         public static ICurrency GetSystemCurrency()
         {
             return m_oKernel.Get<ICurrency>(

@@ -5,14 +5,18 @@ using System.Text;
 using System.Threading.Tasks;
 using Imperatur_v2.trade;
 using Imperatur_v2.securites;
+using Imperatur_v2.monetary;
 
 namespace Imperatur_v2.handler
 {
     public interface ITradeHandlerInterface
     {
         ITradeInterface GetTrade(string Symbol, decimal Quantity);
+        ITradeInterface GetTrade(string Symbol, decimal Quantity, DateTime TradeDateTime, IMoney Revenue);
         List<Quote> GetQuotes();
         Quote GetQuote(string Symbol);
         bool ForceUpdate();
+        void CacheQuotes();
+        event ImperaturMarket.QuoteUpdateHandler QuoteUpdateEvent;
     }
 }

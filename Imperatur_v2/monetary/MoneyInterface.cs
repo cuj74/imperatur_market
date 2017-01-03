@@ -19,6 +19,6 @@ namespace Imperatur_v2.monetary
         IMoney Subtract(Decimal Subtract);
         IMoney Subtract(IMoney Subtract);
         ICurrency CurrencyCode { get; }
-        decimal Amount();
+        decimal Amount { get; }
     }
 }
