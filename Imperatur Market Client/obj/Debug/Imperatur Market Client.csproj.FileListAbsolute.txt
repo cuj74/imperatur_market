@@ -44,3 +44,4 @@ C:\temp\dev\imperatur_market\Imperatur Market Client\obj\Debug\Imperatur_Market_
 F:\visualstudioprojects\Imperatur\imperatur_market\Imperatur Market Client\obj\Debug\Imperatur_Market_Client.control.Account_MainInfo.resources
 C:\temp\dev\imperatur_market\Imperatur Market Client\obj\Debug\Imperatur_Market_Client.control.SellDialog.resources
 F:\visualstudioprojects\Imperatur\imperatur_market\Imperatur Market Client\obj\Debug\Imperatur_Market_Client.control.SellDialog.resources
+C:\temp\dev\imperatur_market\Imperatur Market Client\obj\Debug\Imperatur_Market_Client.dialog.WaitDialog.resources

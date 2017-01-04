@@ -76,6 +76,12 @@ namespace Imperatur_Market_Client.control
                 SelectedAccount(this, e);
         }
 
+        public void SetSelectedSymbol(string Symbol)
+        {
+            comboBox_Symbols.SelectedItem = Symbol;
+        }
+
+
         private void ComboBox_Symbols_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (this.comboBox_Symbols.SelectedItem != null)

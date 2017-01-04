@@ -42,8 +42,8 @@
             this.tableLayoutPanel_maininfo.Location = new System.Drawing.Point(0, 0);
             this.tableLayoutPanel_maininfo.Name = "tableLayoutPanel_maininfo";
             this.tableLayoutPanel_maininfo.RowCount = 3;
-            this.tableLayoutPanel_maininfo.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
-            this.tableLayoutPanel_maininfo.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
+            this.tableLayoutPanel_maininfo.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 150F));
+            this.tableLayoutPanel_maininfo.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
             this.tableLayoutPanel_maininfo.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 40F));
             this.tableLayoutPanel_maininfo.Size = new System.Drawing.Size(288, 258);
             this.tableLayoutPanel_maininfo.TabIndex = 0;

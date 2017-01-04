@@ -109,6 +109,12 @@
     <Compile Include="dialog\System_Load.Designer.cs">
       <DependentUpon>System_Load.cs</DependentUpon>
     </Compile>
+    <Compile Include="dialog\WaitDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="dialog\WaitDialog.Designer.cs">
+      <DependentUpon>WaitDialog.cs</DependentUpon>
+    </Compile>
     <Compile Include="events\ShareEvents.cs" />
     <Compile Include="MainForm.cs">
       <SubType>Form</SubType>
@@ -141,6 +147,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="dialog\System_Load.resx">
       <DependentUpon>System_Load.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="dialog\WaitDialog.resx">
+      <DependentUpon>WaitDialog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>

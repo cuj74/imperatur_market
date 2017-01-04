@@ -78,6 +78,13 @@ namespace Imperatur_Market_Client.control
             ExpandSearch.MouseEnter += ExpandSearch_MouseEnter;
             ExpandSearch.MouseLeave += ExpandSearch_MouseLeave;
 
+            oControl_Account_Holdings.SelectedSymbol += OControl_Account_Holdings_SelectedSymbol;
+
+        }
+
+        private void OControl_Account_Holdings_SelectedSymbol(object sender, SelectedSymbolEventArg e)
+        {
+            oControl_Account_Trade.SetSelectedSymbol(e.Symbol);
         }
 
         private void OControl_Account_Trade_SelectedAccount(object sender, SelectedAccountEventArg e)

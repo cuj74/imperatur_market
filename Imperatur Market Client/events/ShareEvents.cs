@@ -15,4 +15,9 @@ namespace Imperatur_Market_Client.events
     {
         public Guid Identifier;
     }
+
+    public class SelectedSymbolEventArg : EventArgs
+    {
+        public string Symbol;
+    }
 }

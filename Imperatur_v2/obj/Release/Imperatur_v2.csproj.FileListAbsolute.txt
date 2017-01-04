@@ -1,0 +1,9 @@
+C:\temp\dev\imperatur_market\Imperatur_v2\bin\Release\Imperatur_v2.dll
+C:\temp\dev\imperatur_market\Imperatur_v2\bin\Release\Imperatur_v2.pdb
+C:\temp\dev\imperatur_market\Imperatur_v2\bin\Release\Newtonsoft.Json.dll
+C:\temp\dev\imperatur_market\Imperatur_v2\bin\Release\Ninject.dll
+C:\temp\dev\imperatur_market\Imperatur_v2\bin\Release\Newtonsoft.Json.xml
+C:\temp\dev\imperatur_market\Imperatur_v2\bin\Release\Ninject.xml
+C:\temp\dev\imperatur_market\Imperatur_v2\obj\Release\Imperatur_v2.csprojResolveAssemblyReference.cache
+C:\temp\dev\imperatur_market\Imperatur_v2\obj\Release\Imperatur_v2.dll
+C:\temp\dev\imperatur_market\Imperatur_v2\obj\Release\Imperatur_v2.pdb

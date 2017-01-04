@@ -20,6 +20,7 @@ namespace Imperatur_v2
         public string ULR_Quotes;
         public string QuoteRefreshTime;
         public bool IsAutomaticMaintained = false;
+        public string Exchange;
 
     }
 
@@ -33,19 +34,10 @@ namespace Imperatur_v2
         public static string CustomerDirectory = "customer";
         public static string CustomerFile = "customer.json";
         public static string SystemCurrency = "SEK";
-        public static string ULR_Quotes = "http://finance.google.com/finance/info?client=ig&q={exhange}%3A";
+        public static string ULR_Quotes = "http://finance.google.com/finance/info?client=ig&q={exchange}%3A";
         public static string QuoteRefreshTime = "15";
+        public static string Exchange = "STO";
     }
 
-    public class Exchange
-    {
-        public string Region;
-        public string ExhangeCode;
-        public string Name;
-
-    }
-    public enum QuoteSupplier
-    {
-       Google
-    }
+  
 }

@@ -72,10 +72,12 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="rest\Rest.cs" />
     <Compile Include="rest\RestInterface.cs" />
+    <Compile Include="securites\HistoricalQuote.cs" />
     <Compile Include="securites\Quote.cs" />
     <Compile Include="securites\Security.cs" />
     <Compile Include="shared\Attributes.cs" />
     <Compile Include="shared\ImperaturGlobal.cs" />
+    <Compile Include="shared\LineReader.cs" />
     <Compile Include="shared\ObjectMapping.cs" />
     <Compile Include="shared\ObjectReflection.cs" />
     <Compile Include="shared\ObjectTextSearch.cs" />

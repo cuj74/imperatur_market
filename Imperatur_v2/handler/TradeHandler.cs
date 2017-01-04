@@ -49,15 +49,22 @@ namespace Imperatur_v2.handler
                 //first try to read the file
                 try
                 {
-                    //get file younger than 15 min
-                    var files = from file in Directory.EnumerateFiles(string.Format(@"{0}\{1}\", ImperaturGlobal.SystemData.SystemDirectory, ImperaturGlobal.SystemData.QuoteDirectory), string.Format("{0}.*", ImperaturGlobal.SystemData.QuoteFile), SearchOption.TopDirectoryOnly)
-                                from f in file
-                                where Convert.ToDateTime(f.ToString().Replace(ImperaturGlobal.SystemData.QuoteFile, "")) > DateTime.Now.AddMinutes(-15)
-                                select f;
-
-                    if (files.Count() > 0)
+                    string FileToRead = "";
+                    foreach (string f in Directory.EnumerateFiles(string.Format(@"{0}\{1}\", ImperaturGlobal.SystemData.SystemDirectory, ImperaturGlobal.SystemData.QuoteDirectory), string.Format("{0}*", ImperaturGlobal.SystemData.QuoteFile), SearchOption.TopDirectoryOnly))
                     {
-                        m_oQuotes = (List<Quote>)DeserializeJSON.DeserializeObjectFromFile(@files.First().ToString());
+                        string time = f.Substring(f.Length - 5).Replace(";", ":");
+                        string date = f.Substring(f.Length - 15).Substring(0, 10);
+                        if (Convert.ToDateTime(string.Format("{0} {1}", date, time)).CompareTo(DateTime.Now.AddMinutes(-15)) > 0)
+                        {
+                            FileToRead = f;
+                            break;
+                        }
+                    }
+
+
+                    if (FileToRead != "")
+                    {
+                        m_oQuotes = (List<Quote>)DeserializeJSON.DeserializeObjectFromFile(@FileToRead.ToString());
                     }
                     else
                     {
@@ -86,14 +93,23 @@ namespace Imperatur_v2.handler
         private List<Quote> GetQuotesFromExternalSource(string URL)
         {
             List<Quote> QuotesRet = new List<Quote>();
+            List<string> AllSymbolsToRetrieve = ImperaturGlobal.Instruments.Select(i => i.Symbol.Replace(" ", "-")).ToList();
+            URL = URL.Replace("{exchange}", "STO");
+            while (AllSymbolsToRetrieve.Count() > 0)
+            {
+                QuotesRet.AddRange(GetQuotesFromExternalSource(URL, AllSymbolsToRetrieve.Take(20).ToList()));
+                AllSymbolsToRetrieve.RemoveRange(0, AllSymbolsToRetrieve.Count() < 20 ? AllSymbolsToRetrieve.Count(): 20);
+            }
+            return QuotesRet;
+        }
+
+        private List<Quote> GetQuotesFromExternalSource(string URL, List<string> SymbolsToRetrieve)
+        {
+            List<Quote> QuotesRet = new List<Quote>();
             string json;
             rest.Rest oG = new rest.Rest();
 
-            //take only 10 at a time!
-
-            //ugly
-            URL = URL.Replace("{exchange}", "STO");
-            json = oG.GetResultFromURL(URL + string.Join(",",ImperaturGlobal.Instruments.Select(i => i.Symbol.Replace(" ", "-")).ToArray()));
+            json = oG.GetResultFromURL(URL + string.Join(",", SymbolsToRetrieve.ToArray()));
 
             //Google adds a comment before the json for some unknown reason, so we need to remove it
             json = json.Replace("//", "");
@@ -131,9 +147,6 @@ namespace Imperatur_v2.handler
                     }
                 }
             }
-
-
-
             return QuotesRet;
         }
 

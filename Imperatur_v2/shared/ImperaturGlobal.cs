@@ -106,6 +106,8 @@ namespace Imperatur_v2.shared
 
             BuildCurrencyCodeCache();
 
+            BuildHistoricalPriceCache();
+
             InitializeBusinessAccount(BusinessAccounts);
 
 
@@ -148,6 +150,7 @@ namespace Imperatur_v2.shared
             }
         }
 
+        
         private static void BuildCurrencyCodeCache()
         {
             if (!GlobalCachingProvider.Instance.FindItem(ImperaturGlobal.CurrencyCodeCache))
@@ -176,6 +179,17 @@ namespace Imperatur_v2.shared
                     )
                 );
                 */
+        }
+
+        private static void BuildHistoricalPriceCache()
+        {
+            GoogleHistoricalDataInterpreter oGHDI = new GoogleHistoricalDataInterpreter();
+            foreach (Instrument i in Instruments)
+            {
+
+                HistoricalQuote oh = oGHDI.GetHistoricalData(i, new Exchange { ExhangeCode = "STO" });
+                int gg = 0;
+            }
         }
         #endregion
     }

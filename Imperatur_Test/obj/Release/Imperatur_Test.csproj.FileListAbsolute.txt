@@ -1,0 +1,10 @@
+C:\temp\dev\imperatur_market\Imperatur_Test\bin\Release\Imperatur_Test.exe.config
+C:\temp\dev\imperatur_market\Imperatur_Test\bin\Release\Imperatur_Test.exe
+C:\temp\dev\imperatur_market\Imperatur_Test\bin\Release\Imperatur_Test.pdb
+C:\temp\dev\imperatur_market\Imperatur_Test\bin\Release\Imperatur.dll
+C:\temp\dev\imperatur_market\Imperatur_Test\bin\Release\Newtonsoft.Json.dll
+C:\temp\dev\imperatur_market\Imperatur_Test\bin\Release\Imperatur.pdb
+C:\temp\dev\imperatur_market\Imperatur_Test\bin\Release\Newtonsoft.Json.xml
+C:\temp\dev\imperatur_market\Imperatur_Test\obj\Release\Imperatur_Test.csprojResolveAssemblyReference.cache
+C:\temp\dev\imperatur_market\Imperatur_Test\obj\Release\Imperatur_Test.exe
+C:\temp\dev\imperatur_market\Imperatur_Test\obj\Release\Imperatur_Test.pdb

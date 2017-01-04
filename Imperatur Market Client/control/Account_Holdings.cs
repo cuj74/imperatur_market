@@ -20,10 +20,12 @@ namespace Imperatur_Market_Client.control
     public partial class Account_Holdings : UserControl
     {
         public event MainForm.SelectedAccountEventHandler SelectedAccount;
+        public event MainForm.SelectedSymbolEventHandler SelectedSymbol;
         private IAccountHandlerInterface m_oAh;
         private ITradeHandlerInterface m_oTradeHandler;
         private UserControl TotalAvailableFunds;
         private IAccountInterface m_oA;
+        private DataGridView TotalAvilableFundsGrid;
 
         public Account_Holdings(IAccountHandlerInterface AccountHandler, ITradeHandlerInterface TradeHandler)
         {
@@ -37,24 +39,73 @@ namespace Imperatur_Market_Client.control
             listView_holdings.Columns.Add("Quantity");
             listView_holdings.Columns.Add("PurchaseAmount");
             listView_holdings.Columns.Add("Change");
-            listView_holdings.Columns.Add("ChangePercent");
             listView_holdings.Columns.Add("CurrentValue");
+            listView_holdings.Columns.Add("AAC"); //average acquisition cost
             listView_holdings.Columns.Add("Action");
             listView_holdings.Columns.Add("Info");
 
             ListViewExtender extender = new ListViewExtender(listView_holdings);
-            ListViewButtonColumn buttonAction = new ListViewButtonColumn(6);
+            ListViewButtonColumn buttonAction = new ListViewButtonColumn(listView_holdings.Columns.Count-2);
             buttonAction.Click += ButtonAction_Click;
             buttonAction.FixedWidth = true;
             extender.AddColumn(buttonAction);
 
-            //ListViewExtender extenderInfo = new ListViewExtender(listView_holdings);
-            ListViewButtonColumn buttonActionInfo = new ListViewButtonColumn(7);
+            ListViewButtonColumn buttonActionInfo = new ListViewButtonColumn(listView_holdings.Columns.Count - 1);
             buttonActionInfo.Click += ButtonActionInfo_Click;
             buttonActionInfo.FixedWidth = true;
             extender.AddColumn(buttonActionInfo);
 
+            listView_holdings.Click += ListView_holdings_Click;
+            TotalAvilableFundsGrid = new DataGridView();
 
+            TotalAvilableFundsGrid.AutoGenerateColumns = false;
+            TotalAvilableFundsGrid.AllowUserToAddRows = false;
+            TotalAvilableFundsGrid.RowHeadersVisible = false;
+
+            TotalAvilableFundsGrid.Columns.Add(
+                new DataGridViewTextBoxColumn()
+                {
+                    CellTemplate = new DataGridViewTextBoxCell(),
+                    Name = "Deposit",
+                    HeaderText = "Deposit",
+                    DataPropertyName = "Deposit",
+                    ReadOnly = true
+                }
+            );
+
+            TotalAvilableFundsGrid.Columns.Add(
+                new DataGridViewTextBoxColumn()
+                {
+                    CellTemplate = new DataGridViewTextBoxCell(),
+                    Name = "Amount",
+                    HeaderText = "Amount",
+                    DataPropertyName = "Amount",
+                    ReadOnly = true
+                }
+            );
+
+            TotalAvilableFundsGrid.Columns.Add(
+                new DataGridViewTextBoxColumn()
+                {
+                    CellTemplate = new DataGridViewTextBoxCell(),
+                    Name = "Change",
+                    HeaderText = "Change",
+                    DataPropertyName = "Change",
+                    ReadOnly = true
+                }
+            );
+
+        }
+
+        private void ListView_holdings_Click(object sender, EventArgs e)
+        {
+            if (listView_holdings.SelectedItems.Count == 1)
+            {
+                OnSelectedSymbol(new SelectedSymbolEventArg()
+                {
+                    Symbol = listView_holdings.SelectedItems[0].Tag.ToString()
+                });
+            }
         }
 
         private void ButtonActionInfo_Click(object sender, ListViewColumnMouseEventArgs e)
@@ -121,6 +172,7 @@ namespace Imperatur_Market_Client.control
                     ReadOnly = true
                 }
             );
+            TransactionGrid.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.DisplayedCells;
 
             DataTable TransactionsDT = new DataTable();
             TransactionsDT.Columns.Add("Amount");
@@ -154,6 +206,7 @@ namespace Imperatur_Market_Client.control
 
             Form Ftrans = new Form();
             Ftrans.Controls.Add(TransactionControl);
+            Ftrans.Width = TransactionControl.Width + 50;
             Ftrans.ShowDialog();
 
 
@@ -164,6 +217,14 @@ namespace Imperatur_Market_Client.control
             if (SelectedAccount != null)
                 SelectedAccount(this, e);
         }
+
+        protected virtual void OnSelectedSymbol(SelectedSymbolEventArg e)
+        {
+            if (SelectedSymbol != null)
+                SelectedSymbol(this, e);
+        }
+
+        
 
         private void RefreshData()
         {
@@ -187,9 +248,11 @@ namespace Imperatur_Market_Client.control
                         oH.Name,
                         oH.Quantity.ToString(),
                         oH.PurchaseAmount.ToString(),
+                        string.Format("{0} / {1}",
                         oH.Change.ToString(true, true),
-                        Math.Round(oH.ChangePercent, 2, MidpointRounding.AwayFromZero).ToString() + " %",
+                        Math.Round(oH.ChangePercent, 2, MidpointRounding.AwayFromZero).ToString() + " %"),
                         oH.CurrentAmount.ToString(),
+                        m_oA.GetAverageAcquisitionCostFromHolding(oH.Name).ToString(),
                         "Sell",
                         "Info"
                     }
@@ -202,62 +265,20 @@ namespace Imperatur_Market_Client.control
 
 
             listView_holdings.Refresh();
-
-
-            DataGridView TotalAvilableFundsGrid = new DataGridView();
-
-            TotalAvilableFundsGrid.AutoGenerateColumns = false;
-            TotalAvilableFundsGrid.AllowUserToAddRows = false;
-
-            TotalAvilableFundsGrid.Columns.Add(
-                new DataGridViewTextBoxColumn()
+            if (listView_holdings.Items.Count == 1)
+            {
+                //Show the selected symbol in the trade
+                OnSelectedSymbol(new SelectedSymbolEventArg()
                 {
-                    CellTemplate = new DataGridViewTextBoxCell(),
-                    Name = "Deposit",
-                    HeaderText = "Deposit",
-                    DataPropertyName = "Deposit",
-                    ReadOnly = true
-                }
-            );
-
-            TotalAvilableFundsGrid.Columns.Add(
-                new DataGridViewTextBoxColumn()
-                {
-                    CellTemplate = new DataGridViewTextBoxCell(),
-                    Name = "Amount",
-                    HeaderText = "Amount",
-                    DataPropertyName = "Amount",
-                    ReadOnly = true
-                }
-            );
-
-            TotalAvilableFundsGrid.Columns.Add(
-                new DataGridViewTextBoxColumn()
-                {
-                    CellTemplate = new DataGridViewTextBoxCell(),
-                    Name = "Change",
-                    HeaderText = "Change",
-                    DataPropertyName = "Change",
-                    ReadOnly = true
-                }
-            );
-
-            TotalAvilableFundsGrid.Columns.Add(
-                new DataGridViewTextBoxColumn()
-                {
-                    CellTemplate = new DataGridViewTextBoxCell(),
-                    Name = "ChangePercent",
-                    HeaderText = "ChangePercent",
-                    DataPropertyName = "ChangePercent",
-                    ReadOnly = true
-                }
-            );
+                    Symbol = listView_holdings.Items[0].Tag.ToString()
+                });
+            }
+            
 
             DataTable TotalAvilableFundsDT = new DataTable();
             TotalAvilableFundsDT.Columns.Add("Deposit");
             TotalAvilableFundsDT.Columns.Add("Amount");
             TotalAvilableFundsDT.Columns.Add("Change");
-            TotalAvilableFundsDT.Columns.Add("ChangePercent");
 
             List<IMoney> TotalFundsList = AccountData.GetTotalFunds() ?? new List<IMoney>();
             List<IMoney> TotalDeposit = AccountData.GetDepositedAmount() ?? new List<IMoney>();
@@ -270,14 +291,20 @@ namespace Imperatur_Market_Client.control
                 row = TotalAvilableFundsDT.NewRow();
                 row["Deposit"] = TotalDeposit.Where(od => od.CurrencyCode.Equals(oM.CurrencyCode)).First().ToString();
                 row["Amount"] = oM.ToString(true, true);
-                row["Change"] = oM.Subtract(TotalDeposit.Where(od => od.CurrencyCode.Equals(oM.CurrencyCode)).First()).ToString();
-                row["ChangePercent"] = string.Format("{0}%", TotalDeposit.Where(od => od.CurrencyCode.Equals(oM.CurrencyCode)).First().Amount > 0 ? oM.Subtract(TotalDeposit.Where(od => od.CurrencyCode.Equals(oM.CurrencyCode)).First().Amount).Divide(TotalDeposit.Where(od => od.CurrencyCode.Equals(oM.CurrencyCode)).First().Amount).Multiply(100).ToString(true, false) : "0");
+                row["Change"] =
+                    string.Format("{0} / {1}",
+                    oM.Subtract(TotalDeposit.Where(od => od.CurrencyCode.Equals(oM.CurrencyCode)).First()).ToString(),
+                    string.Format("{0}%", TotalDeposit.Where(od => od.CurrencyCode.Equals(oM.CurrencyCode)).First().Amount > 0 ? oM.Subtract(TotalDeposit.Where(od => od.CurrencyCode.Equals(oM.CurrencyCode)).First().Amount).Divide(TotalDeposit.Where(od => od.CurrencyCode.Equals(oM.CurrencyCode)).First().Amount).Multiply(100).ToString(true, false) : "0")
+                    );
+                //row["ChangePercent"] = string.Format("{0}%", TotalDeposit.Where(od => od.CurrencyCode.Equals(oM.CurrencyCode)).First().Amount > 0 ? oM.Subtract(TotalDeposit.Where(od => od.CurrencyCode.Equals(oM.CurrencyCode)).First().Amount).Divide(TotalDeposit.Where(od => od.CurrencyCode.Equals(oM.CurrencyCode)).First().Amount).Multiply(100).ToString(true, false) : "0");
                 TotalAvilableFundsDT.Rows.Add(row);
 
             }
 
             TotalAvilableFundsGrid.DataSource = TotalAvilableFundsDT;
             TotalAvilableFundsGrid.Dock = DockStyle.Top;
+            TotalAvilableFundsGrid.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.DisplayedCells;
+            TotalAvilableFundsGrid.CellFormatting += TotalAvilableFundsGrid_CellFormatting;
             TotalAvailableFunds = new CreateDataGridControlFromObject(
                 new DataGridForControl
                 {
@@ -298,6 +325,22 @@ namespace Imperatur_Market_Client.control
             }
 
 
+        }
+
+        private void TotalAvilableFundsGrid_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
+        {
+            if (TotalAvilableFundsGrid.Columns[e.ColumnIndex].Name.Equals("Change"))
+            {
+                if (TotalAvilableFundsGrid.Rows[e.RowIndex].Cells[e.ColumnIndex].Value != null &&
+TotalAvilableFundsGrid.Rows[e.RowIndex].Cells[e.ColumnIndex].Value.ToString().Substring(0,1) == "-")
+                {
+                    TotalAvilableFundsGrid.Rows[e.RowIndex].Cells[e.ColumnIndex].Style = new DataGridViewCellStyle { ForeColor = Color.IndianRed};
+                }
+                else
+                {
+                    TotalAvilableFundsGrid.Rows[e.RowIndex].Cells[e.ColumnIndex].Style = new DataGridViewCellStyle { ForeColor = Color.CadetBlue };
+                }
+            }
         }
 
         private void ButtonAction_Click(object sender, ListViewColumnMouseEventArgs e)

@@ -22,6 +22,7 @@ namespace Imperatur_v2.account
         List<Holding> GetHoldings();
         List<IMoney> GetAvailableFunds();
         List<IMoney> GetTotalFunds();
+        IMoney GetAverageAcquisitionCostFromHolding(string Symbol);
         List<IMoney> GetAvailableFunds(List<ICurrency> FilterCurrency);
         List<IMoney> GetTotalFunds(List<ICurrency> FilterCurrency);
         Customer GetCustomer();

@@ -1,0 +1,24 @@
+C:\temp\dev\imperatur_market\Imperatur Market Client\bin\Release\Imperatur Market Client.exe.config
+C:\temp\dev\imperatur_market\Imperatur Market Client\bin\Release\Imperatur Market Client.exe
+C:\temp\dev\imperatur_market\Imperatur Market Client\bin\Release\Imperatur Market Client.pdb
+C:\temp\dev\imperatur_market\Imperatur Market Client\bin\Release\Imperatur_v2.dll
+C:\temp\dev\imperatur_market\Imperatur Market Client\bin\Release\Ninject.dll
+C:\temp\dev\imperatur_market\Imperatur Market Client\bin\Release\Newtonsoft.Json.dll
+C:\temp\dev\imperatur_market\Imperatur Market Client\bin\Release\Imperatur_v2.pdb
+C:\temp\dev\imperatur_market\Imperatur Market Client\bin\Release\Ninject.xml
+C:\temp\dev\imperatur_market\Imperatur Market Client\bin\Release\Newtonsoft.Json.xml
+C:\temp\dev\imperatur_market\Imperatur Market Client\obj\Release\Imperatur Market Client.csprojResolveAssemblyReference.cache
+C:\temp\dev\imperatur_market\Imperatur Market Client\obj\Release\Imperatur_Market_Client.control.AccountTab.resources
+C:\temp\dev\imperatur_market\Imperatur Market Client\obj\Release\Imperatur_Market_Client.control.Account_Holdings.resources
+C:\temp\dev\imperatur_market\Imperatur Market Client\obj\Release\Imperatur_Market_Client.control.Account_MainInfo.resources
+C:\temp\dev\imperatur_market\Imperatur Market Client\obj\Release\Imperatur_Market_Client.control.Account_Search.resources
+C:\temp\dev\imperatur_market\Imperatur Market Client\obj\Release\Imperatur_Market_Client.control.Account_Trade.resources
+C:\temp\dev\imperatur_market\Imperatur Market Client\obj\Release\Imperatur_Market_Client.control.SellDialog.resources
+C:\temp\dev\imperatur_market\Imperatur Market Client\obj\Release\Imperatur_Market_Client.dialog.NewSystem.resources
+C:\temp\dev\imperatur_market\Imperatur Market Client\obj\Release\Imperatur_Market_Client.dialog.System_Load.resources
+C:\temp\dev\imperatur_market\Imperatur Market Client\obj\Release\Imperatur_Market_Client.dialog.WaitDialog.resources
+C:\temp\dev\imperatur_market\Imperatur Market Client\obj\Release\Imperatur_Market_Client.MainForm.resources
+C:\temp\dev\imperatur_market\Imperatur Market Client\obj\Release\Imperatur_Market_Client.Properties.Resources.resources
+C:\temp\dev\imperatur_market\Imperatur Market Client\obj\Release\Imperatur Market Client.csproj.GenerateResource.Cache
+C:\temp\dev\imperatur_market\Imperatur Market Client\obj\Release\Imperatur Market Client.exe
+C:\temp\dev\imperatur_market\Imperatur Market Client\obj\Release\Imperatur Market Client.pdb

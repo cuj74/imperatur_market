@@ -186,6 +186,7 @@ namespace Imperatur_Market_Client.control
             }
             TransactionGrid.DataSource = TransactionsDT;
             TransactionGrid.Dock = DockStyle.Fill;
+            TransactionGrid.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.DisplayedCells;
 
             UserControl TransactionControl = new CreateDataGridControlFromObject(
             new DataGridForControl

@@ -19,7 +19,7 @@ using Newtonsoft.Json;
 namespace Imperatur_v2.account
 {
     [DesignAttribute(true)]
-    public class Account : IAccountInterface//, INotifyPropertyChanged
+    public class Account : IAccountInterface
     {
         private string LastErrorMessage;
         private Guid Identifier;
@@ -388,6 +388,19 @@ namespace Imperatur_v2.account
                           select ImperaturGlobal.GetMoney(g.ToList().Sum(), g.Key)).First().Divide(Convert.ToDecimal(Holdingtransactions.Where(t => t.TransactionType.Equals(TransactionType.Buy)).Count()));
         }
 
+        private IMoney GetAACFromHoldingNoCheck(string Symbol)
+        {
+            var Holdingtransactions = m_oTransactions.Where(t => t.DebitAccount.Equals(Identifier) && t.SecuritiesTrade.Security.Symbol.Equals(Symbol)).ToList();
+            //decimal g2 = Holdingtransactions.Sum(h => h.GetQuantity());
+            if (Holdingtransactions.Sum(h => h.GetQuantity()) <= 0m)
+                return null;
+
+            //calculate GAA
+            return (from p in Holdingtransactions.Where(t => t.TransactionType.Equals(TransactionType.Buy))
+                    group p.GetGAA().Amount by p.GetGAA().CurrencyCode into g
+                    select ImperaturGlobal.GetMoney(g.ToList().Sum(), g.Key)).First().Divide(Convert.ToDecimal(Holdingtransactions.Where(t => t.TransactionType.Equals(TransactionType.Buy)).Count()));
+        }
+
         private IMoney GetRevenueFromHoldingSell(int Quantity, string Ticker)
         {
             IMoney GAA = GetGAAFromHolding(Quantity, Ticker);
@@ -461,6 +474,11 @@ namespace Imperatur_v2.account
                 join fc in FilterCurrency on t.CurrencyCode equals fc
                 select t;
             return TotalFunds.ToList();
+        }
+
+        public IMoney GetAverageAcquisitionCostFromHolding(string Symbol)
+        {
+            return GetAACFromHoldingNoCheck(Symbol);
         }
 
         #endregion

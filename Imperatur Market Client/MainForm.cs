@@ -27,6 +27,8 @@ namespace Imperatur_Market_Client
         private readonly string SystemLocationCacheFile = "systemlocation.imp";
         public delegate void SelectedAccountEventHandler(object sender, SelectedAccountEventArg e);
         public delegate void ToggleSearchDialogHandler(object sender, ToggleSearchEvents e);
+        public delegate void SelectedSymbolEventHandler(object sender, SelectedSymbolEventArg e);
+
 
         private AccountTab m_oAccountTab;
         delegate void RefreshQuotes();
@@ -67,6 +69,8 @@ namespace Imperatur_Market_Client
             ImperaturData oNewSystem = null;
             bool CreateNewSystem = ShowSystemLoad();
 
+            dialog.WaitDialog oW = new dialog.WaitDialog();
+            oW.Show();
             if (CreateNewSystem)
             {
                 oNewSystem = CreateNewImperaturMarket(oNewSystem);
@@ -78,7 +82,7 @@ namespace Imperatur_Market_Client
             }
             else
                 m_Ic = (ImperaturMarket)ImperaturContainer.BuildImperaturContainer(SystemLocation);
-
+            oW.Close();
             //this far we save the systemlocation to the clients application folder for easy access
             //SystemLocationCacheFile
             SaveSystemLocationToCache(oNewSystem);

@@ -151,7 +151,7 @@ namespace Imperatur_Market_Client.control
 
         #endregion
     }
-
+    /*
     public static class ExpanderHelper
     {
         public static Label CreateLabelHeader(Expander expander, string text, Color backColor, Image collapsedImage = null, Image expandedImage = null, int height = 25, Font font = null)
@@ -181,5 +181,5 @@ namespace Imperatur_Market_Client.control
 
             return headerLabel;
         }
-    }
+    }*/
 }

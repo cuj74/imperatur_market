@@ -23,9 +23,13 @@ namespace Imperatur_Market_Client.control
             CreateInfoControlFromObject oC = new CreateInfoControlFromObject();
             GroupBox oB = oC.CreateGroupBox(NewDataGridData.GroupBoxCaption);
             oB.Dock = DockStyle.Fill;
+            oB.Width = NewDataGridData.DataGridViewToBuild.Width + 20;
+            NewDataGridData.DataGridViewToBuild.RowHeadersVisible = false;
             oB.Controls.Add(NewDataGridData.DataGridViewToBuild);
             this.Dock = DockStyle.Fill;
             this.Controls.Add(oB);
+            this.Width = NewDataGridData.DataGridViewToBuild.Width +50;
+
         }
     }
 

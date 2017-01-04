@@ -13,6 +13,7 @@ using System.IO;
 using Imperatur_v2.json;
 using Newtonsoft.Json.Linq;
 using Imperatur_v2.account;
+using Imperatur_v2.securites;
 
 namespace Imperatur_v2
 {
@@ -239,6 +240,7 @@ namespace Imperatur_v2
         }
         private void CreateImperaturMarket(ImperaturData SystemData)
         {
+
             m_oImperaturData = SystemData;
             ImperaturGlobal.Initialize(m_oImperaturData, InitiateNinjectKernel(), null);
             List<account.AccountCacheType> BusinessAccounts = new List<account.AccountCacheType>();

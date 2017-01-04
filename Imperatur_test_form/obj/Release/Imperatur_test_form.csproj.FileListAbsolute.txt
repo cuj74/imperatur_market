@@ -12,3 +12,18 @@ C:\Users\urbajoha\Documents\Visual Studio 2015\Projects\Imperatur\Imperatur_test
 C:\Users\urbajoha\Documents\Visual Studio 2015\Projects\Imperatur\Imperatur_test_form\obj\Release\Imperatur_test_form.csproj.GenerateResource.Cache
 C:\Users\urbajoha\Documents\Visual Studio 2015\Projects\Imperatur\Imperatur_test_form\obj\Release\Imperatur_test_form.exe
 C:\Users\urbajoha\Documents\Visual Studio 2015\Projects\Imperatur\Imperatur_test_form\obj\Release\Imperatur_test_form.pdb
+C:\temp\dev\imperatur_market\Imperatur_test_form\bin\Release\Imperatur_test_form.exe.config
+C:\temp\dev\imperatur_market\Imperatur_test_form\bin\Release\Imperatur_test_form.exe
+C:\temp\dev\imperatur_market\Imperatur_test_form\bin\Release\Imperatur_test_form.pdb
+C:\temp\dev\imperatur_market\Imperatur_test_form\bin\Release\Imperatur.dll
+C:\temp\dev\imperatur_market\Imperatur_test_form\bin\Release\Newtonsoft.Json.dll
+C:\temp\dev\imperatur_market\Imperatur_test_form\bin\Release\Imperatur.pdb
+C:\temp\dev\imperatur_market\Imperatur_test_form\bin\Release\Newtonsoft.Json.xml
+C:\temp\dev\imperatur_market\Imperatur_test_form\obj\Release\Imperatur_test_form.csprojResolveAssemblyReference.cache
+C:\temp\dev\imperatur_market\Imperatur_test_form\obj\Release\Imperatur_test_form.Form1.resources
+C:\temp\dev\imperatur_market\Imperatur_test_form\obj\Release\Imperatur_test_form.Form_imperaturclient.resources
+C:\temp\dev\imperatur_market\Imperatur_test_form\obj\Release\Imperatur_test_form.Properties.Resources.resources
+C:\temp\dev\imperatur_market\Imperatur_test_form\obj\Release\Imperatur_test_form.SellDialog.resources
+C:\temp\dev\imperatur_market\Imperatur_test_form\obj\Release\Imperatur_test_form.csproj.GenerateResource.Cache
+C:\temp\dev\imperatur_market\Imperatur_test_form\obj\Release\Imperatur_test_form.exe
+C:\temp\dev\imperatur_market\Imperatur_test_form\obj\Release\Imperatur_test_form.pdb
