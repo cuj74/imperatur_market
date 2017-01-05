@@ -47,7 +47,7 @@ namespace Imperatur_Market_Client.control
         {
             int QuantityToBuy;
             bool isNumeric = int.TryParse(textBox_Quantity.Text.Trim(), out QuantityToBuy);
-            if (m_oAccountData != null && isNumeric && comboBox_Symbols.SelectedItem.ToString().Length > 0)
+            if (m_oAccountData != null && isNumeric && comboBox_Symbols.SelectedItem != null && comboBox_Symbols.SelectedItem.ToString().Length > 0)
             {
 
                 IMoney MarketValue = ImperaturGlobal.Quotes.Where(q => q.Symbol.Equals(comboBox_Symbols.SelectedItem.ToString())).First().LastTradePrice.Multiply(Convert.ToDecimal(QuantityToBuy));
@@ -88,13 +88,17 @@ namespace Imperatur_Market_Client.control
             {
                 if (ImperaturGlobal.Quotes.Where(q => q.Symbol.Equals(comboBox_Symbols.SelectedItem.ToString())).Count() > 0)
                 {
-                    label_instrument_info.Text = ImperaturGlobal.Quotes.Where(q => q.Symbol.Equals(comboBox_Symbols.SelectedItem.ToString())).First().LastTradePrice.ToString();
+                    label_instrument_info.Text = ImperaturGlobal.Quotes.Where(q => q.Symbol.Equals(comboBox_Symbols.SelectedItem.ToString())).First().LastTradePrice.ToString() + " " + ImperaturGlobal.Instruments.Where(i=>i.Symbol.Equals(comboBox_Symbols.SelectedItem.ToString())).First().Name;
                     using (WebClient webClient = new WebClient())
                     {
                         //webClient.DownloadFile("https://www.google.com/finance/getchart?q=" + comboBox_Symbols.SelectedItem.ToString(), "image.png");
                         pictureBox_graph.Load("https://www.google.com/finance/getchart?q=" + comboBox_Symbols.SelectedItem.ToString().Replace(" ", "-"));
                         pictureBox_graph.SizeMode = PictureBoxSizeMode.StretchImage;
                     }
+
+                    Imperatur_v2.trade.analysis.SecurityAnalysis oS = new Imperatur_v2.trade.analysis.SecurityAnalysis(ImperaturGlobal.Instruments.Where(i => i.Symbol.Equals(comboBox_Symbols.SelectedItem.ToString())).First());
+                    label3.Text = oS.StandardDeviationForRange(DateTime.Now.AddDays(-7), DateTime.Now).ToString();
+                    label3.Text += " | " + oS.StandardDeviation.ToString();
                 }
                 else
                     label_instrument_info.Text = "N/A";
@@ -115,7 +119,7 @@ namespace Imperatur_Market_Client.control
         {
             int QuantityToBuy;
             bool isNumeric = int.TryParse(textBox_Quantity.Text.Trim(), out QuantityToBuy);
-            if (m_oAccountData != null && isNumeric && comboBox_Symbols.SelectedItem.ToString().Length > 0)
+            if (m_oAccountData != null && isNumeric && comboBox_Symbols.SelectedItem != null && comboBox_Symbols.SelectedItem.ToString().Length > 0)
             {
                 /*
                 IMoney MarketValue = ImperaturGlobal.Quotes.Where(q => q.Symbol.Equals(comboBox_Symbols.SelectedItem.ToString())).First().LastTradePrice.Multiply(Convert.ToDecimal(QuantityToBuy));

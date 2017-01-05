@@ -2,6 +2,7 @@
 using Imperatur_v2.shared;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -86,10 +87,24 @@ namespace Imperatur_v2.securites
         private const string INTERVAL = "INTERVAL=";
         private const string INTERVALDELIMITER = "a";
         private const string TIMEZONE_OFFSET = "TIMEZONE_OFFSET";
-        public HistoricalQuote GetHistoricalData(Instrument Instrument, Exchange Exchange)
+
+        public HistoricalQuote GetHistoricalData(Instrument Instrument, Exchange Exchange, DateTime FromDate, bool UseDate)
         {
+            string Symbol = Instrument.Symbol.Replace(" ", "-");
+            string URL = "";
+            if (UseDate)
+            {
+                TimeSpan epochTicks = new TimeSpan(new DateTime(1970, 1, 1).Ticks);
+                TimeSpan unixTicks = new TimeSpan(FromDate.Ticks) - epochTicks;
+                
+                URL = string.Format("http://www.google.com/finance/getprices?q={0}&x={1}&i=86400&p=40Y&ts={2}&f=d,c,v,k,o,h,l", Symbol, Exchange.ExhangeCode, unixTicks.TotalSeconds.ToString());
+            }
+            else
+            {
+                URL = string.Format("http://www.google.com/finance/getprices?q={0}&x={1}&i=86400&p=40Y&f=d,c,v,k,o,h,l", Symbol, Exchange.ExhangeCode);
+            }
             string ResponseData = "";
-            string URL = string.Format("http://www.google.com/finance/getprices?q={0}&x={1}&i=86400&p=40Y&f=d,c,v,k,o,h,l", Instrument.Symbol, Exchange.ExhangeCode);
+            
             using (WebClient wc = new WebClient())
             {
                 ResponseData = wc.DownloadString(URL);
@@ -131,7 +146,7 @@ namespace Imperatur_v2.securites
 
                 List<HistoricalQuoteDetails> oIntervalData = new List<HistoricalQuoteDetails>();
 
-                
+
 
                 DateTime ResponseDateTime = DateTime.Now;
                 int IntervalMultiplier = -1;
@@ -149,8 +164,8 @@ namespace Imperatur_v2.securites
                         DateTime dtDateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, System.DateTimeKind.Utc);
                         ResponseDateTime = dtDateTime.AddSeconds(Convert.ToDouble(ResponseLine.Substring(1).Split(',')[0])).AddMinutes(TimeZoneOffset);
                         //remove the unixtimestamp
-                        ResponseLineWorkingObject = ResponseLineWorkingObject.Remove(0, ResponseLine.Split(',')[0].Length - 1);
-                        ResponseLineWorkingObject = "0," + ResponseLineWorkingObject;
+                        ResponseLineWorkingObject = ResponseLineWorkingObject.Remove(0, ResponseLine.Split(',')[0].Length);
+                        ResponseLineWorkingObject = "0" + ResponseLineWorkingObject;
                         IntervalMultiplier = 0;
 
                     }
@@ -169,16 +184,16 @@ namespace Imperatur_v2.securites
                                     oHd.Date = GetDateFromIntervalData(IntervalMultiplier, IntervalInSec, ResponseDateTime);
                                     break;
                                 case "CLOSE":
-                                    oHd.Close = decimal.Parse(ResponseLineWorkingObject.Split(',')[i]);
+                                    oHd.Close = CustomParse(ResponseLineWorkingObject.Split(',')[i]);
                                     break;
                                 case "LOW":
-                                    oHd.Low = decimal.Parse(ResponseLineWorkingObject.Split(',')[i]);
+                                    oHd.Low = CustomParse(ResponseLineWorkingObject.Split(',')[i]);
                                     break;
                                 case "HIGH":
-                                    oHd.High = decimal.Parse(ResponseLineWorkingObject.Split(',')[i]);
+                                    oHd.High = CustomParse(ResponseLineWorkingObject.Split(',')[i]);
                                     break;
                                 case "OPEN":
-                                    oHd.Open = decimal.Parse(ResponseLineWorkingObject.Split(',')[i]);
+                                    oHd.Open = CustomParse(ResponseLineWorkingObject.Split(',')[i]);
                                     break;
                                 case "VOLUME":
                                     oHd.Volume = int.Parse(ResponseLineWorkingObject.Split(',')[i]);
@@ -202,8 +217,22 @@ namespace Imperatur_v2.securites
                 return new HistoricalQuote(Exchange, Instrument, oIntervalData);
             }
             return null;
+        }
+
+        public HistoricalQuote GetHistoricalData(Instrument Instrument, Exchange Exchange)
+        {
+            return GetHistoricalData(Instrument, Exchange, new DateTime(), false);
 
         }
+
+        public decimal CustomParse(string incomingValue)
+        {
+            decimal val;
+            if (!decimal.TryParse(incomingValue.Replace(",", "").Replace(".", ""), NumberStyles.Number, CultureInfo.InvariantCulture, out val))
+                return 0m;
+            return val / 100;
+        }
+
         private  DateTime GetDateFromIntervalData(int IntervalAmount, int IntervalSeconds, DateTime StartDateTime )
         {
             try

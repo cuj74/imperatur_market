@@ -50,7 +50,7 @@ namespace Imperatur_v2.handler
                 try
                 {
                     string FileToRead = "";
-                    foreach (string f in Directory.EnumerateFiles(string.Format(@"{0}\{1}\", ImperaturGlobal.SystemData.SystemDirectory, ImperaturGlobal.SystemData.QuoteDirectory), string.Format("{0}*", ImperaturGlobal.SystemData.QuoteFile), SearchOption.TopDirectoryOnly))
+                    foreach (string f in Directory.EnumerateFiles(string.Format(@"{0}\{1}\{2}", ImperaturGlobal.SystemData.SystemDirectory, ImperaturGlobal.SystemData.QuoteDirectory, ImperaturGlobal.SystemData.DailyQuoteDirectory), string.Format("{0}*", ImperaturGlobal.SystemData.QuoteFile), SearchOption.TopDirectoryOnly))
                     {
                         string time = f.Substring(f.Length - 5).Replace(";", ":");
                         string date = f.Substring(f.Length - 15).Substring(0, 10);
@@ -71,7 +71,7 @@ namespace Imperatur_v2.handler
                         m_oQuotes = GetQuotesFromExternalSource(ImperaturGlobal.SystemData.ULR_Quotes);
                         if (m_oQuotes.Count() > 0)
                         {
-                            SerializeJSONdata.SerializeObject(m_oQuotes, string.Format(@"{0}\{1}\{2}{3}{4}", ImperaturGlobal.SystemData.SystemDirectory, ImperaturGlobal.SystemData.QuoteDirectory, ImperaturGlobal.SystemData.QuoteFile, DateTime.Now.ToShortDateString(), DateTime.Now.ToShortTimeString().Replace(":", ";")));
+                            SerializeJSONdata.SerializeObject(m_oQuotes, string.Format(@"{0}\{1}\{2}\{3}{4}{5}", ImperaturGlobal.SystemData.SystemDirectory, ImperaturGlobal.SystemData.QuoteDirectory, ImperaturGlobal.SystemData.DailyQuoteDirectory, ImperaturGlobal.SystemData.QuoteFile, DateTime.Now.ToShortDateString(), DateTime.Now.ToShortTimeString().Replace(":", ";")));
                         }
                     }
                 }

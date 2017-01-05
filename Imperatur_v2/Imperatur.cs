@@ -189,7 +189,9 @@ namespace Imperatur_v2
                 &&
                 CreateDirectory(string.Format(@"{0}\{1}", Systemdata.SystemDirectory, Systemdata.AcccountDirectory))
                 &&
-                CreateDirectory(string.Format(@"{0}\{1}", Systemdata.SystemDirectory, Systemdata.QuoteDirectory))
+                CreateDirectory(string.Format(@"{0}\{1}\{2}", Systemdata.SystemDirectory, Systemdata.QuoteDirectory, Systemdata.DailyQuoteDirectory))
+                &&
+                CreateDirectory(string.Format(@"{0}\{1}\{2}", Systemdata.SystemDirectory, Systemdata.QuoteDirectory, Systemdata.HistoricalQuoteDirectory))
                 &&
                 CreateSystemSettingsFile(Systemdata)
                 )
@@ -285,7 +287,7 @@ namespace Imperatur_v2
 
             m_oQuoteTimer = new System.Timers.Timer();
             m_oQuoteTimer.Elapsed += M_oQuoteTimer_Elapsed;
-            m_oQuoteTimer.Interval = 1000 * 60 * Convert.ToInt32(m_oImperaturData.QuoteRefreshTime); //every 15 minutes
+            m_oQuoteTimer.Interval = 1000 * 60 * 2; Convert.ToInt32(m_oImperaturData.QuoteRefreshTime); //every 15 minutes
             m_oQuoteTimer.Enabled = true;
 
             m_oDisplayCurrency = ImperaturGlobal.Kernel.Get<ICurrency>(new Ninject.Parameters.ConstructorArgument("CurrencyCode", m_oImperaturData.SystemCurrency));
@@ -297,6 +299,7 @@ namespace Imperatur_v2
         {
             m_oTradeHandler.CacheQuotes();
             OnQuoteUpdate(e);
+            ImperaturGlobal.Quotes = m_oTradeHandler.GetQuotes();
             //this is also the trading robot start. 
             if (m_oImperaturData.IsAutomaticMaintained)
             {

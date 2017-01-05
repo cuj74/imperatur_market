@@ -402,7 +402,11 @@ namespace Imperatur_Market_Client
                 SystemCurrency = SystemData.FirstOrDefault(t => t.Key == "SystemCurrency").Value,
                 SystemDirectory = SystemData.FirstOrDefault(t => t.Key == "SystemDirectory").Value,
                 ULR_Quotes = SystemData.FirstOrDefault(t => t.Key == "ULR_Quotes").Value,
-                QuoteRefreshTime = SystemData.FirstOrDefault(t => t.Key == "QuoteRefreshTime").Value
+                QuoteRefreshTime = SystemData.FirstOrDefault(t => t.Key == "QuoteRefreshTime").Value,
+                DailyQuoteDirectory = SystemData.FirstOrDefault(t => t.Key == "DailyQuoteDirectory").Value,
+                Exchange = SystemData.FirstOrDefault(t => t.Key == "Exchange").Value,
+                HistoricalQuoteDirectory = SystemData.FirstOrDefault(t => t.Key == "HistoricalQuoteDirectory").Value,
+                HistoricalQuoteFile = SystemData.FirstOrDefault(t => t.Key == "HistoricalQuoteFile").Value
 
             };
             //all fields must be filled in!

@@ -13,6 +13,9 @@ namespace Imperatur_v2
         public string AcccountDirectory;
         public string AccountFile;
         public string QuoteDirectory;
+        public string DailyQuoteDirectory;
+        public string HistoricalQuoteDirectory;
+        public string HistoricalQuoteFile;  
         public string QuoteFile;
         public string CustomerDirectory;
         public string CustomerFile;
@@ -30,6 +33,9 @@ namespace Imperatur_v2
         public static string AcccountDirectory = "account";
         public static string AccountFile = "account.json";
         public static string QuoteDirectory = "quote";
+        public static string DailyQuoteDirectory = "daily";
+        public static string HistoricalQuoteDirectory = "hist";
+        public static string HistoricalQuoteFile = "hist{exchange}~{symbol}.json";
         public static string QuoteFile = "qoute.json";
         public static string CustomerDirectory = "customer";
         public static string CustomerFile = "customer.json";

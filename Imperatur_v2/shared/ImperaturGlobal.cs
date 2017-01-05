@@ -13,6 +13,7 @@ using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
 using Ninject;
 using Imperatur_v2.events;
+using Imperatur_v2.json;
 
 namespace Imperatur_v2.shared
 {
@@ -35,7 +36,7 @@ namespace Imperatur_v2.shared
         public static List<Quote> Quotes;
 
         private static StandardKernel m_oKernel;
-    
+
         #endregion
 
         #region Init
@@ -43,7 +44,8 @@ namespace Imperatur_v2.shared
         static ICurrencyExhangeHandler _CurrencyExchangeHandler = null;
         public static StandardKernel Kernel
         {
-            get {
+            get
+            {
                 if (m_oKernel == null)
                 {
                     m_oKernel = new StandardKernel();
@@ -105,8 +107,14 @@ namespace Imperatur_v2.shared
                 m_oKernel = NinjectKernel;
 
             BuildCurrencyCodeCache();
-
-            BuildHistoricalPriceCache();
+            try
+            {
+                BuildHistoricalPriceCache();
+            }
+            catch (Exception ex)
+            {
+                int gg = 0;
+            }
 
             InitializeBusinessAccount(BusinessAccounts);
 
@@ -150,7 +158,7 @@ namespace Imperatur_v2.shared
             }
         }
 
-        
+
         private static void BuildCurrencyCodeCache()
         {
             if (!GlobalCachingProvider.Instance.FindItem(ImperaturGlobal.CurrencyCodeCache))
@@ -183,14 +191,89 @@ namespace Imperatur_v2.shared
 
         private static void BuildHistoricalPriceCache()
         {
-            GoogleHistoricalDataInterpreter oGHDI = new GoogleHistoricalDataInterpreter();
             foreach (Instrument i in Instruments)
             {
 
-                HistoricalQuote oh = oGHDI.GetHistoricalData(i, new Exchange { ExhangeCode = "STO" });
-                int gg = 0;
+                HistoricalQuote oH = new HistoricalQuote(null, null, null);
+                DateTime oDataFromNeeded = DateTime.Now;
+                bool bReadMore = false;
+                bool bAllHistoricalDataNeeded = true;
+                /*string FileName = ImperaturGlobal.SystemData.HistoricalQuoteFile.Replace("{exchange}", SystemData.Exchange).Replace("{symbol}", i.Symbol);
+                string FullPath = string.Format(@"{0}\{1}\{2}\{3}", ImperaturGlobal.SystemData.SystemDirectory, ImperaturGlobal.SystemData.QuoteDirectory, ImperaturGlobal.SystemData.HistoricalQuoteDirectory, FileName);
+                */
+                string FullPath = GetFullPathOfHistoricalDataForInstrument(i);
+                if (File.Exists(FullPath))
+                {
+                    oH = (HistoricalQuote)DeserializeJSON.DeserializeObjectFromFile(FullPath);
+                    if (oH == null)
+                    {
+                        continue;
+                    }
+
+                    //get the latest date to see if we need to add
+                    if (oH.HistoricalQuoteDetails != null && oH.HistoricalQuoteDetails.Count > 0 && (DateTime.Now.Date - oH.HistoricalQuoteDetails.Max(h => h.Date).Date.AddDays(1).Date).Days >= 1)
+                    {
+                        bReadMore = true;
+                        bAllHistoricalDataNeeded = false;
+                    }
+                    else
+                    {
+                        //all is up to date!
+                        bAllHistoricalDataNeeded = false;
+                    }
+                }
+
+                if (!bReadMore && bAllHistoricalDataNeeded)
+                {
+                    try
+                    {
+                        oH = GetHistoricalQuoteOnline(i, new Exchange { ExhangeCode = SystemData.Exchange });
+                        SerializeJSONdata.SerializeObject(oH, FullPath);
+                    }
+                    catch (Exception ex)
+                    {
+                        int lg = 0;
+                    }
+                }
+                else if (bReadMore)
+                {
+                    try
+                    {
+                        HistoricalQuote oHnew = GetHistoricalQuoteOnline(i, new Exchange { ExhangeCode = SystemData.Exchange }, oDataFromNeeded);
+                        oH.HistoricalQuoteDetails.AddRange(oHnew.HistoricalQuoteDetails);
+                        SerializeJSONdata.SerializeObject(oH, FullPath);
+                    }
+                    catch (Exception ex)
+                    {
+                        int geg = 0;
+                    }
+                }
             }
+            int gg = 0;
+        }
+
+
+        public static HistoricalQuote GetHistoricalQuoteOnline(Instrument instrument, Exchange exchange)
+        {
+            GoogleHistoricalDataInterpreter oGHDI = new GoogleHistoricalDataInterpreter();
+            return oGHDI.GetHistoricalData(instrument, exchange);
+        }
+        public static HistoricalQuote GetHistoricalQuoteOnline(Instrument instrument, Exchange exchange, DateTime FromDate)
+        {
+            GoogleHistoricalDataInterpreter oGHDI = new GoogleHistoricalDataInterpreter();
+            return oGHDI.GetHistoricalData(instrument, exchange, FromDate, true);
+        }
+
+        private static string GetFullPathOfHistoricalDataForInstrument(Instrument Instrument)
+        {
+            string FileName = ImperaturGlobal.SystemData.HistoricalQuoteFile.Replace("{exchange}", SystemData.Exchange).Replace("{symbol}", Instrument.Symbol);
+            return string.Format(@"{0}\{1}\{2}\{3}", ImperaturGlobal.SystemData.SystemDirectory, ImperaturGlobal.SystemData.QuoteDirectory, ImperaturGlobal.SystemData.HistoricalQuoteDirectory, FileName);
+        }
+        public static HistoricalQuote HistoricalQuote(Instrument Instrument)
+        {
+            return (HistoricalQuote)DeserializeJSON.DeserializeObjectFromFile(GetFullPathOfHistoricalDataForInstrument(Instrument));
         }
         #endregion
     }
 }
+
