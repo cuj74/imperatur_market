@@ -198,9 +198,7 @@ namespace Imperatur_v2.shared
                 DateTime oDataFromNeeded = DateTime.Now;
                 bool bReadMore = false;
                 bool bAllHistoricalDataNeeded = true;
-                /*string FileName = ImperaturGlobal.SystemData.HistoricalQuoteFile.Replace("{exchange}", SystemData.Exchange).Replace("{symbol}", i.Symbol);
-                string FullPath = string.Format(@"{0}\{1}\{2}\{3}", ImperaturGlobal.SystemData.SystemDirectory, ImperaturGlobal.SystemData.QuoteDirectory, ImperaturGlobal.SystemData.HistoricalQuoteDirectory, FileName);
-                */
+
                 string FullPath = GetFullPathOfHistoricalDataForInstrument(i);
                 if (File.Exists(FullPath))
                 {

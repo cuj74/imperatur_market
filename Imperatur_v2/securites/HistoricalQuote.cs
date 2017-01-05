@@ -169,7 +169,7 @@ namespace Imperatur_v2.securites
                         IntervalMultiplier = 0;
 
                     }
-
+                    //TODO: currency exchange from USD to the instruments currency!!
                     //where in the data loop now
                     if (IntervalMultiplier >= 0)
                     {

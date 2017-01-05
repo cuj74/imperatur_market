@@ -293,6 +293,50 @@ namespace Imperatur_v2
             m_oDisplayCurrency = ImperaturGlobal.Kernel.Get<ICurrency>(new Ninject.Parameters.ConstructorArgument("CurrencyCode", m_oImperaturData.SystemCurrency));
             m_oTradeHandler.QuoteUpdateEvent += M_oTradeHandler_QuoteUpdateEvent;
 
+            if (m_oImperaturData.IsAutomaticMaintained)
+            {
+                
+                int[] Intervals = new int[] { 30, 90, 180 };
+                IAccountInterface oA = m_oAccountHandler.Accounts().Where(a => a.GetAccountType().Equals(AccountType.Customer)).First();
+                foreach (Instrument i in ImperaturGlobal.Instruments)
+                {
+                    if (oA.GetAvailableFunds(new List<ICurrency> { GetMoney(0, i.CurrencyCode).CurrencyCode }).Count > 0 && oA.GetAvailableFunds(new List<ICurrency> { GetMoney(0, i.CurrencyCode).CurrencyCode }).First().Amount < 1000m)
+                    {
+                        break;
+                    }
+                    trade.analysis.SecurityAnalysis oSA = new trade.analysis.SecurityAnalysis(i);
+                    foreach (int Interval in Intervals)
+                    {
+                        if (oA.GetAvailableFunds(new List<ICurrency> { GetMoney(0, i.CurrencyCode).CurrencyCode }).First().Amount < 1000m)
+                        {
+                            break;
+                        }
+                        decimal SaleValue;
+                        if (oSA.RangeConvergeWithElliotForBuy(Interval, out SaleValue))
+                        {
+                            
+                            //calculate how many we can buy
+                            //decimal Avail = oA.GetAvailableFunds(new List<ICurrency> { GetMoney(0, i.CurrencyCode).CurrencyCode }).First().Amount;
+                            //decimal price = ImperaturGlobal.Quotes.Where(q => q.Symbol.Equals(i.Symbol)).First().LastTradePrice.Amount;
+
+                            int Quantity = (int) (oA.GetAvailableFunds(new List<ICurrency> { GetMoney(0, i.CurrencyCode).CurrencyCode }).First().Amount
+                                /
+                                ImperaturGlobal.Quotes.Where(q => q.Symbol.Equals(i.Symbol)).First().LastTradePrice.Amount);
+
+
+                            //ImperaturGlobal.Quotes.Where(q => q.Symbol.Equals(comboBox_Symbols.SelectedItem.ToString())).First().LastTradePrice.Multiply(Convert.ToDecimal(QuantityToBuy))
+                            m_oAccountHandler.Accounts()[0].AddHoldingToAccount(
+                                Quantity - 1,
+                                i.Symbol,
+                                m_oTradeHandler
+                                );
+
+                            
+                        }
+                    }
+                }
+            }
+
         }
 
         private void M_oTradeHandler_QuoteUpdateEvent(object sender, EventArgs e)

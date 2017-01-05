@@ -45,3 +45,6 @@ F:\visualstudioprojects\Imperatur\imperatur_market\Imperatur Market Client\obj\D
 C:\temp\dev\imperatur_market\Imperatur Market Client\obj\Debug\Imperatur_Market_Client.control.SellDialog.resources
 F:\visualstudioprojects\Imperatur\imperatur_market\Imperatur Market Client\obj\Debug\Imperatur_Market_Client.control.SellDialog.resources
 C:\temp\dev\imperatur_market\Imperatur Market Client\obj\Debug\Imperatur_Market_Client.dialog.WaitDialog.resources
+F:\visualstudioprojects\Imperatur\imperatur_market\Imperatur Market Client\bin\Debug\MathNet.Numerics.dll
+F:\visualstudioprojects\Imperatur\imperatur_market\Imperatur Market Client\bin\Debug\MathNet.Numerics.xml
+F:\visualstudioprojects\Imperatur\imperatur_market\Imperatur Market Client\obj\Debug\Imperatur_Market_Client.dialog.WaitDialog.resources
