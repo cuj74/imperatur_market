@@ -18,3 +18,6 @@ F:\visualstudioprojects\Imperatur\imperatur_market\Imperatur_v2\obj\Debug\Impera
 F:\visualstudioprojects\Imperatur\imperatur_market\Imperatur_v2\obj\Debug\Imperatur_v2.pdb
 F:\visualstudioprojects\Imperatur\imperatur_market\Imperatur_v2\bin\Debug\MathNet.Numerics.dll
 F:\visualstudioprojects\Imperatur\imperatur_market\Imperatur_v2\bin\Debug\MathNet.Numerics.xml
+C:\temp\dev\imperatur_market\Imperatur_v2\bin\Debug\Imperatur_v2.dll.config
+C:\temp\dev\imperatur_market\Imperatur_v2\bin\Debug\MathNet.Numerics.dll
+C:\temp\dev\imperatur_market\Imperatur_v2\bin\Debug\MathNet.Numerics.xml

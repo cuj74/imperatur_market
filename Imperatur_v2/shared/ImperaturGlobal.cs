@@ -34,6 +34,7 @@ namespace Imperatur_v2.shared
         public static ImperaturData SystemData;
         public static List<Instrument> Instruments;
         public static List<Quote> Quotes;
+        private static List<CurrencyInfo> m_oCurrencyRates;
 
         private static StandardKernel m_oKernel;
 
@@ -54,7 +55,21 @@ namespace Imperatur_v2.shared
                 return m_oKernel;
             }
         }
+        public static List<CurrencyInfo> CurrencyRates
+        {
+            get {
+                if (m_oCurrencyRates == null)
+                {
+                    SetCurrencyExhangeRatesForToday();
+                }
+                return m_oCurrencyRates;
+            }
+        }
 
+        public static decimal GetPriceForCurrencyToday(ICurrency Currency)
+        {
+            return CurrencyRates.Where(c => c.Currency.Equals(Currency)).First().Price;
+        }
         public static ICurrency GetSystemCurrency()
         {
             return m_oKernel.Get<ICurrency>(
@@ -73,7 +88,7 @@ namespace Imperatur_v2.shared
         }
         public static IMoney GetMoney(decimal Amount, ICurrency Currency)
         {
-            return GetMoney(Amount, Currency.GetCurrencyString());
+            return GetMoney(Amount, Currency.CurrencyCode);
             /*
             string t = Currency.ToString();
             int g = 0;
@@ -117,11 +132,19 @@ namespace Imperatur_v2.shared
             }
 
             InitializeBusinessAccount(BusinessAccounts);
-
-
+            
             if (!GlobalCachingProvider.Instance.FindItem(ImperaturGlobal.CountryCache))
                 GlobalCachingProvider.Instance.AddItem(ImperaturGlobal.CountryCache, new CountryCache());
 
+
+            m_oCurrencyRates = new CurrencyDataFromExternalSource().GetCurrentCurrencyExchangeRate();
+
+
+        }
+
+        private static void SetCurrencyExhangeRatesForToday()
+        {
+            m_oCurrencyRates = new CurrencyDataFromExternalSource().GetCurrentCurrencyExchangeRate();
         }
 
         internal static void InitializeBusinessAccount(List<account.AccountCacheType> BusinessAccounts)
@@ -191,6 +214,7 @@ namespace Imperatur_v2.shared
 
         private static void BuildHistoricalPriceCache()
         {
+            return;
             foreach (Instrument i in Instruments)
             {
 
@@ -213,6 +237,7 @@ namespace Imperatur_v2.shared
                     {
                         bReadMore = true;
                         bAllHistoricalDataNeeded = false;
+                        oDataFromNeeded = oH.HistoricalQuoteDetails.Max(h => h.Date).Date.AddDays(1).Date;
                     }
                     else
                     {

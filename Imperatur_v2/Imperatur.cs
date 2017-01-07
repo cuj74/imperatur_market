@@ -297,12 +297,12 @@ namespace Imperatur_v2
             {
                 
                 int[] Intervals = new int[] { 30, 90, 180 };
-                IAccountInterface oA = m_oAccountHandler.Accounts().Where(a => a.GetAccountType().Equals(AccountType.Customer)).First();
+                IAccountInterface oA = m_oAccountHandler.Accounts().Where(a => a.GetAccountType().Equals(AccountType.Customer)).Take(10).Last();
                 foreach (Instrument i in ImperaturGlobal.Instruments)
                 {
                     if (oA.GetAvailableFunds(new List<ICurrency> { GetMoney(0, i.CurrencyCode).CurrencyCode }).Count > 0 && oA.GetAvailableFunds(new List<ICurrency> { GetMoney(0, i.CurrencyCode).CurrencyCode }).First().Amount < 1000m)
                     {
-                        break;
+                        continue;
                     }
                     trade.analysis.SecurityAnalysis oSA = new trade.analysis.SecurityAnalysis(i);
                     foreach (int Interval in Intervals)

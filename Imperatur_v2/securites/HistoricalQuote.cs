@@ -97,7 +97,7 @@ namespace Imperatur_v2.securites
                 TimeSpan epochTicks = new TimeSpan(new DateTime(1970, 1, 1).Ticks);
                 TimeSpan unixTicks = new TimeSpan(FromDate.Ticks) - epochTicks;
                 
-                URL = string.Format("http://www.google.com/finance/getprices?q={0}&x={1}&i=86400&p=40Y&ts={2}&f=d,c,v,k,o,h,l", Symbol, Exchange.ExhangeCode, unixTicks.TotalSeconds.ToString());
+                URL = string.Format("http://www.google.com/finance/getprices?q={0}&x={1}&i=86400&ts={2}&f=d,c,v,k,o,h,l", Symbol, Exchange.ExhangeCode, unixTicks.TotalSeconds.ToString());
             }
             else
             {

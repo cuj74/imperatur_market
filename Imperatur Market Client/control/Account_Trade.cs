@@ -109,7 +109,7 @@ namespace Imperatur_Market_Client.control
         {
             m_oAccountData = AccountData;
             var newSymbolsToShow = from i in ImperaturGlobal.Instruments
-                                   join a in m_oAccountData.GetAvailableFunds() on i.CurrencyCode equals a.CurrencyCode.GetCurrencyString()
+                                   join a in m_oAccountData.GetAvailableFunds() on i.CurrencyCode equals a.CurrencyCode.CurrencyCode
                                    select i.Symbol;
             comboBox_Symbols.DataSource = newSymbolsToShow.ToList();
             comboBox_Symbols.Refresh();

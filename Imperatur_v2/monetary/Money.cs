@@ -105,9 +105,9 @@ namespace Imperatur_v2.monetary
         {
             //no need add a minussign!
             if (WithSign)
-                return string.Format("{0}{1} {2}", m_oAmount == 0 ? "" : m_oAmount > 0 ? "+" : "", Math.Round(m_oAmount, 2, MidpointRounding.AwayFromZero).ToString("#,0.00", System.Globalization.CultureInfo.GetCultureInfo("sv-SE")), WithCurrencyCode ? m_oCurrencyCode.GetCurrencyString().ToUpper().Trim() : "");
+                return string.Format("{0}{1} {2}", m_oAmount == 0 ? "" : m_oAmount > 0 ? "+" : "", Math.Round(m_oAmount, 2, MidpointRounding.AwayFromZero).ToString("#,0.00", System.Globalization.CultureInfo.GetCultureInfo("sv-SE")), WithCurrencyCode ? m_oCurrencyCode.CurrencyCode.ToUpper().Trim() : "");
             else
-                return string.Format("{0} {1}", Math.Round(m_oAmount, 2, MidpointRounding.AwayFromZero).ToString("#,0.00", System.Globalization.CultureInfo.GetCultureInfo("sv-SE")), WithCurrencyCode ? m_oCurrencyCode.GetCurrencyString().ToUpper().Trim() : "");
+                return string.Format("{0} {1}", Math.Round(m_oAmount, 2, MidpointRounding.AwayFromZero).ToString("#,0.00", System.Globalization.CultureInfo.GetCultureInfo("sv-SE")), WithCurrencyCode ? m_oCurrencyCode.CurrencyCode.ToUpper().Trim() : "");
 
         }
         public ICurrency CurrencyCode

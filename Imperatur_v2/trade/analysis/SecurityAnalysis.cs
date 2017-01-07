@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Imperatur_v2.shared;
 using MathNet.Numerics.Interpolation;
+using Imperatur_v2.monetary;
 
 namespace Imperatur_v2.trade.analysis
 {
@@ -35,9 +36,13 @@ namespace Imperatur_v2.trade.analysis
 
         public decimal ChangeSince(DateTime From)
         {
+            ICurrency USD = ImperaturGlobal.GetMoney(0, "USD").CurrencyCode;
             DateTime ClosestDate = m_oH.HistoricalQuoteDetails.Where(h => h.Date >= From).Min(m => m.Date);
             decimal StartValue = m_oH.HistoricalQuoteDetails.Where(h => h.Date.Equals(ClosestDate)).First().Close;
-            decimal EndValue = ImperaturGlobal.Quotes.Where(q => q.Symbol.Equals(m_oH.Instrument.Symbol)).First().LastTradePrice.Amount;
+            //apply exhange rate from 
+            decimal EndValue = ImperaturGlobal.Quotes.Where(q => q.Symbol.Equals(m_oH.Instrument.Symbol)).First().LastTradePrice
+                .Divide(ImperaturGlobal.GetPriceForCurrencyToday(USD)).Amount;              
+                
             return (EndValue / StartValue) * 100;
         }
 
