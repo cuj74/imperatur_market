@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Imperatur_v2.cache;
+using Imperatur_v2.SweaWebService;
 
 namespace Imperatur_v2.monetary
 {
@@ -65,9 +66,8 @@ namespace Imperatur_v2.monetary
     public class CurrencyInfo
     {
         public decimal Price;
-        public Currency Currency;
+        public ICurrency Currency;
         public DateTime Date;
-        //public Guid BFSid;
     }
     /// <summary>
     /// Used for creating the currency cachce
@@ -75,7 +75,6 @@ namespace Imperatur_v2.monetary
     public class CurrencyInfoCache
     {
         public string Currency;
-        //public Guid BFSid;
     }
 
 
@@ -104,7 +103,7 @@ namespace Imperatur_v2.monetary
             m_oCurrencyExhange.AddRange(
                 ListOfCurrencyExchange.Select(x =>
             Tuple.Create(
-                                     x.Currency.CurrencyCode,
+                                     x.Currency.GetCurrencyString(),
                                      x.Date.ToString("yyyy-MM-dd"),
                                      x.Price.ToString()
                                     )
@@ -116,5 +115,38 @@ namespace Imperatur_v2.monetary
         {
             return m_oCurrencyExhange;
         }
+    }
+
+    public class CurrencyDataFromExternalSource
+    {
+        const string SEKTOEURSERIE = "SEKEURPMI";
+        const string SEKTOUSDSERIE = "SEKUSDPMI";
+        const int GroupId = 130;
+        public CurrencyDataFromExternalSource()
+        {
+
+        }
+        public List<CurrencyInfo> GetCurrentCurrencyExchangeRate()//ICurrency FromCurrency, ICurrency ToCurrency)
+        {
+            string[] series = new string[] { SEKTOEURSERIE, SEKTOUSDSERIE };
+
+            SweaWebServicePortTypeClient oClient = new SweaWebServicePortTypeClient();
+            /*
+                        SweaWebService.getLatestInterestAndExchangeRatesRequest oRequest = new getLatestInterestAndExchangeRatesRequest(
+                            LanguageType.en,
+                            series
+                            );
+                            */
+            Result oResult  = oClient.getLatestInterestAndExchangeRates(LanguageType.en,
+                series
+                );
+
+            //Result oResult = oRequest.
+
+
+
+        }
+
+
     }
 }
