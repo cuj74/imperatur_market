@@ -12,9 +12,12 @@ using Imperatur_v2;
 using Imperatur_v2.account;
 using Imperatur_v2.events;
 using Imperatur_v2.shared;
+using Imperatur_v2.trade;
 using Imperatur_Market_Client.events;
 using Imperatur_v2.monetary;
 using System.Net;
+using Imperatur_v2.trade.analysis;
+using Imperatur_v2.securites;
 
 namespace Imperatur_Market_Client.control
 {
@@ -63,7 +66,7 @@ namespace Imperatur_Market_Client.control
                     button_BuySecurity.Enabled = true;
             }
 
-                if (e.KeyCode == Keys.Enter)
+            if (e.KeyCode == Keys.Enter)
             {
                 button_BuySecurity_Click(this, null);
             }
@@ -88,7 +91,7 @@ namespace Imperatur_Market_Client.control
             {
                 if (ImperaturGlobal.Quotes.Where(q => q.Symbol.Equals(comboBox_Symbols.SelectedItem.ToString())).Count() > 0)
                 {
-                    label_instrument_info.Text = ImperaturGlobal.Quotes.Where(q => q.Symbol.Equals(comboBox_Symbols.SelectedItem.ToString())).First().LastTradePrice.ToString() + " " + ImperaturGlobal.Instruments.Where(i=>i.Symbol.Equals(comboBox_Symbols.SelectedItem.ToString())).First().Name;
+                    label_instrument_info.Text = ImperaturGlobal.Quotes.Where(q => q.Symbol.Equals(comboBox_Symbols.SelectedItem.ToString())).First().LastTradePrice.ToString() + " " + ImperaturGlobal.Instruments.Where(i => i.Symbol.Equals(comboBox_Symbols.SelectedItem.ToString())).First().Name;
                     using (WebClient webClient = new WebClient())
                     {
                         //webClient.DownloadFile("https://www.google.com/finance/getchart?q=" + comboBox_Symbols.SelectedItem.ToString(), "image.png");
@@ -166,6 +169,83 @@ namespace Imperatur_Market_Client.control
             {
                 Identifier = m_oAccountData.Identifier
             });
+        }
+
+        private void button_buy_recommdation_Click(object sender, EventArgs e)
+        {
+            Instrument i;
+            if (m_oAccountData != null && comboBox_Symbols.SelectedItem.ToString().Length > 0)
+            {
+                i = ImperaturGlobal.Instruments.Where(ins => ins.Symbol.Equals(comboBox_Symbols.SelectedItem.ToString())).First();
+
+                int[] Intervals = new int[200];
+                for (int inv = 0; inv < 199; inv++)
+                {
+                    Intervals[inv] = inv + 1 + 2;
+                }
+                SecurityAnalysis oSA = new SecurityAnalysis(i);
+                if (!oSA.HasValue)
+                {
+                    return;
+                }
+                decimal SaleValue;
+                foreach (int Interval in Intervals)
+                {
+                    if (m_oAccountData.GetAvailableFunds(new List<ICurrency> { ImperaturGlobal.GetMoney(0, i.CurrencyCode).CurrencyCode }).Count > 0 && m_oAccountData.GetAvailableFunds(new List<ICurrency> { ImperaturGlobal.GetMoney(0, i.CurrencyCode).CurrencyCode }).First().Amount < 1000m)
+                    {
+                        break;
+                    }
+                    
+                    if (oSA.RangeConvergeWithElliotForBuy(Interval, out SaleValue))
+                    {
+                        MessageBox.Show("Yes + " + SaleValue.ToString());
+
+                        /*
+                                            int Quantity = (int)(oA.GetAvailableFunds(new List<ICurrency> { GetMoney(0, i.CurrencyCode).CurrencyCode }).First().Amount
+                                                /
+                                                ImperaturGlobal.Quotes.Where(q => q.Symbol.Equals(i.Symbol)).First().LastTradePrice.Amount);
+
+
+                                            //ImperaturGlobal.Quotes.Where(q => q.Symbol.Equals(comboBox_Symbols.SelectedItem.ToString())).First().LastTradePrice.Multiply(Convert.ToDecimal(QuantityToBuy))
+                                            m_oAccountHandler.Accounts()[0].AddHoldingToAccount(
+                                                Quantity - 1,
+                                                i.Symbol,
+                                                m_oTradeHandler
+                                                );
+                                                */
+
+
+                    }
+                }
+
+
+                //try other dateranges
+                int[] IntervalsToStartfrom = new int[200];
+                for (int inv = 0; inv < 199; inv++)
+                {
+                    Intervals[inv] = inv;
+                }
+                //decimal SaleValue2;
+                int IntervalMultiplier = 10;
+                //always from todaysdate
+                foreach (int Interval in IntervalsToStartfrom)
+                {
+                    if (oSA.RangeConvergeWithElliotForBuy(DateTime.Now.AddDays(-(Interval + IntervalMultiplier)), DateTime.Now, out SaleValue))
+                    {
+                        MessageBox.Show("Yes + " + SaleValue.ToString());
+                    }
+
+                }
+                //moving range
+                foreach (int Interval in IntervalsToStartfrom)
+                {
+                    if (oSA.RangeConvergeWithElliotForBuy(DateTime.Now.AddDays(-(Interval + IntervalMultiplier)), DateTime.Now.AddDays(-Interval), out SaleValue))
+                    {
+                        MessageBox.Show("Yes + " + SaleValue.ToString());
+                    }
+
+                }
+            }
         }
     }
 }

@@ -214,10 +214,15 @@ namespace Imperatur_v2.shared
 
         private static void BuildHistoricalPriceCache()
         {
+
             return;
             foreach (Instrument i in Instruments)
             {
-
+                //for debug!
+               /* if (!i.Symbol.Equals("ELUX A"))
+                {
+                    continue;
+                }*/
                 HistoricalQuote oH = new HistoricalQuote(null, null, null);
                 DateTime oDataFromNeeded = DateTime.Now;
                 bool bReadMore = false;

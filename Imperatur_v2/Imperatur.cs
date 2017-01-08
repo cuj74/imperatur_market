@@ -296,18 +296,35 @@ namespace Imperatur_v2
             if (m_oImperaturData.IsAutomaticMaintained)
             {
                 
-                int[] Intervals = new int[] { 30, 90, 180 };
+                int[] Intervals = new int[] { 7,30,50,70,90,150,180,240,260,360,720 };
                 IAccountInterface oA = m_oAccountHandler.Accounts().Where(a => a.GetAccountType().Equals(AccountType.Customer)).Take(10).Last();
                 foreach (Instrument i in ImperaturGlobal.Instruments)
                 {
+                   
                     if (oA.GetAvailableFunds(new List<ICurrency> { GetMoney(0, i.CurrencyCode).CurrencyCode }).Count > 0 && oA.GetAvailableFunds(new List<ICurrency> { GetMoney(0, i.CurrencyCode).CurrencyCode }).First().Amount < 1000m)
                     {
                         continue;
                     }
                     trade.analysis.SecurityAnalysis oSA = new trade.analysis.SecurityAnalysis(i);
+
+
+                    if (!oSA.HasValue)
+                    {
+                        continue;
+                    }
+                    decimal SaleVal;
                     foreach (int Interval in Intervals)
                     {
-                        if (oA.GetAvailableFunds(new List<ICurrency> { GetMoney(0, i.CurrencyCode).CurrencyCode }).First().Amount < 1000m)
+                        if (oSA.RangeConvergeWithElliotForBuy2(DateTime.Now.AddDays(-Interval), DateTime.Now, out SaleVal))
+                        {
+                            int dfgdf = 0;
+                        }
+
+                    }
+                    /*
+                    foreach (int Interval in Intervals)
+                    {
+                        if (oA.GetAvailableFunds(new List<ICurrency> { GetMoney(0, i.CurrencyCode).CurrencyCode }).Count > 0 && oA.GetAvailableFunds(new List<ICurrency> { GetMoney(0, i.CurrencyCode).CurrencyCode }).First().Amount < 1000m)
                         {
                             break;
                         }
@@ -333,7 +350,7 @@ namespace Imperatur_v2
 
                             
                         }
-                    }
+                    }*/
                 }
             }
 

@@ -184,6 +184,8 @@ namespace Imperatur_v2.securites
                                     oHd.Date = GetDateFromIntervalData(IntervalMultiplier, IntervalInSec, ResponseDateTime);
                                     break;
                                 case "CLOSE":
+                                    //string Data = CustomParse(ResponseLineWorkingObject.Split(',')[i]);
+
                                     oHd.Close = CustomParse(ResponseLineWorkingObject.Split(',')[i]);
                                     break;
                                 case "LOW":
@@ -227,6 +229,10 @@ namespace Imperatur_v2.securites
 
         public decimal CustomParse(string incomingValue)
         {
+            if (!incomingValue.Contains("."))
+            {
+                incomingValue += ".0";
+            }
             decimal val;
             if (!decimal.TryParse(incomingValue.Replace(",", "").Replace(".", ""), NumberStyles.Number, CultureInfo.InvariantCulture, out val))
                 return 0m;

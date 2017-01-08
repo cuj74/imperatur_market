@@ -13,7 +13,8 @@ namespace Imperatur_v2.trade.analysis
         decimal ChangeSince(DateTime From);
         bool RangeConvergeWithElliotForBuy(int IntervalInDays, out decimal SaleValue);
         bool RangeConvergeWithElliotForSell(int IntervalInDays);
-
+        bool HasValue { get; }
+        List<double> MovingAverageForRange(DateTime Start, DateTime End);
 
     }
 }
