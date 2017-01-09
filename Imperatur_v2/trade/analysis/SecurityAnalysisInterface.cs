@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Imperatur_v2.securites;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -15,6 +16,7 @@ namespace Imperatur_v2.trade.analysis
         bool RangeConvergeWithElliotForSell(int IntervalInDays);
         bool HasValue { get; }
         List<double> MovingAverageForRange(DateTime Start, DateTime End);
+        List<HistoricalQuoteDetails> GetDataForRange(DateTime Start, DateTime End);
 
     }
 }

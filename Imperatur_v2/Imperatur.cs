@@ -292,7 +292,7 @@ namespace Imperatur_v2
 
             m_oDisplayCurrency = ImperaturGlobal.Kernel.Get<ICurrency>(new Ninject.Parameters.ConstructorArgument("CurrencyCode", m_oImperaturData.SystemCurrency));
             m_oTradeHandler.QuoteUpdateEvent += M_oTradeHandler_QuoteUpdateEvent;
-
+            return;
             if (m_oImperaturData.IsAutomaticMaintained)
             {
                 

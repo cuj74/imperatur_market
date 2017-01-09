@@ -18,6 +18,7 @@ using Imperatur_v2.monetary;
 using System.Net;
 using Imperatur_v2.trade.analysis;
 using Imperatur_v2.securites;
+using ZedGraph;
 
 namespace Imperatur_Market_Client.control
 {
@@ -92,20 +93,79 @@ namespace Imperatur_Market_Client.control
                 if (ImperaturGlobal.Quotes.Where(q => q.Symbol.Equals(comboBox_Symbols.SelectedItem.ToString())).Count() > 0)
                 {
                     label_instrument_info.Text = ImperaturGlobal.Quotes.Where(q => q.Symbol.Equals(comboBox_Symbols.SelectedItem.ToString())).First().LastTradePrice.ToString() + " " + ImperaturGlobal.Instruments.Where(i => i.Symbol.Equals(comboBox_Symbols.SelectedItem.ToString())).First().Name;
-                    using (WebClient webClient = new WebClient())
+                    /*using (WebClient webClient = new WebClient())
                     {
                         //webClient.DownloadFile("https://www.google.com/finance/getchart?q=" + comboBox_Symbols.SelectedItem.ToString(), "image.png");
                         pictureBox_graph.Load("https://www.google.com/finance/getchart?q=" + comboBox_Symbols.SelectedItem.ToString().Replace(" ", "-"));
                         pictureBox_graph.SizeMode = PictureBoxSizeMode.StretchImage;
-                    }
+                    }*/
 
                     Imperatur_v2.trade.analysis.SecurityAnalysis oS = new Imperatur_v2.trade.analysis.SecurityAnalysis(ImperaturGlobal.Instruments.Where(i => i.Symbol.Equals(comboBox_Symbols.SelectedItem.ToString())).First());
                     label3.Text = oS.StandardDeviationForRange(DateTime.Now.AddDays(-7), DateTime.Now).ToString();
                     label3.Text += " | " + oS.StandardDeviation.ToString();
+                    List<HistoricalQuoteDetails> oH = oS.GetDataForRange(DateTime.Now.AddMonths(-1), DateTime.Now);
+                    CreateGraph(oH.Select(h => Convert.ToDouble(h.Close)).ToArray(), oH.Select(h => h.Date.ToString("yy-m-d")).ToArray());
                 }
                 else
                     label_instrument_info.Text = "N/A";
             }
+        }
+
+        private void CreateGraph(double[] yData, string[] xData)
+        {
+            // generate some fake data
+            //double[] yData = { 1, 2, 3, 9, 1, 15, 3, 7, 2 };
+            //string[] schools = { "A", "B", "C", "D", "E", "F", "G", "H", "J" };
+
+            ZedGraphControl oZGP = new ZedGraphControl();
+            //generate pane
+            var pane = oZGP.GraphPane;
+
+
+            pane.XAxis.Scale.IsVisible = true;
+            pane.YAxis.Scale.IsVisible = true;
+
+            pane.XAxis.MajorGrid.IsVisible = true;
+            pane.YAxis.MajorGrid.IsVisible = true;
+
+            pane.XAxis.Scale.TextLabels = xData;
+            pane.XAxis.Type = AxisType.Text;
+
+
+            //var pointsCurve;
+
+            LineItem pointsCurve = pane.AddCurve("", null, yData, Color.Black);
+            pointsCurve.Line.IsVisible = true;
+            pointsCurve.Line.Width = 3.0F;
+            //Create your own scale of colors.
+
+            pointsCurve.Symbol.Fill = new Fill(new Color[] { Color.Blue, Color.Green, Color.Red });
+            pointsCurve.Symbol.Fill.Type = FillType.Solid;
+            pointsCurve.Symbol.Type = SymbolType.Circle;
+            pointsCurve.Symbol.Border.IsVisible = true;
+
+
+
+            pane.AxisChange();
+            oZGP.Refresh();
+            oZGP.Name = "StockChart";
+            oZGP.Dock = DockStyle.Fill;
+
+
+
+
+
+            if (!tableLayoutPanel_Trade.Controls.ContainsKey(oZGP.Name))
+            {
+                tableLayoutPanel_Trade.Controls.Add(oZGP, 1, 0);
+            }
+            else
+            {
+                tableLayoutPanel_Trade.Controls.RemoveByKey(oZGP.Name);
+                tableLayoutPanel_Trade.Controls.Add(oZGP, 1, 0);
+            }
+
+
         }
 
         public void UpdateAccountInfo(IAccountInterface AccountData)

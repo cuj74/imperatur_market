@@ -672,6 +672,16 @@ Wave 4 can never overlap Wave 1.
         {
             return Statistics.MovingAverage(Sample, Sample.Count()).ToList();
         }
+
+        public List<HistoricalQuoteDetails> GetDataForRange(DateTime Start, DateTime End)
+        {
+            List<HistoricalQuoteDetails> oH = m_oH.HistoricalQuoteDetails
+                    .Where(h => h.Date >= Start.Date && h.Date <= End.Date)
+                    .OrderBy(x => x.Date)
+                    .ToList();
+
+            return oH;
+        }
         #endregion
 
 
@@ -839,6 +849,8 @@ Wave 4 can never overlap Wave 1.
 
         public bool FindElliottDefinitioninWaves(List<Wave> Waves)
         {
+            return false;
+            /*
             //First find all waves thats corresponds to the first wave definition
             List<Wave> FirstWaves = new List<Wave>();
             for (int i = 0; i < Waves.Count()-1; i++)
@@ -872,6 +884,7 @@ Wave 4 can never overlap Wave 1.
                 
 
             }
+        
 
             ElliotWave oEw = oED.ElliotWaveDefinitions.Where(w => w.WaveNumber.Equals(wi)).First();
             if (!oEw.Momentum.Equals(oW.Momentum))
@@ -893,7 +906,7 @@ Wave 4 can never overlap Wave 1.
                 }
                 isElliotWaveDef = bRatioPassed;
             }
-
+                */
         }
     }
    

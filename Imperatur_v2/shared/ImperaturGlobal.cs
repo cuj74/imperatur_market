@@ -215,7 +215,7 @@ namespace Imperatur_v2.shared
         private static void BuildHistoricalPriceCache()
         {
 
-            return;
+            //return;
             foreach (Instrument i in Instruments)
             {
                 //for debug!
@@ -268,7 +268,8 @@ namespace Imperatur_v2.shared
                     try
                     {
                         HistoricalQuote oHnew = GetHistoricalQuoteOnline(i, new Exchange { ExhangeCode = SystemData.Exchange }, oDataFromNeeded);
-                        oH.HistoricalQuoteDetails.AddRange(oHnew.HistoricalQuoteDetails);
+
+                        oH.HistoricalQuoteDetails.AddRange(oHnew.HistoricalQuoteDetails.Where(h=>h.Date.Date > oDataFromNeeded.Date).ToList());
                         SerializeJSONdata.SerializeObject(oH, FullPath);
                     }
                     catch (Exception ex)
