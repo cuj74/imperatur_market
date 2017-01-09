@@ -44,6 +44,7 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Numerics" />
     <Reference Include="System.Runtime.Caching" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.ServiceModel" />
@@ -94,6 +95,7 @@
     <Compile Include="shared\ObjectReflection.cs" />
     <Compile Include="shared\ObjectTextSearch.cs" />
     <Compile Include="shared\ObservableRangeCollection.cs" />
+    <Compile Include="trade\analysis\PolynomialRegression.cs" />
     <Compile Include="trade\analysis\SecurityAnalysis.cs" />
     <Compile Include="trade\analysis\SecurityAnalysisInterface.cs" />
     <Compile Include="trade\Holding.cs" />

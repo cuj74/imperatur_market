@@ -5,9 +5,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Imperatur_v2.shared;
+using MathNet.Numerics;
 using MathNet.Numerics.Interpolation;
 using MathNet.Numerics.Statistics;
+using MathNet.Numerics.LinearAlgebra;
+using MathNet.Numerics.LinearRegression;
 using Imperatur_v2.monetary;
+using MathNet.Numerics.LinearAlgebra.Complex;
+
 
 namespace Imperatur_v2.trade.analysis
 {
@@ -20,7 +25,6 @@ namespace Imperatur_v2.trade.analysis
         private decimal[] m_oWave2Definition;
         private decimal[] m_oWave3Definition;
         private decimal m_oOffsetAllowed;
-        private List<ElliotWave> oElliotWaveDefintion;
 
         public SecurityAnalysis(Instrument Instrument)
         {
@@ -28,69 +32,7 @@ namespace Imperatur_v2.trade.analysis
             m_oWave2Definition =new decimal[]{ 0.382m, 0.5m, 0.618m};
             m_oWave3Definition = new decimal[] { 1.618m, 2.618m };
             m_oOffsetAllowed = 0.1m;
-            oElliotWaveDefintion = new List<ElliotWave>();
-            //first
-            oElliotWaveDefintion.Add(
-                new ElliotWave
-                {
-                    Momentum = Momentum.Negative,
-                    WaveNumber = 1
-                }
-                );
-            //second
-            oElliotWaveDefintion.Add(
-            new ElliotWave
-            {
-                Momentum = Momentum.Positive,
-                WaveNumber = 2,
-                RatioToWave = new List<Tuple<int, double>>
-                {
-                    new Tuple<int, double>(1, 0.382),
-                    new Tuple<int, double>(1, 0.5),
-                    new Tuple<int, double>(1, 0.618),
-                }
-            }
-            );
-            //third
-            oElliotWaveDefintion.Add(
-                new ElliotWave
-                {
-                    Momentum = Momentum.Negative,
-                    WaveNumber = 3,
-                    RatioToWave = new List<Tuple<int, double>>
-                    {
-                                    new Tuple<int, double>(1, 2.618),
-                                    new Tuple<int, double>(1, 1.618),
-                    }
-                }
-                );
-            //Fourth
-            oElliotWaveDefintion.Add(
-            new ElliotWave
-            {
-                Momentum = Momentum.Positive,
-                WaveNumber = 4,
-                RatioToWave = new List<Tuple<int, double>>
-                {
-                                            new Tuple<int, double>(1, 0.382),
-                                            new Tuple<int, double>(1, 0.5),
-                }
-            }
-            );
-            //Fifth
-            oElliotWaveDefintion.Add(
-            new ElliotWave
-            {
-                Momentum = Momentum.Negative,
-                WaveNumber = 4,
-                RatioToWave = new List<Tuple<int, double>>
-                {
-                                            new Tuple<int, double>(1, 0.382),
-                                            new Tuple<int, double>(1, 0.5),
-                                            new Tuple<int, double>(1, 0.618),
-                }
-            }
-            );
+
         }
 
         public decimal StandardDeviation
@@ -120,13 +62,14 @@ namespace Imperatur_v2.trade.analysis
         public decimal GetValueOfDate(DateTime DateOfValue)
         {
             decimal AmountValue;
-            ICurrency USD = ImperaturGlobal.GetMoney(0, "USD").CurrencyCode;
+            //currency is correct!! No need to exchange
+            //ICurrency USD = ImperaturGlobal.GetMoney(0, "USD").CurrencyCode;
             if (DateOfValue >= DateTime.Now.Date)
             {
                 if (ImperaturGlobal.Quotes.Where(q => q.Symbol.Equals(m_oH.Instrument.Symbol)).Count() > 0)
                 {
-                    AmountValue = ImperaturGlobal.Quotes.Where(q => q.Symbol.Equals(m_oH.Instrument.Symbol)).First().LastTradePrice
-                        .Divide(ImperaturGlobal.GetPriceForCurrencyToday(USD)).Amount;
+                    AmountValue = ImperaturGlobal.Quotes.Where(q => q.Symbol.Equals(m_oH.Instrument.Symbol)).First().LastTradePrice.Amount;
+                        //.Divide(ImperaturGlobal.GetPriceForCurrencyToday(USD)).Amount;
                 }
                 else
                 {
@@ -167,6 +110,10 @@ namespace Imperatur_v2.trade.analysis
         0.382 or 0.5 of Wave A length
         C
         1.618, 0.618 or 0.5 of Wave A length
+
+Wave 2 cannot retrace more than 100% of Wave 1.
+Wave 3 can never be the shortest of waves 1, 3, and 5.
+Wave 4 can never overlap Wave 1.
          * 
          */
 
@@ -249,8 +196,90 @@ namespace Imperatur_v2.trade.analysis
                     .OrderBy(x => x.Date)
                     .ToList().ForEach(p =>
                     oD.AddRange(GetListOfPricesFromHistoricalQuoteDetails(p)));
+            //add the latest data from qoutes
+            if (EndDate.Date.Equals(DateTime.Now.Date))
+            {
+                oD.Add(Convert.ToDouble(GetValueOfDate(EndDate)));
+            }
             return oD;
             
+        }
+
+        public bool RangeConvergeWithElliotForBuy3(DateTime StartDate, DateTime EndDate, out decimal SaleValue)
+        {
+            SaleValue = 0m;
+            List<double> oPriceData = GetRangeOfDataAsDoubleIncludingLowHigh(StartDate, EndDate);
+            double[] xdata = oPriceData.Select((s, i2) => new { i2, s })
+            .Select(t => Convert.ToDouble(t.i2)).ToArray();
+            double[] ydata = oPriceData.ToArray();
+            if (Fit.Line(xdata, ydata).Item2 >= 0)
+            {
+                //Positive/Neutral momement
+                return false;
+            }
+
+            PolynomialRegression oP = new analysis.PolynomialRegression(new MathNet.Numerics.LinearAlgebra.Double.DenseVector(ydata), 20);
+
+            List<Wave> oWaves = new List<Wave>();
+
+            var WaveValues = oPriceData.Select((s, i2) => new { i2, s })
+                .ToList().Select(f => oP.Calculate(Convert.ToDouble(f.i2))).ToArray();
+
+
+            CubicSpline oSplineData = CubicSpline.InterpolateNaturalInplace(
+                xdata,
+                WaveValues
+                );
+
+            int i = 0;
+            Momentum Current = Momentum.Neutral;
+            Momentum Old = Momentum.Neutral;
+            List<double> oCalcDoublesForWave = new List<double>();
+            bool bFirst = true;
+            foreach (var fvd in WaveValues)
+            {
+                double Diff = oSplineData.Differentiate(i);
+                if (Diff < 0)
+                    Current = Momentum.Negative;
+                else if (Diff == 0)
+                    Current = Momentum.Neutral;
+                else
+                    Current = Momentum.Positive;
+
+                if (bFirst)
+                {
+                    oCalcDoublesForWave.Add(oSplineData.Interpolate(i));
+                    bFirst = false;
+                }
+                else
+                {
+                    if (Current != Old && oCalcDoublesForWave.Count > 1)
+                    {
+                        oWaves.Add(new Wave
+                        {
+                            End = oCalcDoublesForWave.Last(),
+                            Start = oCalcDoublesForWave.First(),
+                            Length = oCalcDoublesForWave.Count,
+                            Momentum = Old
+                        });
+                        oCalcDoublesForWave.Clear();
+                    }
+                    else if (Current != Old && oCalcDoublesForWave.Count <= 1)
+                    {
+                        oCalcDoublesForWave.Clear();
+                    }
+                    oCalcDoublesForWave.Add(oSplineData.Interpolate(i));
+                }
+                Old = Current;
+
+                i++;
+            }
+
+            int ff = 0;
+
+            return false;
+
+
         }
 
 
@@ -267,8 +296,33 @@ namespace Imperatur_v2.trade.analysis
             int IntervalInDays = (int)(EndDate - StartDate).TotalDays;
             List<double> oPriceData = GetRangeOfDataAsDoubleIncludingLowHigh(StartDate, EndDate);
 
+            double[] xdata = oPriceData.Select((s, i2) => new { i2, s })
+                        .Select(t => Convert.ToDouble(t.i2)).ToArray();
+            double[] ydata = oPriceData.ToArray();
+
+            double[] PolynomialRegression =  Fit.Polynomial(xdata, ydata, 1);
+
+            Func<int, double> func_GetYdata= (fx) => ydata[fx];
+            var yVector = Vector<double>.Build.Dense(xdata.Count()-1, func_GetYdata);
+            System.Numerics.Complex[] oComp = oPriceData.Select(c => (System.Numerics.Complex)c).ToArray();
+            //Vector<System.Numerics.Complex> oDV = DenseVector.Build.DenseOfArray(oComp);
+            MathNet.Numerics.LinearAlgebra.Double.DenseVector oDD = new MathNet.Numerics.LinearAlgebra.Double.DenseVector(ydata);
+
+            PolynomialRegression oP = new analysis.PolynomialRegression(oDD, 1);
+
+            foreach (double x in xdata)
+            {
+                double xres = oP.Calculate(x);
+            }
 
 
+
+
+
+            //Trend
+            Tuple<double, double> LineVector = Fit.Line(xdata, ydata);
+            double a = LineVector.Item1; // intercept
+            double b = LineVector.Item2; // slope
 
             CubicSpline oCSTotalData = CubicSpline.InterpolateAkimaSorted(
 
@@ -276,6 +330,23 @@ namespace Imperatur_v2.trade.analysis
                         .Select(t => Convert.ToDouble(t.i2)).ToArray(),
 
                          oPriceData.Select(s => Convert.ToDouble(s)).ToArray());
+
+            /*
+            //try now with matrix, split into 1000 x 1000
+            var oMatrix = Matrix<double>.Build;
+            oMatrix.Dense(1000, 1000, (mi, j) => oCSTotalData.Interpolate(mi));
+
+            
+
+            var X = Matrix<double>.CreateFromColumns(new[] {
+                new DenseVector(xdata.Length, 1),
+                new DenseVector(xdata.Select(t => Math.Sin(omega*t)).ToArray()),
+                new DenseVector(xdata.Select(t => Math.Cos(omega*t)).ToArray())});
+            var y = new DenseVector(ydata);
+            */
+
+
+
 
             //create list of Waves
             List<Wave> oWaves = new List<Wave>();
@@ -378,13 +449,14 @@ namespace Imperatur_v2.trade.analysis
             //find the elliotwave definition
             int wi = 1;
             bool isElliotWaveDef = true;
+            ElliotWaveDefinition oED = new ElliotWaveDefinition();
             foreach (Wave oW in oCleanedWaves)
             {
                 if (wi > 5 && isElliotWaveDef)
                 {
                     break;
                 }
-                ElliotWave oEw = oElliotWaveDefintion.Where(w => w.WaveNumber.Equals(wi)).First();
+                ElliotWave oEw = oED.ElliotWaveDefinitions.Where(w => w.WaveNumber.Equals(wi)).First();
                 if (!oEw.Momentum.Equals(oW.Momentum))
                 {
                     isElliotWaveDef = false;
@@ -583,9 +655,15 @@ namespace Imperatur_v2.trade.analysis
         {
             
 
-            Double[] oSample = m_oH.HistoricalQuoteDetails
+            List<double> oSample = m_oH.HistoricalQuoteDetails
                 .Where(h => h.Date >= Start.Date && h.Date.Date <= End)
-                .Select(h => Convert.ToDouble(h.Close)).ToArray();
+                .Select(h => Convert.ToDouble(h.Close)).ToList();
+
+            if (End.Date.Equals(DateTime.Now.Date))
+            {
+                oSample.Add(Convert.ToDouble(GetValueOfDate(End)));
+            }
+
 
             return Statistics.MovingAverage(oSample, oSample.Count()).ToList();
         }
@@ -618,5 +696,205 @@ namespace Imperatur_v2.trade.analysis
         public int WaveNumber;
     }
 
+    public class ElliotWaveDefinition
+    {
+        private List<ElliotWave> m_oElliotWaveDefintion;
+        private decimal m_oOffsetAllowed;
 
+        public ElliotWaveDefinition()
+        {
+            m_oElliotWaveDefintion = new List<ElliotWave>();
+            //first
+            m_oElliotWaveDefintion.Add(
+                new ElliotWave
+                {
+                    Momentum = Momentum.Negative,
+                    WaveNumber = 1
+                }
+                );
+            //second
+            m_oElliotWaveDefintion.Add(
+            new ElliotWave
+            {
+                Momentum = Momentum.Positive,
+                WaveNumber = 2,
+                RatioToWave = new List<Tuple<int, double>>
+                {
+                    new Tuple<int, double>(1, 0.382),
+                    new Tuple<int, double>(1, 0.5),
+                    new Tuple<int, double>(1, 0.618),
+                }
+            }
+            );
+            //third
+            m_oElliotWaveDefintion.Add(
+                new ElliotWave
+                {
+                    Momentum = Momentum.Negative,
+                    WaveNumber = 3,
+                    RatioToWave = new List<Tuple<int, double>>
+                    {
+                                    new Tuple<int, double>(1, 2.618),
+                                    new Tuple<int, double>(1, 1.618),
+                    }
+                }
+                );
+            //Fourth
+            m_oElliotWaveDefintion.Add(
+            new ElliotWave
+            {
+                Momentum = Momentum.Positive,
+                WaveNumber = 4,
+                RatioToWave = new List<Tuple<int, double>>
+                {
+                                            new Tuple<int, double>(1, 0.382),
+                                            new Tuple<int, double>(1, 0.5),
+                }
+            }
+            );
+            //Fifth
+            m_oElliotWaveDefintion.Add(
+            new ElliotWave
+            {
+                Momentum = Momentum.Negative,
+                WaveNumber = 4,
+                RatioToWave = new List<Tuple<int, double>>
+                {
+                                            new Tuple<int, double>(1, 0.382),
+                                            new Tuple<int, double>(1, 0.5),
+                                            new Tuple<int, double>(1, 0.618),
+                }
+            }
+            );
+        }
+
+        public List<ElliotWave> ElliotWaveDefinitions
+        {
+            get { return m_oElliotWaveDefintion; }
+        }
+
+        private bool EvaluteWave(List<Wave> Waves, int WaveIndexToEvalute, ElliotWave ElliotWaveToUse)
+        {
+            bool isElliotWaveDef;
+            if (!ElliotWaveToUse.Momentum.Equals(Waves[WaveIndexToEvalute].Momentum))
+            {
+                return false;
+            }
+            if (ElliotWaveToUse.RatioToWave != null && ElliotWaveToUse.RatioToWave.Count() > 0)
+            {
+                bool bRatioPassed = false;
+                foreach (Tuple<int, double> WaveDef in ElliotWaveToUse.RatioToWave)
+                {
+                    if (WaveIndexToEvalute - ElliotWaveToUse.WaveNumber - WaveDef.Item1 < 0)
+                    {
+                        return false;
+                    }
+                    Wave ToCompare = Waves[WaveIndexToEvalute - ElliotWaveToUse.WaveNumber - WaveDef.Item1];
+                    if (IsWaveElliot(ToCompare.Length, Waves[WaveIndexToEvalute].Length, new double[] { WaveDef.Item2 }))
+                    {
+                        bRatioPassed = true;
+                        break;
+                    }
+                }
+                isElliotWaveDef = bRatioPassed;
+            }
+            return false;
+        }
+        private bool IsWaveElliot(decimal Wave1Lenght, decimal Wave2Lenght, decimal[] WaveDef)
+        {
+            decimal divider = Wave2Lenght / Wave1Lenght;
+            foreach (decimal oDef in WaveDef)
+            {
+                if (divider >= Offset(oDef, m_oOffsetAllowed, false) && divider <= Offset(oDef, m_oOffsetAllowed, true))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private bool IsWaveElliot(double Wave1Lenght, double Wave2Lenght, double[] WaveDef)
+        {
+            double divider = Wave2Lenght / Wave1Lenght;
+            foreach (double oDef in WaveDef)
+            {
+                if (divider >= Offset(oDef, Convert.ToDouble(m_oOffsetAllowed), false) && divider <= Offset(oDef, Convert.ToDouble(m_oOffsetAllowed), true))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private decimal Offset(decimal Offset, decimal Value, bool Add)
+        {
+            return Add ? Value - Value * Offset : Value + Value * Offset;
+        }
+
+        private double Offset(double Offset, double Value, bool Add)
+        {
+            return Add ? Value - Value * Offset : Value + Value * Offset;
+        }
+
+
+        public bool FindElliottDefinitioninWaves(List<Wave> Waves)
+        {
+            //First find all waves thats corresponds to the first wave definition
+            List<Wave> FirstWaves = new List<Wave>();
+            for (int i = 0; i < Waves.Count()-1; i++)
+            {
+                if (EvaluteWave(Waves, i, m_oElliotWaveDefintion.Where(e=>e.WaveNumber == 1).First()))
+                {
+                    FirstWaves.Add(Waves[i]);
+                }
+            }
+            foreach (Wave FirstWave in FirstWaves)
+            {
+                foreach (ElliotWave oEW in m_oElliotWaveDefintion.Where(ew=>ew.WaveNumber >1).ToArray())
+                {
+                    //find next to look at
+                    bool bUseAsFirst = false; 
+                    foreach (Wave oW in FirstWaves)
+                    {
+                        //need to fix!!! We don't know the index of the wave in the list!
+                        if (bUseAsFirst)
+                        {
+                            if (EvaluteWave(Waves, i, m_oElliotWaveDefintion.Where(e => e.WaveNumber == 1).First())))
+                            bUseAsFirst = false;
+                        }
+                        if (oW.Equals(FirstWave))
+                        {
+                            bUseAsFirst = true;
+                        }
+                    }
+                       
+                }
+                
+
+            }
+
+            ElliotWave oEw = oED.ElliotWaveDefinitions.Where(w => w.WaveNumber.Equals(wi)).First();
+            if (!oEw.Momentum.Equals(oW.Momentum))
+            {
+                isElliotWaveDef = false;
+                break;
+            }
+            if (oEw.RatioToWave != null && oEw.RatioToWave.Count() > 0)
+            {
+                bool bRatioPassed = false;
+                foreach (Tuple<int, double> WaveDef in oEw.RatioToWave)
+                {
+                    Wave ToCompare = oCleanedWaves[WaveDef.Item1 - 1];
+                    if (IsWaveElliot(ToCompare.Length, oW.Length, new double[] { WaveDef.Item2 }))
+                    {
+                        bRatioPassed = true;
+                        break;
+                    }
+                }
+                isElliotWaveDef = bRatioPassed;
+            }
+
+        }
+    }
+   
 }

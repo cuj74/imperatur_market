@@ -296,7 +296,7 @@ namespace Imperatur_v2
             if (m_oImperaturData.IsAutomaticMaintained)
             {
                 
-                int[] Intervals = new int[] { 7,30,50,70,90,150,180,240,260,360,720 };
+                int[] Intervals = new int[] { 30,50,70,90,150,180,240,260,360,720 };
                 IAccountInterface oA = m_oAccountHandler.Accounts().Where(a => a.GetAccountType().Equals(AccountType.Customer)).Take(10).Last();
                 foreach (Instrument i in ImperaturGlobal.Instruments)
                 {
@@ -315,7 +315,7 @@ namespace Imperatur_v2
                     decimal SaleVal;
                     foreach (int Interval in Intervals)
                     {
-                        if (oSA.RangeConvergeWithElliotForBuy2(DateTime.Now.AddDays(-Interval), DateTime.Now, out SaleVal))
+                        if (oSA.RangeConvergeWithElliotForBuy3(DateTime.Now.AddDays(-Interval), DateTime.Now, out SaleVal))
                         {
                             int dfgdf = 0;
                         }
