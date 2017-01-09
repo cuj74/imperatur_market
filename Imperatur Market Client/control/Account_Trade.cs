@@ -28,6 +28,9 @@ namespace Imperatur_Market_Client.control
         private IAccountHandlerInterface m_oAh;
         private IAccountInterface m_oAccountData;
         private ITradeHandlerInterface m_oTradeHandler;
+        private Imperatur_v2.trade.analysis.SecurityAnalysis m_oS;
+        private int m_oGraphSettingDays;
+        private Instrument m_oI;
 
         public Account_Trade(IAccountHandlerInterface AccountHandler, ITradeHandlerInterface TradeHandler)
         {
@@ -45,6 +48,8 @@ namespace Imperatur_Market_Client.control
             comboBox_Symbols.Text = "";
             comboBox_Symbols.SelectedIndexChanged += ComboBox_Symbols_SelectedIndexChanged;
             this.textBox_Quantity.KeyDown += TextBox_Quantity_KeyDown;
+            tableLayoutPanel_Graph.Visible = false;
+            m_oGraphSettingDays = 7;
         }
 
         private void TextBox_Quantity_KeyDown(object sender, KeyEventArgs e)
@@ -99,34 +104,59 @@ namespace Imperatur_Market_Client.control
                         pictureBox_graph.Load("https://www.google.com/finance/getchart?q=" + comboBox_Symbols.SelectedItem.ToString().Replace(" ", "-"));
                         pictureBox_graph.SizeMode = PictureBoxSizeMode.StretchImage;
                     }*/
+                    m_oI = ImperaturGlobal.Instruments.Where(i => i.Symbol.Equals(comboBox_Symbols.SelectedItem.ToString())).First();
+                    m_oS = new Imperatur_v2.trade.analysis.SecurityAnalysis(m_oI); 
+                    label3.Text = m_oS.StandardDeviationForRange(DateTime.Now.AddDays(-7), DateTime.Now).ToString();
+                    label3.Text += " | " + m_oS.StandardDeviation.ToString();
+                    ChangeGraph(m_oGraphSettingDays);
 
-                    Imperatur_v2.trade.analysis.SecurityAnalysis oS = new Imperatur_v2.trade.analysis.SecurityAnalysis(ImperaturGlobal.Instruments.Where(i => i.Symbol.Equals(comboBox_Symbols.SelectedItem.ToString())).First());
-                    label3.Text = oS.StandardDeviationForRange(DateTime.Now.AddDays(-7), DateTime.Now).ToString();
-                    label3.Text += " | " + oS.StandardDeviation.ToString();
-                    List<HistoricalQuoteDetails> oH = oS.GetDataForRange(DateTime.Now.AddMonths(-1), DateTime.Now);
-                    CreateGraph(oH.Select(h => Convert.ToDouble(h.Close)).ToArray(), oH.Select(h => h.Date.ToString("yy-m-d")).ToArray());
                 }
                 else
                     label_instrument_info.Text = "N/A";
             }
         }
 
+        private void ChangeGraph(int days)
+        {
+            if (m_oS != null)
+            {
+                List<HistoricalQuoteDetails> oH = m_oS.GetDataForRange(DateTime.Now.AddDays(-days), DateTime.Now);
+                CreateGraph(oH.Select(h => Convert.ToDouble(h.Close)).ToArray(), oH.Select(h => h.Date.ToString("yyyy-mm-dd")).ToArray());
+            }
+        }
+
         private void CreateGraph(double[] yData, string[] xData)
         {
-            // generate some fake data
-            //double[] yData = { 1, 2, 3, 9, 1, 15, 3, 7, 2 };
-            //string[] schools = { "A", "B", "C", "D", "E", "F", "G", "H", "J" };
+            string ButtonName = "b_daterange0";
+            if (!tableLayoutPanel_Graph.Controls.ContainsKey(ButtonName))
+            {
+                List<string> ButtonControl = new List<string>
+                {
+                    "1d","3d", "1w", "1m", "1y"
+                };
+
+                for (int i = 0; i < 5; i++)
+                {
+                    Button b = new Button();
+                    b.Name = ButtonName.Replace("0", i.ToString());
+                    b.Text = ButtonControl[i];
+                    b.Click += BChartChange_Click;
+                    this.tableLayoutPanel_Graph.Controls.Add(b, i, 1);
+                }
+            }
 
             ZedGraphControl oZGP = new ZedGraphControl();
             //generate pane
             var pane = oZGP.GraphPane;
+            pane.Title.Text = string.Format("{0} ({1})", m_oI.Name, m_oI.Symbol);
+            pane.YAxis.Title.Text = m_oI.CurrencyCode.ToString();
 
 
-            pane.XAxis.Scale.IsVisible = true;
+            pane.XAxis.Scale.IsVisible = false;
             pane.YAxis.Scale.IsVisible = true;
 
-            pane.XAxis.MajorGrid.IsVisible = true;
-            pane.YAxis.MajorGrid.IsVisible = true;
+            pane.XAxis.MajorGrid.IsVisible = false;
+            pane.YAxis.MajorGrid.IsVisible = false;
 
             pane.XAxis.Scale.TextLabels = xData;
             pane.XAxis.Type = AxisType.Text;
@@ -155,17 +185,48 @@ namespace Imperatur_Market_Client.control
 
 
 
-            if (!tableLayoutPanel_Trade.Controls.ContainsKey(oZGP.Name))
+            if (!panel_chart.Controls.ContainsKey(oZGP.Name))
             {
-                tableLayoutPanel_Trade.Controls.Add(oZGP, 1, 0);
+                panel_chart.Controls.Add(oZGP);
             }
             else
             {
-                tableLayoutPanel_Trade.Controls.RemoveByKey(oZGP.Name);
-                tableLayoutPanel_Trade.Controls.Add(oZGP, 1, 0);
+                panel_chart.Controls.RemoveByKey(oZGP.Name);
+                panel_chart.Controls.Add(oZGP);
             }
 
+            tableLayoutPanel_Graph.Visible = true;
+        }
 
+        private void BChartChange_Click(object sender, EventArgs e)
+        {
+            //"1d","3d", "1w", "1m", "1y"
+            Button ob = (Button)sender;
+            switch (ob.Text)
+            {
+                case "1d":
+                    m_oGraphSettingDays = 1;
+                    ChangeGraph(1);
+                    break;
+                case "3d":
+                    m_oGraphSettingDays = 3;
+                    ChangeGraph(3);
+                    break;
+                case "1w":
+                    m_oGraphSettingDays = 7;
+                    ChangeGraph(7);
+                    break;
+                case "1m":
+                    m_oGraphSettingDays = 30;
+                    ChangeGraph(30);
+                    break;
+                case "1y":
+                    m_oGraphSettingDays = 360;
+                    ChangeGraph(360);
+                    break;
+                default:
+                    break;
+            }
         }
 
         public void UpdateAccountInfo(IAccountInterface AccountData)
