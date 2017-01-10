@@ -150,24 +150,26 @@ namespace Imperatur_Market_Client.control
             var pane = oZGP.GraphPane;
             pane.Title.Text = string.Format("{0} ({1})", m_oI.Name, m_oI.Symbol);
             pane.YAxis.Title.Text = m_oI.CurrencyCode.ToString();
+            pane.YAxis.Title.Text = "Date";
 
 
-            pane.XAxis.Scale.IsVisible = false;
+            pane.XAxis.Scale.IsVisible = true;
             pane.YAxis.Scale.IsVisible = true;
 
             pane.XAxis.MajorGrid.IsVisible = false;
             pane.YAxis.MajorGrid.IsVisible = false;
 
             pane.XAxis.Scale.TextLabels = xData;
-            pane.XAxis.Type = AxisType.Text;
-
-
-            //var pointsCurve;
+            pane.XAxis.Type = AxisType.Date;
+            
+           
 
             LineItem pointsCurve = pane.AddCurve("", null, yData, Color.Black);
             pointsCurve.Line.IsVisible = true;
-            pointsCurve.Line.Width = 3.0F;
+            pointsCurve.Line.Width = 1.0F;
             //Create your own scale of colors.
+
+            
 
             pointsCurve.Symbol.Fill = new Fill(new Color[] { Color.Blue, Color.Green, Color.Red });
             pointsCurve.Symbol.Fill.Type = FillType.Solid;
@@ -175,6 +177,7 @@ namespace Imperatur_Market_Client.control
             pointsCurve.Symbol.Border.IsVisible = true;
 
 
+            
 
             pane.AxisChange();
             oZGP.Refresh();
@@ -299,29 +302,34 @@ namespace Imperatur_Market_Client.control
             {
                 i = ImperaturGlobal.Instruments.Where(ins => ins.Symbol.Equals(comboBox_Symbols.SelectedItem.ToString())).First();
 
-                int[] Intervals = new int[200];
-                for (int inv = 0; inv < 199; inv++)
-                {
-                    Intervals[inv] = inv + 1 + 2;
-                }
+                int[] Intervals = Enumerable.Range(30, 180).ToArray();
+                //int[] Intervals = new int[200];
+                //for (int inv = 0; inv < 199; inv++)
+                //{
+                //    Intervals[inv] = 40 + (inv*2);
+                //}
                 SecurityAnalysis oSA = new SecurityAnalysis(i);
                 if (!oSA.HasValue)
                 {
                     return;
                 }
-                decimal SaleValue;
+                TradingRecommendation oTradeRec = new TradingRecommendation();
+                bool bReccomend = false;
                 foreach (int Interval in Intervals)
                 {
                     if (m_oAccountData.GetAvailableFunds(new List<ICurrency> { ImperaturGlobal.GetMoney(0, i.CurrencyCode).CurrencyCode }).Count > 0 && m_oAccountData.GetAvailableFunds(new List<ICurrency> { ImperaturGlobal.GetMoney(0, i.CurrencyCode).CurrencyCode }).First().Amount < 1000m)
                     {
                         break;
                     }
-                    
-                    if (oSA.RangeConvergeWithElliotForBuy(Interval, out SaleValue))
+                    bReccomend = oSA.RangeConvergeWithElliotForBuy(Interval, out oTradeRec);
+                    if (bReccomend)
+                        break;
+
+                    /*if (oSA.RangeConvergeWithElliotForBuy(Interval, out SaleValue))
                     {
                         MessageBox.Show("Yes + " + SaleValue.ToString());
 
-                        /*
+                        
                                             int Quantity = (int)(oA.GetAvailableFunds(new List<ICurrency> { GetMoney(0, i.CurrencyCode).CurrencyCode }).First().Amount
                                                 /
                                                 ImperaturGlobal.Quotes.Where(q => q.Symbol.Equals(i.Symbol)).First().LastTradePrice.Amount);
@@ -333,39 +341,22 @@ namespace Imperatur_Market_Client.control
                                                 i.Symbol,
                                                 m_oTradeHandler
                                                 );
-                                                */
+                                                
 
 
-                    }
+                    }*/
+
                 }
-
-
-                //try other dateranges
-                int[] IntervalsToStartfrom = new int[200];
-                for (int inv = 0; inv < 199; inv++)
+                if (bReccomend)
                 {
-                    Intervals[inv] = inv;
+                    MessageBox.Show(string.Format("Yes {0} at {1}", oTradeRec.BuyAtPrice ?? 0, oTradeRec.PredictedBuyDate ?? DateTime.MinValue));
                 }
-                //decimal SaleValue2;
-                int IntervalMultiplier = 10;
-                //always from todaysdate
-                foreach (int Interval in IntervalsToStartfrom)
+                else
                 {
-                    if (oSA.RangeConvergeWithElliotForBuy(DateTime.Now.AddDays(-(Interval + IntervalMultiplier)), DateTime.Now, out SaleValue))
-                    {
-                        MessageBox.Show("Yes + " + SaleValue.ToString());
-                    }
-
+                    MessageBox.Show("No reccomendation");
                 }
-                //moving range
-                foreach (int Interval in IntervalsToStartfrom)
-                {
-                    if (oSA.RangeConvergeWithElliotForBuy(DateTime.Now.AddDays(-(Interval + IntervalMultiplier)), DateTime.Now.AddDays(-Interval), out SaleValue))
-                    {
-                        MessageBox.Show("Yes + " + SaleValue.ToString());
-                    }
 
-                }
+                //moving range??
             }
         }
     }

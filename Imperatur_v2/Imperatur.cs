@@ -14,6 +14,7 @@ using Imperatur_v2.json;
 using Newtonsoft.Json.Linq;
 using Imperatur_v2.account;
 using Imperatur_v2.securites;
+using Imperatur_v2.trade.analysis;
 
 namespace Imperatur_v2
 {
@@ -295,16 +296,16 @@ namespace Imperatur_v2
             return;
             if (m_oImperaturData.IsAutomaticMaintained)
             {
-                
-                int[] Intervals = new int[] { 30,50,70,90,150,180,240,260,360,720 };
+
+                int[] Intervals = Enumerable.Range(30, 365).ToArray();//new int[] { 30,50,70,90,150,180,240,260,360,720 };
                 IAccountInterface oA = m_oAccountHandler.Accounts().Where(a => a.GetAccountType().Equals(AccountType.Customer)).Take(10).Last();
                 foreach (Instrument i in ImperaturGlobal.Instruments)
                 {
-                   
+                   /*
                     if (oA.GetAvailableFunds(new List<ICurrency> { GetMoney(0, i.CurrencyCode).CurrencyCode }).Count > 0 && oA.GetAvailableFunds(new List<ICurrency> { GetMoney(0, i.CurrencyCode).CurrencyCode }).First().Amount < 1000m)
                     {
                         continue;
-                    }
+                    }*/
                     trade.analysis.SecurityAnalysis oSA = new trade.analysis.SecurityAnalysis(i);
 
 
@@ -312,10 +313,10 @@ namespace Imperatur_v2
                     {
                         continue;
                     }
-                    decimal SaleVal;
+                    TradingRecommendation oTR = new TradingRecommendation();
                     foreach (int Interval in Intervals)
                     {
-                        if (oSA.RangeConvergeWithElliotForBuy3(DateTime.Now.AddDays(-Interval), DateTime.Now, out SaleVal))
+                        if (oSA.RangeConvergeWithElliotForBuy(DateTime.Now.AddDays(-Interval), DateTime.Now, out oTR))
                         {
                             int dfgdf = 0;
                         }

@@ -22,16 +22,19 @@ namespace Imperatur_v2.trade.analysis
     public class SecurityAnalysis : ISecurityAnalysis
     {
         HistoricalQuote m_oH;
+        ElliotWaveDefinition m_oED;
+        /*
         private decimal[] m_oWave2Definition;
         private decimal[] m_oWave3Definition;
         private decimal m_oOffsetAllowed;
-
+        */
         public SecurityAnalysis(Instrument Instrument)
         {
             m_oH = ImperaturGlobal.HistoricalQuote(Instrument);
-            m_oWave2Definition =new decimal[]{ 0.382m, 0.5m, 0.618m};
-            m_oWave3Definition = new decimal[] { 1.618m, 2.618m };
-            m_oOffsetAllowed = 0.1m;
+            m_oED = new ElliotWaveDefinition();
+            //m_oWave2Definition =new decimal[]{ 0.382m, 0.5m, 0.618m};
+            //m_oWave3Definition = new decimal[] { 1.618m, 2.618m };
+            //m_oOffsetAllowed = 0.1m;
 
         }
 
@@ -116,7 +119,7 @@ Wave 3 can never be the shortest of waves 1, 3, and 5.
 Wave 4 can never overlap Wave 1.
          * 
          */
-
+         /*
         private bool IsWaveElliot(decimal Wave1Lenght, decimal Wave2Lenght, decimal[] WaveDef)
         {
             decimal divider = Wave2Lenght / Wave1Lenght;
@@ -152,7 +155,7 @@ Wave 4 can never overlap Wave 1.
         {
             return Add ? Value - Value * Offset : Value + Value * Offset;
         }
-
+        */
         private List<decimal> GetRangeofDataPoints(DateTime From, int Take, int Skip)
         {
             return m_oH.HistoricalQuoteDetails
@@ -202,9 +205,9 @@ Wave 4 can never overlap Wave 1.
                 oD.Add(Convert.ToDouble(GetValueOfDate(EndDate)));
             }
             return oD;
-            
-        }
 
+        }
+        /*
         public bool RangeConvergeWithElliotForBuy3(DateTime StartDate, DateTime EndDate, out decimal SaleValue)
         {
             SaleValue = 0m;
@@ -280,8 +283,173 @@ Wave 4 can never overlap Wave 1.
             return false;
 
 
+        }*/
+
+        private TradingRecommendation GetTradingRecommendationFromWaves(List<ConfirmedElliotWave> ConfirmedWaves, DateTime Start, DateTime End )
+        {
+            //only calc on 4 and up
+            int MaxConfirmedWave = ConfirmedWaves.Max(c => c.WaveNumber);
+            //titta på senaste index som har confirmed wave > 3
+            int MaxIndex =  ConfirmedWaves.Where(cf=>cf.WaveNumber > 3).Max(c => c.Wave.SourceIndex);
+            if (Start.AddDays((int)(MaxIndex/4)).Date < DateTime.Now.Date.AddDays(-2)) //just to test...
+            {
+                return new TradingRecommendation();
+            }
+
+            int WaveNumber = ConfirmedWaves.Where(cf => cf.Wave.SourceIndex.Equals(MaxIndex)).First().WaveNumber;
+            if (MaxConfirmedWave > WaveNumber)
+                MaxConfirmedWave = WaveNumber;
+
+            if (MaxConfirmedWave < 4 || MaxConfirmedWave.Equals(m_oED.ElliotWaveDefinitions.Select(e=>e.WaveNumber).Max()))
+            {
+                ConfirmedElliotWave MaxConfirmedWaveObject = ConfirmedWaves.Where(f => f.Wave.SourceIndex.Equals(
+                    ConfirmedWaves.Where(cw => cw.WaveNumber.Equals(MaxConfirmedWave)).Select(e => e.Wave.SourceIndex).Max()
+                    )).First();
+                double x = MaxConfirmedWaveObject.Wave.SourceIndex / 4;
+                //DateTime ActionDateToTrade = Start.AddDays((int)x);
+                //Last wave for buy!
+                return new TradingRecommendation()
+                {
+                    BuyAtPrice = Convert.ToDecimal(MaxConfirmedWaveObject.Wave.End),
+                    PredictedBuyDate = Start.AddDays((int)x)
+                };
+            }
+
+                
+
+            ElliotWave oE = m_oED.ElliotWaveDefinitions.Where(ed => ed.WaveNumber.Equals(MaxConfirmedWave + 1)).First();
+
+            List<Wave> ToCompare = new List<Wave>();
+           // List<decimal> BuyPoints = new List<decimal>();
+            //get the new lowpoint, find the ElliotWave to compare to of this wave
+
+            foreach (var oCW in ConfirmedWaves.Where(c=>c.WaveNumber.Equals(MaxConfirmedWave)))
+            {
+                foreach (var t in oE.RatioToWave)
+                {
+                    ToCompare.AddRange(ConfirmedWaves.Where(c => c.WaveNumber.Equals(t.Item1) && m_oED.IsWaveElliot(Convert.ToDouble(c.Wave.Length), Convert.ToDouble(oCW.Wave.Length), new double[] { t.Item2 })).Select(g=>g.Wave).ToList());
+                }
+            }
+
+            //loop through the max waves detected(ToCompare) and get the new point according to oE
+            //just to be on the safe side, pick the smallest value, largets value if we are excepting a raise
+            double PredictedLenght = 0;
+            if (oE.Momentum.Equals(Momentum.Negative))
+                PredictedLenght = ToCompare.Select(s => s.Length * oE.RatioToWave.Select(t => t.Item2).Min()).Min();
+            else
+                PredictedLenght = ToCompare.Select(s => s.Length * oE.RatioToWave.Select(t => t.Item2).Min()).Max();
+
+            //nu måste vi interpola vilket värde som det skulle kunna vara, tror att vi kan räkna med samma lutning som den vi jämför med.
+            //räkna ut slope baserat på alla värden i tocompare
+            // double SlopeAvg = ToCompare.Select(x => Fit.Line(Enumerable.Range(0, (int)x.Length - 1).Select(y=>Convert.ToDouble(y)).ToArray(), new double[] { x.Start, x.End }).Item2).Average();
+            double SlopeAvg = ToCompare.Select(x => Fit.Line(new double[] { 0, 1 }, new double[] { x.Start, x.End }).Item2/x.Length).Average();
+
+            //every day consists of four values (open low high close)
+            //List<double> oPriceData = GetRangeOfDataAsDoubleIncludingLowHigh(Start, End);
+            double XWaveIndex  = (ToCompare.Select(x => x.SourceIndex).Max() + PredictedLenght)/4;
+            DateTime ActionDateToTrade = Start.AddDays((int)XWaveIndex);
+
+            return new TradingRecommendation
+            {
+                BuyAtPrice = oE.Momentum.Equals(Momentum.Negative) ? Convert.ToDecimal(ConfirmedWaves.Where(c => c.WaveNumber.Equals(MaxConfirmedWave)).Last().Wave.End + (PredictedLenght * SlopeAvg)) : (decimal?)null,
+                SellAtPrice = oE.Momentum.Equals(Momentum.Positive) ? Convert.ToDecimal(ConfirmedWaves.Where(c => c.WaveNumber.Equals(MaxConfirmedWave)).Last().Wave.End + (PredictedLenght * SlopeAvg)) : (decimal?)null,
+                PredictedBuyDate = oE.Momentum.Equals(Momentum.Negative) ? ActionDateToTrade : (DateTime?)null,
+                PredictedSellDate = oE.Momentum.Equals(Momentum.Positive) ? ActionDateToTrade : (DateTime?)null
+            };
+
         }
 
+
+        public bool RangeConvergeWithElliotForBuy(DateTime StartDate, DateTime EndDate, out TradingRecommendation TradingRecommendation)
+        {
+            List<Wave> oWaves = GetListOfWavesFromRange(StartDate, EndDate);
+            List<ConfirmedElliotWave> oConfirmedWaves;
+            TradingRecommendation = new TradingRecommendation();
+            int LastWaveNumberHit;
+            if (oWaves.Count > 1 && m_oED.FindElliottDefinitioninWaves(oWaves, out LastWaveNumberHit, out oConfirmedWaves))
+            {
+                if (LastWaveNumberHit > 0)
+                {
+                    TradingRecommendation = GetTradingRecommendationFromWaves(oConfirmedWaves, StartDate, EndDate);
+                    if (TradingRecommendation.Equals(new TradingRecommendation()))
+                        return false;
+                    else
+                        return true;
+                }
+                else
+                    return false;
+            }
+            return false;
+        }
+        //public TradingRecommendation GetRecommendationFromElliotWawes
+        private List<Wave> GetListOfWavesFromRange(DateTime StartDate, DateTime EndDate)
+        {
+            List<double> oPriceData = GetRangeOfDataAsDoubleIncludingLowHigh(StartDate, EndDate);
+            if (oPriceData.Count < 5)
+                return new List<Wave>();
+
+            CubicSpline oCSTotalData = CubicSpline.InterpolateAkimaSorted(
+
+                        oPriceData.Select((s, i2) => new { i2, s })
+                        .Select(t => Convert.ToDouble(t.i2)).ToArray(),
+
+                         oPriceData.Select(s => Convert.ToDouble(s)).ToArray());
+
+
+            //create list of Waves
+            List<Wave> oWaves = new List<Wave>();
+
+            var FirstVarDiff = oPriceData.Select((s, i2) => new { i2, s })
+                .ToList().Select(f => oCSTotalData.Differentiate(Convert.ToDouble(f.i2))).ToArray();
+
+           // List<double> MovingAverageFirst = MovingAverage(oPriceData);
+            int i = 0;
+            Momentum Current = Momentum.Neutral;
+            Momentum Old = Momentum.Neutral;
+            List<double> oCalcDoublesForWave = new List<double>();
+            bool bFirst = true;
+            foreach (var fvd in FirstVarDiff)
+            {
+                if (fvd < 0)
+                    Current = Momentum.Negative;
+                else if (fvd == 0)
+                    Current = Momentum.Neutral;
+                else
+                    Current = Momentum.Positive;
+
+                if (bFirst)
+                {
+                    oCalcDoublesForWave.Add(oCSTotalData.Interpolate(i));
+                    bFirst = false;
+                }
+                else
+                {
+                    if (Current != Old && oCalcDoublesForWave.Count > 1)
+                    {
+                        oWaves.Add(new Wave
+                        {
+                            End = oCalcDoublesForWave.Last(),
+                            Start = oCalcDoublesForWave.First(),
+                            Length = oCalcDoublesForWave.Count,
+                            Momentum = Old,
+                            SourceIndex = i
+
+                        });
+                        oCalcDoublesForWave.Clear();
+                    }
+                    else if (Current != Old && oCalcDoublesForWave.Count <= 1)
+                    {
+                        oCalcDoublesForWave.Clear();
+                    }
+                    oCalcDoublesForWave.Add(oCSTotalData.Interpolate(i));
+                }
+                Old = Current;
+
+                i++;
+            }
+            return oWaves;
+        }
+        /*
 
         public bool RangeConvergeWithElliotForBuy2(DateTime StartDate, DateTime EndDate, out decimal SaleValue)
         {
@@ -330,22 +498,6 @@ Wave 4 can never overlap Wave 1.
                         .Select(t => Convert.ToDouble(t.i2)).ToArray(),
 
                          oPriceData.Select(s => Convert.ToDouble(s)).ToArray());
-
-            /*
-            //try now with matrix, split into 1000 x 1000
-            var oMatrix = Matrix<double>.Build;
-            oMatrix.Dense(1000, 1000, (mi, j) => oCSTotalData.Interpolate(mi));
-
-            
-
-            var X = Matrix<double>.CreateFromColumns(new[] {
-                new DenseVector(xdata.Length, 1),
-                new DenseVector(xdata.Select(t => Math.Sin(omega*t)).ToArray()),
-                new DenseVector(xdata.Select(t => Math.Cos(omega*t)).ToArray())});
-            var y = new DenseVector(ydata);
-            */
-
-
 
 
             //create list of Waves
@@ -485,7 +637,8 @@ Wave 4 can never overlap Wave 1.
             return oCleanedWaves.Count() > 0 ? isElliotWaveDef : false;
 
         }
-
+        */
+        /*
         public bool RangeConvergeWithElliotForBuy(DateTime StartDate, DateTime EndDate, out decimal SaleValue)
         {
             SaleValue = -1m;
@@ -549,15 +702,7 @@ Wave 4 can never overlap Wave 1.
 
 
             //analyze second part, looking for the positive trends and analyze the lenght, compare it to first wave
-            /*
-            CubicSpline oCs = CubicSpline.InterpolateNatural(
 
-                                SecondPart.Select((s, i2) => new { i2, s })
-                                .Where(t => t.s > Wave1Value)
-                                .Select(t => Convert.ToDouble(t.i2)).ToArray(),
-
-                                 SecondPart.Select(s => Convert.ToDouble(s)).ToArray());
-                                 */
             CubicSpline oCs = CubicSpline.InterpolateNatural(
 
                                 SecondPart.Select((s, i2) => new { i2, s })
@@ -618,10 +763,10 @@ Wave 4 can never overlap Wave 1.
             //nope, try another
             return false;
         }
-
-        public bool RangeConvergeWithElliotForBuy(int IntervalInDays, out decimal SaleValue)
+        */
+        public bool RangeConvergeWithElliotForBuy(int IntervalInDays, out TradingRecommendation TradingRecommendation)
         {
-            return RangeConvergeWithElliotForBuy(DateTime.Now.AddDays(-IntervalInDays), DateTime.Now, out SaleValue);
+            return RangeConvergeWithElliotForBuy(DateTime.Now.AddDays(-IntervalInDays), DateTime.Now, out TradingRecommendation);
         }
 
         public bool RangeConvergeWithElliotForSell(int IntervalInDays)
@@ -697,13 +842,27 @@ Wave 4 can never overlap Wave 1.
         public double Start;
         public double End;
         public double Length;
+        public DateTime StartDate;
+        public int SourceIndex;
         public Momentum Momentum;
+    }
+    public struct ConfirmedElliotWave 
+    {
+        public Wave Wave;
+        public int WaveNumber;
     }
     public struct ElliotWave
     {
         public List<Tuple<int, double>> RatioToWave;
         public Momentum Momentum;
         public int WaveNumber;
+    }
+    public struct TradingRecommendation
+    {
+        public decimal? SellAtPrice;
+        public decimal? BuyAtPrice;
+        public DateTime? PredictedBuyDate;
+        public DateTime? PredictedSellDate;
     }
 
     public class ElliotWaveDefinition
@@ -713,6 +872,7 @@ Wave 4 can never overlap Wave 1.
 
         public ElliotWaveDefinition()
         {
+            m_oOffsetAllowed = 0.1m;
             m_oElliotWaveDefintion = new List<ElliotWave>();
             //first
             m_oElliotWaveDefintion.Add(
@@ -767,7 +927,7 @@ Wave 4 can never overlap Wave 1.
             new ElliotWave
             {
                 Momentum = Momentum.Negative,
-                WaveNumber = 4,
+                WaveNumber = 5,
                 RatioToWave = new List<Tuple<int, double>>
                 {
                                             new Tuple<int, double>(1, 0.382),
@@ -808,7 +968,11 @@ Wave 4 can never overlap Wave 1.
                 }
                 isElliotWaveDef = bRatioPassed;
             }
-            return false;
+            else
+            {
+                isElliotWaveDef =  true;
+            }
+            return isElliotWaveDef;
         }
         private bool IsWaveElliot(decimal Wave1Lenght, decimal Wave2Lenght, decimal[] WaveDef)
         {
@@ -823,12 +987,12 @@ Wave 4 can never overlap Wave 1.
             return false;
         }
 
-        private bool IsWaveElliot(double Wave1Lenght, double Wave2Lenght, double[] WaveDef)
+        public bool IsWaveElliot(double Wave1Lenght, double Wave2Lenght, double[] WaveDef)
         {
             double divider = Wave2Lenght / Wave1Lenght;
             foreach (double oDef in WaveDef)
             {
-                if (divider >= Offset(oDef, Convert.ToDouble(m_oOffsetAllowed), false) && divider <= Offset(oDef, Convert.ToDouble(m_oOffsetAllowed), true))
+                if (divider >= Offset(Convert.ToDouble(m_oOffsetAllowed), oDef, false) && divider <= Offset(Convert.ToDouble(m_oOffsetAllowed), oDef, true))
                 {
                     return true;
                 }
@@ -843,14 +1007,39 @@ Wave 4 can never overlap Wave 1.
 
         private double Offset(double Offset, double Value, bool Add)
         {
-            return Add ? Value - Value * Offset : Value + Value * Offset;
+            return Add ? Value + (Value * Offset) : Value - (Value * Offset);
+            //return Add ? Value + Value * Offset : Value - Value * Offset;
         }
 
 
-        public bool FindElliottDefinitioninWaves(List<Wave> Waves)
+        public bool FindElliottDefinitioninWaves(List<Wave> Waves, out int LastWaveNumber, out List<ConfirmedElliotWave> ConfirmedElliotWaves)
         {
-            return false;
+            List<Wave> oElliotConfirmedWaves = new List<Wave>();
+            ConfirmedElliotWaves = new List<ConfirmedElliotWave>();
+            LastWaveNumber = 0;
+            foreach (var ElliotDef in m_oElliotWaveDefintion)
+            {
+                
+                oElliotConfirmedWaves = Waves.Where(wl => EvaluteWave(Waves, Waves.FindIndex(a => a.Equals(wl)), ElliotDef)).ToList();
+                if (oElliotConfirmedWaves.Count() == 0)
+                {
+                    return false;
+                }
+                else
+                {
+                    LastWaveNumber = ElliotDef.WaveNumber;
+                    ConfirmedElliotWaves.AddRange(oElliotConfirmedWaves.Select(w => new ConfirmedElliotWave
+                    {
+                        Wave = w,
+                        WaveNumber = ElliotDef.WaveNumber
+                    }).ToList());
+                }
+            }
+            return true;
             /*
+            //var index = myList.FindIndex(a => a.Prop == oProp);
+            //return false;
+
             //First find all waves thats corresponds to the first wave definition
             List<Wave> FirstWaves = new List<Wave>();
             for (int i = 0; i < Waves.Count()-1; i++)
@@ -860,14 +1049,21 @@ Wave 4 can never overlap Wave 1.
                     FirstWaves.Add(Waves[i]);
                 }
             }
+
+            //find second waves that match
             foreach (Wave FirstWave in FirstWaves)
             {
+                //find the index in the original list
+                var index = Waves.FindIndex(a => a.Equals(FirstWave));
                 foreach (ElliotWave oEW in m_oElliotWaveDefintion.Where(ew=>ew.WaveNumber >1).ToArray())
                 {
+                   
                     //find next to look at
                     bool bUseAsFirst = false; 
                     foreach (Wave oW in FirstWaves)
                     {
+                        //find the 
+
                         //need to fix!!! We don't know the index of the wave in the list!
                         if (bUseAsFirst)
                         {
