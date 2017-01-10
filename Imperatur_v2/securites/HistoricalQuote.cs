@@ -17,6 +17,8 @@ namespace Imperatur_v2.securites
         private Instrument m_oInstrument;
         private List<HistoricalQuoteDetails> m_oHistoricalQuoteDetails;
 
+
+
         public HistoricalQuote(
             Exchange Exchange,
             Instrument Instrument,
@@ -80,7 +82,7 @@ namespace Imperatur_v2.securites
     {
         Google
     }
-
+    //TODO,add interface
     public class GoogleHistoricalDataInterpreter
     {
         private const string COLUMNS = "COLUMNS=";
@@ -88,23 +90,28 @@ namespace Imperatur_v2.securites
         private const string INTERVALDELIMITER = "a";
         private const string TIMEZONE_OFFSET = "TIMEZONE_OFFSET";
 
-        public HistoricalQuote GetHistoricalData(Instrument Instrument, Exchange Exchange, DateTime FromDate, bool UseDate)
+        private const int DAYINSECONDS = 86400;
+        private const int HOURINSECONDS = 3600;
+        private const int MINUTEINSECONDS = 60;
+
+
+        public HistoricalQuote GetHistoricalDataWithInterval(Instrument Instrument, Exchange Exchange, DateTime? FromDate, int IntervalSeconds)
         {
             string Symbol = Instrument.Symbol.Replace(" ", "-");
             string URL = "";
-            if (UseDate)
+            if (FromDate != (DateTime?)null)
             {
                 TimeSpan epochTicks = new TimeSpan(new DateTime(1970, 1, 1).Ticks);
-                TimeSpan unixTicks = new TimeSpan(FromDate.Ticks) - epochTicks;
-                
-                URL = string.Format("http://www.google.com/finance/getprices?q={0}&x={1}&i=86400&ts={2}&f=d,c,v,k,o,h,l", Symbol, Exchange.ExhangeCode, unixTicks.TotalSeconds.ToString());
+                TimeSpan unixTicks = new TimeSpan(FromDate.Value.Ticks) - epochTicks;
+
+                URL = string.Format("http://www.google.com/finance/getprices?q={0}&x={1}&i={2}&ts={3}&f=d,c,v,k,o,h,l", Symbol, Exchange.ExhangeCode, IntervalSeconds.ToString(), unixTicks.TotalSeconds.ToString());
             }
             else
             {
-                URL = string.Format("http://www.google.com/finance/getprices?q={0}&x={1}&i=86400&p=40Y&f=d,c,v,k,o,h,l", Symbol, Exchange.ExhangeCode);
+                URL = string.Format("http://www.google.com/finance/getprices?q={0}&x={1}&i={2}&p=40Y&f=d,c,v,k,o,h,l", Symbol, Exchange.ExhangeCode, IntervalSeconds);
             }
             string ResponseData = "";
-            
+
             using (WebClient wc = new WebClient())
             {
                 ResponseData = wc.DownloadString(URL);
@@ -221,9 +228,14 @@ namespace Imperatur_v2.securites
             return null;
         }
 
+        public HistoricalQuote GetHistoricalData(Instrument Instrument, Exchange Exchange, DateTime? FromDate)
+        {
+            return GetHistoricalDataWithInterval(Instrument, Exchange, FromDate, DAYINSECONDS);
+        }
+
         public HistoricalQuote GetHistoricalData(Instrument Instrument, Exchange Exchange)
         {
-            return GetHistoricalData(Instrument, Exchange, new DateTime(), false);
+            return GetHistoricalData(Instrument, Exchange, new DateTime());
 
         }
 

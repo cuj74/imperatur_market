@@ -52,9 +52,9 @@
             this.groupBox1.Controls.Add(this.tableLayoutPanel_Trade);
             this.groupBox1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.groupBox1.Location = new System.Drawing.Point(0, 0);
-            this.groupBox1.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.groupBox1.Margin = new System.Windows.Forms.Padding(2);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Padding = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.groupBox1.Padding = new System.Windows.Forms.Padding(2);
             this.groupBox1.Size = new System.Drawing.Size(407, 277);
             this.groupBox1.TabIndex = 0;
             this.groupBox1.TabStop = false;
@@ -69,7 +69,7 @@
             this.tableLayoutPanel_Trade.Controls.Add(this.tableLayoutPanel_Graph, 0, 1);
             this.tableLayoutPanel_Trade.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel_Trade.Location = new System.Drawing.Point(2, 15);
-            this.tableLayoutPanel_Trade.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.tableLayoutPanel_Trade.Margin = new System.Windows.Forms.Padding(2);
             this.tableLayoutPanel_Trade.Name = "tableLayoutPanel_Trade";
             this.tableLayoutPanel_Trade.RowCount = 3;
             this.tableLayoutPanel_Trade.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 33.33333F));
@@ -90,7 +90,7 @@
             this.panel1.Controls.Add(this.comboBox_Symbols);
             this.panel1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panel1.Location = new System.Drawing.Point(2, 2);
-            this.panel1.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.panel1.Margin = new System.Windows.Forms.Padding(2);
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(399, 82);
             this.panel1.TabIndex = 0;
@@ -146,7 +146,7 @@
             // textBox_Quantity
             // 
             this.textBox_Quantity.Location = new System.Drawing.Point(128, 28);
-            this.textBox_Quantity.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.textBox_Quantity.Margin = new System.Windows.Forms.Padding(2);
             this.textBox_Quantity.Name = "textBox_Quantity";
             this.textBox_Quantity.Size = new System.Drawing.Size(76, 20);
             this.textBox_Quantity.TabIndex = 2;
@@ -154,7 +154,7 @@
             // button_BuySecurity
             // 
             this.button_BuySecurity.Location = new System.Drawing.Point(220, 27);
-            this.button_BuySecurity.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.button_BuySecurity.Margin = new System.Windows.Forms.Padding(2);
             this.button_BuySecurity.Name = "button_BuySecurity";
             this.button_BuySecurity.Size = new System.Drawing.Size(56, 19);
             this.button_BuySecurity.TabIndex = 1;
@@ -166,14 +166,15 @@
             // 
             this.comboBox_Symbols.FormattingEnabled = true;
             this.comboBox_Symbols.Location = new System.Drawing.Point(12, 28);
-            this.comboBox_Symbols.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.comboBox_Symbols.Margin = new System.Windows.Forms.Padding(2);
             this.comboBox_Symbols.Name = "comboBox_Symbols";
             this.comboBox_Symbols.Size = new System.Drawing.Size(92, 21);
             this.comboBox_Symbols.TabIndex = 0;
             // 
             // tableLayoutPanel_Graph
             // 
-            this.tableLayoutPanel_Graph.ColumnCount = 6;
+            this.tableLayoutPanel_Graph.ColumnCount = 7;
+            this.tableLayoutPanel_Graph.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 50F));
             this.tableLayoutPanel_Graph.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 50F));
             this.tableLayoutPanel_Graph.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 50F));
             this.tableLayoutPanel_Graph.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 50F));
@@ -183,7 +184,7 @@
             this.tableLayoutPanel_Graph.Controls.Add(this.panel_chart, 0, 0);
             this.tableLayoutPanel_Graph.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel_Graph.Location = new System.Drawing.Point(2, 88);
-            this.tableLayoutPanel_Graph.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.tableLayoutPanel_Graph.Margin = new System.Windows.Forms.Padding(2);
             this.tableLayoutPanel_Graph.Name = "tableLayoutPanel_Graph";
             this.tableLayoutPanel_Graph.RowCount = 2;
             this.tableLayoutPanel_Graph.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
@@ -197,7 +198,7 @@
             this.panel_chart.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panel_chart.Location = new System.Drawing.Point(3, 3);
             this.panel_chart.Name = "panel_chart";
-            this.panel_chart.Size = new System.Drawing.Size(393, 52);
+            this.panel_chart.Size = new System.Drawing.Size(294, 52);
             this.panel_chart.TabIndex = 3;
             // 
             // Account_Trade
@@ -205,7 +206,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.Controls.Add(this.groupBox1);
-            this.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.Margin = new System.Windows.Forms.Padding(2);
             this.Name = "Account_Trade";
             this.Size = new System.Drawing.Size(407, 277);
             this.groupBox1.ResumeLayout(false);

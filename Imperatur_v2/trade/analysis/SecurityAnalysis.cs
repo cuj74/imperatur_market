@@ -798,17 +798,16 @@ Wave 4 can never overlap Wave 1.
 
         public List<double> MovingAverageForRange(DateTime Start, DateTime End)
         {
-            
+            //List<double> oSample = GetDataForRange(Start, End);
 
-            List<double> oSample = m_oH.HistoricalQuoteDetails
-                .Where(h => h.Date >= Start.Date && h.Date.Date <= End)
+            List<double> oSample = GetDataForRange(Start, End)
                 .Select(h => Convert.ToDouble(h.Close)).ToList();
-
+/*
             if (End.Date.Equals(DateTime.Now.Date))
             {
                 oSample.Add(Convert.ToDouble(GetValueOfDate(End)));
             }
-
+            */
 
             return Statistics.MovingAverage(oSample, oSample.Count()).ToList();
         }
@@ -820,6 +819,12 @@ Wave 4 can never overlap Wave 1.
 
         public List<HistoricalQuoteDetails> GetDataForRange(DateTime Start, DateTime End)
         {
+            if ((int)(End - Start).TotalDays == 1)
+            {
+                GoogleHistoricalDataInterpreter g = new GoogleHistoricalDataInterpreter();
+                return g.GetHistoricalDataWithInterval(m_oH.Instrument, m_oH.Exchange, Start, 60 * 10).HistoricalQuoteDetails;
+            }
+
             List<HistoricalQuoteDetails> oH = m_oH.HistoricalQuoteDetails
                     .Where(h => h.Date >= Start.Date && h.Date <= End.Date)
                     .OrderBy(x => x.Date)

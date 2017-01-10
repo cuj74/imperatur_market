@@ -290,7 +290,7 @@ namespace Imperatur_v2.shared
         public static HistoricalQuote GetHistoricalQuoteOnline(Instrument instrument, Exchange exchange, DateTime FromDate)
         {
             GoogleHistoricalDataInterpreter oGHDI = new GoogleHistoricalDataInterpreter();
-            return oGHDI.GetHistoricalData(instrument, exchange, FromDate, true);
+            return oGHDI.GetHistoricalData(instrument, exchange, FromDate);
         }
 
         private static string GetFullPathOfHistoricalDataForInstrument(Instrument Instrument)

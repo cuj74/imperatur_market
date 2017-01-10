@@ -31,6 +31,7 @@ namespace Imperatur_Market_Client.control
         private Imperatur_v2.trade.analysis.SecurityAnalysis m_oS;
         private int m_oGraphSettingDays;
         private Instrument m_oI;
+        private bool ShowMovingAverage = false;
 
         public Account_Trade(IAccountHandlerInterface AccountHandler, ITradeHandlerInterface TradeHandler)
         {
@@ -116,16 +117,23 @@ namespace Imperatur_Market_Client.control
             }
         }
 
-        private void ChangeGraph(int days)
+        private void ChangeGraph(int days, bool AddMovingAverage = false)
         {
             if (m_oS != null)
             {
                 List<HistoricalQuoteDetails> oH = m_oS.GetDataForRange(DateTime.Now.AddDays(-days), DateTime.Now);
-                CreateGraph(oH.Select(h => Convert.ToDouble(h.Close)).ToArray(), oH.Select(h => h.Date.ToString("yyyy-mm-dd")).ToArray());
+                string[] xData = days > 1 ?
+                    oH.Select(h => h.Date.ToShortDateString()).ToArray()
+                    :
+                    oH.Select(h => h.Date.ToShortTimeString()).ToArray();
+
+                
+
+                CreateGraph(oH.Select(h => Convert.ToDouble(h.Close)).ToArray(), xData, (days == 1), AddMovingAverage ? m_oS.MovingAverageForRange(DateTime.Now.AddDays(-days), DateTime.Now).ToArray() : new double[0] { });
             }
         }
 
-        private void CreateGraph(double[] yData, string[] xData)
+        private void CreateGraph(double[] yData, string[] xData, bool ShowTimeInX, double[] movingaverage_yData)
         {
             string ButtonName = "b_daterange0";
             if (!tableLayoutPanel_Graph.Controls.ContainsKey(ButtonName))
@@ -143,6 +151,12 @@ namespace Imperatur_Market_Client.control
                     b.Click += BChartChange_Click;
                     this.tableLayoutPanel_Graph.Controls.Add(b, i, 1);
                 }
+                //add moving average
+                Button bma = new Button();
+                bma.Name = "b_movingaverage";
+                bma.Text = "MA";
+                bma.Click += BChartChange_Click;
+                this.tableLayoutPanel_Graph.Controls.Add(bma, 5, 1);
             }
 
             ZedGraphControl oZGP = new ZedGraphControl();
@@ -150,8 +164,6 @@ namespace Imperatur_Market_Client.control
             var pane = oZGP.GraphPane;
             pane.Title.Text = string.Format("{0} ({1})", m_oI.Name, m_oI.Symbol);
             pane.YAxis.Title.Text = m_oI.CurrencyCode.ToString();
-            pane.YAxis.Title.Text = "Date";
-
 
             pane.XAxis.Scale.IsVisible = true;
             pane.YAxis.Scale.IsVisible = true;
@@ -160,21 +172,50 @@ namespace Imperatur_Market_Client.control
             pane.YAxis.MajorGrid.IsVisible = false;
 
             pane.XAxis.Scale.TextLabels = xData;
-            pane.XAxis.Type = AxisType.Date;
-            
-           
+            if (ShowTimeInX)
+                pane.XAxis.Type = AxisType.Text;
+            else
+                pane.XAxis.Type = AxisType.Date;
+
+            pane.YAxis.Title.Text = "Date";
+
 
             LineItem pointsCurve = pane.AddCurve("", null, yData, Color.Black);
             pointsCurve.Line.IsVisible = true;
-            pointsCurve.Line.Width = 1.0F;
-            //Create your own scale of colors.
-
+            pointsCurve.Line.Width = 0.5F;
             
-
             pointsCurve.Symbol.Fill = new Fill(new Color[] { Color.Blue, Color.Green, Color.Red });
             pointsCurve.Symbol.Fill.Type = FillType.Solid;
+            
             pointsCurve.Symbol.Type = SymbolType.Circle;
-            pointsCurve.Symbol.Border.IsVisible = true;
+            pointsCurve.Symbol.Size = 1.0F;
+            pointsCurve.Symbol.Border.IsVisible = false;
+
+            if (movingaverage_yData.Count() > 0)
+            {
+                LineItem maCurve = pane.AddCurve("", null, movingaverage_yData, Color.PaleVioletRed);
+                maCurve.Line.IsVisible = true;
+                maCurve.Line.Width = 0.5F;
+
+                maCurve.Symbol.Fill = new Fill(new Color[] { Color.Blue, Color.Green, Color.Red });
+                maCurve.Symbol.Fill.Type = FillType.Solid;
+  
+                maCurve.Symbol.Type = SymbolType.Circle;
+                maCurve.Symbol.Size = 1.0F;
+                maCurve.Symbol.Border.IsVisible = false;
+
+                //band upper
+                double[] upper = movingaverage_yData.ToList().Select(x => Convert.ToDouble(m_oS.StandardDeviation) + x).ToArray();
+                LineItem 
+                maCurveUpper = pane.AddCurve("", null, upper, Color.AliceBlue);
+                maCurveUpper.Line.IsVisible = true;
+                maCurveUpper.Line.Width = 0.5F;
+                maCurveUpper.Symbol.Fill = new Fill(new Color[] { Color.Blue, Color.Green, Color.Red });
+                maCurveUpper.Symbol.Fill.Type = FillType.Solid;
+                maCurveUpper.Symbol.Type = SymbolType.Circle;
+                maCurveUpper.Symbol.Size = 1.0F;
+                maCurveUpper.Symbol.Border.IsVisible = false;
+            }
 
 
             
@@ -205,27 +246,40 @@ namespace Imperatur_Market_Client.control
         {
             //"1d","3d", "1w", "1m", "1y"
             Button ob = (Button)sender;
+            if (ob.Name == "b_movingaverage")
+            {
+                if (ShowMovingAverage)
+                {
+                    ShowMovingAverage = false;
+                }
+                else
+                    ShowMovingAverage = true;
+
+                ChangeGraph(m_oGraphSettingDays, ShowMovingAverage);
+                return;
+            }
+
             switch (ob.Text)
             {
                 case "1d":
                     m_oGraphSettingDays = 1;
-                    ChangeGraph(1);
+                    ChangeGraph(1, ShowMovingAverage);
                     break;
                 case "3d":
                     m_oGraphSettingDays = 3;
-                    ChangeGraph(3);
+                    ChangeGraph(3, ShowMovingAverage);
                     break;
                 case "1w":
                     m_oGraphSettingDays = 7;
-                    ChangeGraph(7);
+                    ChangeGraph(7, ShowMovingAverage);
                     break;
                 case "1m":
                     m_oGraphSettingDays = 30;
-                    ChangeGraph(30);
+                    ChangeGraph(30, ShowMovingAverage);
                     break;
                 case "1y":
                     m_oGraphSettingDays = 360;
-                    ChangeGraph(360);
+                    ChangeGraph(360, ShowMovingAverage);
                     break;
                 default:
                     break;
