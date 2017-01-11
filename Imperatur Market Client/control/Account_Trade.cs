@@ -32,6 +32,7 @@ namespace Imperatur_Market_Client.control
         private int m_oGraphSettingDays;
         private Instrument m_oI;
         private bool ShowMovingAverage = false;
+        private bool ShowVolume = false;
 
         public Account_Trade(IAccountHandlerInterface AccountHandler, ITradeHandlerInterface TradeHandler)
         {
@@ -110,7 +111,7 @@ namespace Imperatur_Market_Client.control
                     label3.Text = m_oS.StandardDeviationForRange(DateTime.Now.AddDays(-7), DateTime.Now).ToString();
                     label3.Text += " | " + m_oS.StandardDeviation.ToString();
                     ChangeGraph(m_oGraphSettingDays);
-                    m_oS.GetRangeOfVolumeIndicator(DateTime.Now.AddDays(-40), DateTime.Now);
+                    
 
                 }
                 else
@@ -118,7 +119,7 @@ namespace Imperatur_Market_Client.control
             }
         }
 
-        private void ChangeGraph(int days, bool AddMovingAverage = false)
+        private void ChangeGraph(int days, bool AddMovingAverage = false, bool AddVolume = false)
         {
             if (m_oS != null)
             {
@@ -133,12 +134,21 @@ namespace Imperatur_Market_Client.control
                 {
                     oM = m_oS.BollingerForRange(DateTime.Now.AddDays(-days), DateTime.Now);
                 }
+                var oVi = m_oS.GetRangeOfVolumeIndicator(DateTime.Now.AddDays(-days), DateTime.Now)
+                                        .Where(h => h.Item1.Date >= DateTime.Now.AddDays(-days).Date && h.Item1.Date <= DateTime.Now.Date)
+                    .OrderBy(x => x.Item1)
+                    .ToList();
+                /*                if (oVi.Where(x => x.Item2.VolumeIndicatorType.Equals(VolumeIndicatorType.VolumeClimaxUp) && (int)(DateTime.Now - x.Item1).TotalDays > -2).Count() > 0)
+                                {
+                                    string DateToAlert = oVi.Where(x => x.Item2.VolumeIndicatorType.Equals(VolumeIndicatorType.VolumeClimaxUp) && (int)(DateTime.Now - x.Item1).TotalDays > -2).Last().Item1.ToString();
+                                    MessageBox.Show(DateToAlert);
+                                }*/
 
-                CreateGraph(oH.Select(h => Convert.ToDouble(h.Close)).ToArray(), xData, (days == 1), AddMovingAverage ? oM : new List<List<double>>());
+                CreateGraph(oH.Select(h => Convert.ToDouble(h.Close)).ToArray(), xData, (days == 1), AddMovingAverage ? oM : new List<List<double>>(), AddVolume ? oH.Select(x => Convert.ToDouble(x.Volume)).ToList() : new List<double>(), oVi);
             }
         }
 
-        private void CreateGraph(double[] yData, string[] xData, bool ShowTimeInX, List<List<double>> movingaverage_yData)
+        private void CreateGraph(double[] yData, string[] xData, bool ShowTimeInX, List<List<double>> movingaverage_yData, List<double> Volume, List<Tuple<DateTime, VolumeIndicator>> VI)
         {
             string ButtonName = "b_daterange0";
             if (!tableLayoutPanel_Graph.Controls.ContainsKey(ButtonName))
@@ -154,20 +164,29 @@ namespace Imperatur_Market_Client.control
                     b.Name = ButtonName.Replace("0", i.ToString());
                     b.Text = ButtonControl[i];
                     b.Click += BChartChange_Click;
-                    this.tableLayoutPanel_Graph.Controls.Add(b, i, 1);
+                    this.tableLayoutPanel_Graph.Controls.Add(b, i, 2);
                 }
                 //add moving average
                 Button bma = new Button();
                 bma.Name = "b_movingaverage";
                 bma.Text = "MA";
                 bma.Click += BChartChange_Click;
-                this.tableLayoutPanel_Graph.Controls.Add(bma, 5, 1);
+                this.tableLayoutPanel_Graph.Controls.Add(bma, 5, 2);
+
+                //add volume
+                Button bvol = new Button();
+                bvol.Name = "b_vol";
+                bvol.Text = "VOL";
+                bvol.Click += BChartChange_Click;
+                this.tableLayoutPanel_Graph.Controls.Add(bvol, 6, 2);
             }
 
             ZedGraphControl oZGP = new ZedGraphControl();
             //generate pane
             var pane = oZGP.GraphPane;
             pane.Title.Text = string.Format("{0} ({1})", m_oI.Name, m_oI.Symbol);
+            //var Y_Price = pane.AddYAxis("Price");
+            
             pane.YAxis.Title.Text = m_oI.CurrencyCode.ToString();
 
             pane.XAxis.Scale.IsVisible = true;
@@ -177,45 +196,57 @@ namespace Imperatur_Market_Client.control
             pane.YAxis.MajorGrid.IsVisible = false;
 
             pane.XAxis.Scale.TextLabels = xData;
-            if (ShowTimeInX)
-                pane.XAxis.Type = AxisType.Text;
-            else
-                pane.XAxis.Type = AxisType.Date;
+            pane.XAxis.Type = AxisType.Text;
 
-            pane.YAxis.Title.Text = "Date";
-
-
-            LineItem pointsCurve = pane.AddCurve("", null, yData, Color.Black);
-            pointsCurve.Line.IsVisible = true;
-            pointsCurve.Line.Width = 0.5F;
-            
-            pointsCurve.Symbol.Fill = new Fill(new Color[] { Color.Blue, Color.Green, Color.Red });
-            pointsCurve.Symbol.Fill.Type = FillType.Solid;
-            
-            pointsCurve.Symbol.Type = SymbolType.Circle;
-            pointsCurve.Symbol.Size = 1.0F;
-            pointsCurve.Symbol.Border.IsVisible = false;
-
+            var curve1 = new LineItem(null, null,
+               yData, Color.Black, SymbolType.None);
+            //{ YAxisIndex = Y_Price };
+            pane.CurveList.Add(curve1);
 
             foreach (List<double> oM in movingaverage_yData)
             {
-                LineItem maCurve = pane.AddCurve("", null, oM.ToArray(), Color.PaleVioletRed);
-                maCurve.Line.IsVisible = true;
-                maCurve.Line.Width = 0.5F;
+                var curve_MA = new LineItem(null, null,
+                 oM.ToArray(), Color.PaleVioletRed, SymbolType.None);
+                //{ YAxisIndex = Y_Price };
+                pane.CurveList.Add(curve_MA);
 
-                maCurve.Symbol.Fill = new Fill(new Color[] { Color.Blue, Color.Green, Color.Red });
-                maCurve.Symbol.Fill.Type = FillType.Solid;
-
-                maCurve.Symbol.Type = SymbolType.Circle;
-                maCurve.Symbol.Size = 1.0F;
-                maCurve.Symbol.Border.IsVisible = false;
 
             }
 
-   
-        
+            ZedGraphControl oZGP_vol = new ZedGraphControl();
+            if (Volume.Count() > 0)
+            {
+                
+                //generate pane
+                var pane_vol = oZGP_vol.GraphPane;
+                pane_vol.Title.Text = string.Format("{0} ({1})", m_oI.Name, m_oI.Symbol);
+                pane_vol.YAxis.Title.Text = "Volume";
+                pane_vol.XAxis.Scale.IsVisible = false;
+                pane_vol.YAxis.Scale.IsVisible = false;
+                pane_vol.XAxis.MajorGrid.IsVisible = false;
+                pane_vol.YAxis.MajorGrid.IsVisible = false;
+                pane_vol.XAxis.Type = AxisType.Text;
 
-            
+
+                BarItem VolBar = pane_vol.AddBar("", Volume.Select((s, i2) => new { i2, s })
+                               .Select(t => Convert.ToDouble(t.i2)).ToArray(), Volume.ToArray(), Color.Aqua);
+
+                double[] ViIndication = VI.Select(x => x.Item2.VolumeIndicatorType.Equals(VolumeIndicatorType.VolumeClimaxUp) ? Volume.Max() : 0).ToArray();
+                BarItem VolIBar = pane_vol.AddBar("", Volume.Select((s, i2) => new { i2, s })
+                .Select(t => Convert.ToDouble(t.i2)).ToArray(), ViIndication, Color.Red);
+
+                pane_vol.AxisChange();
+                oZGP_vol.Refresh();
+                oZGP_vol.Name = "Volume";
+                oZGP_vol.Dock = DockStyle.Fill;
+
+
+            }
+
+
+
+
+
 
             pane.AxisChange();
             oZGP.Refresh();
@@ -229,11 +260,17 @@ namespace Imperatur_Market_Client.control
             if (!panel_chart.Controls.ContainsKey(oZGP.Name))
             {
                 panel_chart.Controls.Add(oZGP);
+                if (Volume.Count() > 0 && ShowVolume)
+                    panel_vol.Controls.Add(oZGP_vol);
             }
             else
             {
                 panel_chart.Controls.RemoveByKey(oZGP.Name);
                 panel_chart.Controls.Add(oZGP);
+
+                panel_vol.Controls.RemoveByKey(oZGP_vol.Name);
+                if (Volume.Count() > 0 && ShowVolume)
+                    panel_vol.Controls.Add(oZGP_vol);
             }
 
             tableLayoutPanel_Graph.Visible = true;
@@ -252,31 +289,44 @@ namespace Imperatur_Market_Client.control
                 else
                     ShowMovingAverage = true;
 
-                ChangeGraph(m_oGraphSettingDays, ShowMovingAverage);
+                ChangeGraph(m_oGraphSettingDays, ShowMovingAverage, ShowVolume);
                 return;
             }
+            if (ob.Name == "b_vol")
+            {
+                if (ShowVolume)
+                {
+                    ShowVolume = false;
+                }
+                else
+                    ShowVolume = true;
+
+                ChangeGraph(m_oGraphSettingDays, ShowMovingAverage, ShowVolume);
+                return;
+            }
+
 
             switch (ob.Text)
             {
                 case "1d":
                     m_oGraphSettingDays = 1;
-                    ChangeGraph(1, ShowMovingAverage);
+                    ChangeGraph(1, ShowMovingAverage, ShowVolume);
                     break;
                 case "3d":
                     m_oGraphSettingDays = 3;
-                    ChangeGraph(3, ShowMovingAverage);
+                    ChangeGraph(3, ShowMovingAverage, ShowVolume);
                     break;
                 case "1w":
                     m_oGraphSettingDays = 7;
-                    ChangeGraph(7, ShowMovingAverage);
+                    ChangeGraph(7, ShowMovingAverage, ShowVolume);
                     break;
                 case "1m":
                     m_oGraphSettingDays = 30;
-                    ChangeGraph(30, ShowMovingAverage);
+                    ChangeGraph(30, ShowMovingAverage, ShowVolume);
                     break;
                 case "1y":
                     m_oGraphSettingDays = 360;
-                    ChangeGraph(360, ShowMovingAverage);
+                    ChangeGraph(360, ShowMovingAverage, ShowVolume);
                     break;
                 default:
                     break;

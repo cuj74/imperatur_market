@@ -90,9 +90,9 @@ namespace Imperatur_v2.securites
         private const string INTERVALDELIMITER = "a";
         private const string TIMEZONE_OFFSET = "TIMEZONE_OFFSET";
 
-        private const int DAYINSECONDS = 86400;
-        private const int HOURINSECONDS = 3600;
-        private const int MINUTEINSECONDS = 60;
+        public const int DAYINSECONDS = 86400;
+        public const int HOURINSECONDS = 3600;
+        public const int MINUTEINSECONDS = 60;
 
 
         public HistoricalQuote GetHistoricalDataWithInterval(Instrument Instrument, Exchange Exchange, DateTime? FromDate, int IntervalSeconds)
@@ -104,7 +104,7 @@ namespace Imperatur_v2.securites
                 TimeSpan epochTicks = new TimeSpan(new DateTime(1970, 1, 1).Ticks);
                 TimeSpan unixTicks = new TimeSpan(FromDate.Value.Ticks) - epochTicks;
 
-                URL = string.Format("http://www.google.com/finance/getprices?q={0}&x={1}&i={2}&ts={3}&f=d,c,v,k,o,h,l", Symbol, Exchange.ExhangeCode, IntervalSeconds.ToString(), unixTicks.TotalSeconds.ToString());
+                URL = string.Format("http://www.google.com/finance/getprices?q={0}&x={1}&i={2}&ts={3}&f=d,c,v,k,o,h,l", Symbol, Exchange.ExhangeCode, IntervalSeconds.ToString(), ((int)unixTicks.TotalSeconds).ToString());
             }
             else
             {

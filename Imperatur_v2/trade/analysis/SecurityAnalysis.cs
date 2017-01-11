@@ -346,14 +346,19 @@ namespace Imperatur_v2.trade.analysis
 
         public List<HistoricalQuoteDetails> GetDataForRange(DateTime Start, DateTime End)
         {
-            if ((int)(End - Start).TotalDays == 1)
+            if ((int)(End - Start).TotalDays <= 31)
             {
+                //fix the dates, since google keeps sending to much
                 GoogleHistoricalDataInterpreter g = new GoogleHistoricalDataInterpreter();
-                return g.GetHistoricalDataWithInterval(m_oH.Instrument, m_oH.Exchange, Start, 60 * 10).HistoricalQuoteDetails;
+                return g.GetHistoricalDataWithInterval(m_oH.Instrument, m_oH.Exchange, Start, GoogleHistoricalDataInterpreter.HOURINSECONDS).HistoricalQuoteDetails
+                    .Where(h => h.Date.Date >= Start.Date && h.Date.Date <= End.Date)
+                    .OrderBy(x => x.Date)
+                    .ToList();
             }
+            
 
             List<HistoricalQuoteDetails> oH = m_oH.HistoricalQuoteDetails
-                    .Where(h => h.Date >= Start.Date && h.Date <= End.Date)
+                    .Where(h => h.Date.Date >= Start.Date && h.Date.Date <= End.Date)
                     .OrderBy(x => x.Date)
                     .ToList();
 
@@ -405,14 +410,17 @@ namespace Imperatur_v2.trade.analysis
         public List<Tuple<DateTime, VolumeIndicator>> GetRangeOfVolumeIndicator(DateTime Start, DateTime End)
         {
             List<Tuple<DateTime, VolumeIndicator>> oVolumeIndicatorData = new List<Tuple<DateTime, VolumeIndicator>>();
+            
             DateTime StartWithOffset = Start;
             if ((int)(End - Start).TotalDays < 20)
             {
-                StartWithOffset = Start.AddDays(20 - (int)(End - Start).TotalDays);
+                StartWithOffset = Start.AddDays(-(20 - (int)(End - Start).TotalDays));
             }
-            double[] VolumeList = GetDataForRange(StartWithOffset, End).Select(x => Convert.ToDouble(x.Volume)).ToArray();
+            var HistData = GetDataForRange(StartWithOffset, End);
+
+            double[] VolumeList = HistData.Select(x => Convert.ToDouble(x.Volume)).ToArray();
             double StdForVolume = VolumeList.StandardDeviation();
-            double StdForPrice = GetDataForRange(StartWithOffset, End).Select(x => Convert.ToDouble(x.Close)).ToArray().StandardDeviation();
+            double StdForPrice = HistData.Select(x => Convert.ToDouble(x.Close)).ToArray().StandardDeviation();
 
             CubicSpline oCSTotalData = CubicSpline.InterpolateNaturalSorted(
             VolumeList.Select((s, i2) => new { i2, s })
@@ -424,14 +432,14 @@ namespace Imperatur_v2.trade.analysis
                 .ToList().Select(f => oCSTotalData.Differentiate(Convert.ToDouble(f.i2))).ToArray();
 
             int i = 0;
-            foreach (var hqd in GetDataForRange(StartWithOffset, End))
+            foreach (var hqd in HistData)
             {
 
                 VolumeIndicator oVi = new VolumeIndicator();
-                bool bHighVolume = (ListOfDiff[i] > StdForVolume);
-                bool bLowVolume = (-ListOfDiff[i] > StdForVolume);
+                bool bHighVolume = (ListOfDiff[i] > 0 && VolumeList[i] > StdForVolume);
+                bool bLowVolume = (ListOfDiff[i] <= 0 && VolumeList[i] < StdForVolume);
                 bool bHighRange = (Convert.ToDouble(hqd.Close - hqd.Open) > StdForPrice);
-                bool bLowRange = (Convert.ToDouble(hqd.Open - hqd.Close) > StdForPrice);
+                bool bLowRange = (-Convert.ToDouble(hqd.Open - hqd.Close) > StdForPrice);
                 bool bUpBars = (hqd.Close > hqd.Open);
                 bool bNeutralBars = (hqd.Close.Equals(hqd.Open));
 
