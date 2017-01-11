@@ -172,8 +172,6 @@ namespace Imperatur_v2
             ImperaturData oD = new ImperaturData();
             try
             {
-                //JObject oJ = (JObject)DeserializeJSON.DeserializeObjectFromFile(string.Format(@"{0}\{1}", SystemLocation, SystemDataFile));
-                //oD = oJ.ToObject<ImperaturData>();
                 oD = (ImperaturData)DeserializeJSON.DeserializeObjectFromFile(string.Format(@"{0}\{1}", SystemLocation, SystemDataFile));
             }
             catch (Exception ex)
@@ -181,8 +179,7 @@ namespace Imperatur_v2
                 int ff = 0;
             }
             return oD;
-            //return (ImperaturData)DeserializeJSON.DeserializeObjectFromFile(string.Format(@"{0}\{1}", SystemLocation, SystemDataFile));
-        }
+         }
         private bool CreateImperaturDataFromSystemData(ImperaturData Systemdata)
         {
             if (
@@ -297,17 +294,11 @@ namespace Imperatur_v2
             if (m_oImperaturData.IsAutomaticMaintained)
             {
 
-                int[] Intervals = Enumerable.Range(30, 365).ToArray();//new int[] { 30,50,70,90,150,180,240,260,360,720 };
+                int[] Intervals = Enumerable.Range(30, 365).ToArray();
                 IAccountInterface oA = m_oAccountHandler.Accounts().Where(a => a.GetAccountType().Equals(AccountType.Customer)).Take(10).Last();
                 foreach (Instrument i in ImperaturGlobal.Instruments)
                 {
-                   /*
-                    if (oA.GetAvailableFunds(new List<ICurrency> { GetMoney(0, i.CurrencyCode).CurrencyCode }).Count > 0 && oA.GetAvailableFunds(new List<ICurrency> { GetMoney(0, i.CurrencyCode).CurrencyCode }).First().Amount < 1000m)
-                    {
-                        continue;
-                    }*/
                     trade.analysis.SecurityAnalysis oSA = new trade.analysis.SecurityAnalysis(i);
-
 
                     if (!oSA.HasValue)
                     {
@@ -322,36 +313,6 @@ namespace Imperatur_v2
                         }
 
                     }
-                    /*
-                    foreach (int Interval in Intervals)
-                    {
-                        if (oA.GetAvailableFunds(new List<ICurrency> { GetMoney(0, i.CurrencyCode).CurrencyCode }).Count > 0 && oA.GetAvailableFunds(new List<ICurrency> { GetMoney(0, i.CurrencyCode).CurrencyCode }).First().Amount < 1000m)
-                        {
-                            break;
-                        }
-                        decimal SaleValue;
-                        if (oSA.RangeConvergeWithElliotForBuy(Interval, out SaleValue))
-                        {
-                            
-                            //calculate how many we can buy
-                            //decimal Avail = oA.GetAvailableFunds(new List<ICurrency> { GetMoney(0, i.CurrencyCode).CurrencyCode }).First().Amount;
-                            //decimal price = ImperaturGlobal.Quotes.Where(q => q.Symbol.Equals(i.Symbol)).First().LastTradePrice.Amount;
-
-                            int Quantity = (int) (oA.GetAvailableFunds(new List<ICurrency> { GetMoney(0, i.CurrencyCode).CurrencyCode }).First().Amount
-                                /
-                                ImperaturGlobal.Quotes.Where(q => q.Symbol.Equals(i.Symbol)).First().LastTradePrice.Amount);
-
-
-                            //ImperaturGlobal.Quotes.Where(q => q.Symbol.Equals(comboBox_Symbols.SelectedItem.ToString())).First().LastTradePrice.Multiply(Convert.ToDecimal(QuantityToBuy))
-                            m_oAccountHandler.Accounts()[0].AddHoldingToAccount(
-                                Quantity - 1,
-                                i.Symbol,
-                                m_oTradeHandler
-                                );
-
-                            
-                        }
-                    }*/
                 }
             }
 

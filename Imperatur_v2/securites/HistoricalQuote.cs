@@ -249,11 +249,6 @@ namespace Imperatur_v2.securites
             if (!decimal.TryParse(incomingValue, NumberStyles.Number, CultureInfo.InvariantCulture, out val1))
                 return 0m;
             return val1;
-            /*
-            decimal val;
-            if (!decimal.TryParse(incomingValue.Replace(",", "").Replace(".", ""), NumberStyles.Number, CultureInfo.InvariantCulture, out val))
-                return 0m;
-            return val / 100;*/
         }
 
         private  DateTime GetDateFromIntervalData(int IntervalAmount, int IntervalSeconds, DateTime StartDateTime )

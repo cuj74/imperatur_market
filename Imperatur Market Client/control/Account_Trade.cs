@@ -110,6 +110,7 @@ namespace Imperatur_Market_Client.control
                     label3.Text = m_oS.StandardDeviationForRange(DateTime.Now.AddDays(-7), DateTime.Now).ToString();
                     label3.Text += " | " + m_oS.StandardDeviation.ToString();
                     ChangeGraph(m_oGraphSettingDays);
+                    m_oS.GetRangeOfVolumeIndicator(DateTime.Now.AddDays(-40), DateTime.Now);
 
                 }
                 else
@@ -127,13 +128,17 @@ namespace Imperatur_Market_Client.control
                     :
                     oH.Select(h => h.Date.ToShortTimeString()).ToArray();
 
-                
+                List<List<double>> oM = new List<List<double>>();
+                if (AddMovingAverage)
+                {
+                    oM = m_oS.BollingerForRange(DateTime.Now.AddDays(-days), DateTime.Now);
+                }
 
-                CreateGraph(oH.Select(h => Convert.ToDouble(h.Close)).ToArray(), xData, (days == 1), AddMovingAverage ? m_oS.MovingAverageForRange(DateTime.Now.AddDays(-days), DateTime.Now).ToArray() : new double[0] { });
+                CreateGraph(oH.Select(h => Convert.ToDouble(h.Close)).ToArray(), xData, (days == 1), AddMovingAverage ? oM : new List<List<double>>());
             }
         }
 
-        private void CreateGraph(double[] yData, string[] xData, bool ShowTimeInX, double[] movingaverage_yData)
+        private void CreateGraph(double[] yData, string[] xData, bool ShowTimeInX, List<List<double>> movingaverage_yData)
         {
             string ButtonName = "b_daterange0";
             if (!tableLayoutPanel_Graph.Controls.ContainsKey(ButtonName))
@@ -191,32 +196,24 @@ namespace Imperatur_Market_Client.control
             pointsCurve.Symbol.Size = 1.0F;
             pointsCurve.Symbol.Border.IsVisible = false;
 
-            if (movingaverage_yData.Count() > 0)
+
+            foreach (List<double> oM in movingaverage_yData)
             {
-                LineItem maCurve = pane.AddCurve("", null, movingaverage_yData, Color.PaleVioletRed);
+                LineItem maCurve = pane.AddCurve("", null, oM.ToArray(), Color.PaleVioletRed);
                 maCurve.Line.IsVisible = true;
                 maCurve.Line.Width = 0.5F;
 
                 maCurve.Symbol.Fill = new Fill(new Color[] { Color.Blue, Color.Green, Color.Red });
                 maCurve.Symbol.Fill.Type = FillType.Solid;
-  
+
                 maCurve.Symbol.Type = SymbolType.Circle;
                 maCurve.Symbol.Size = 1.0F;
                 maCurve.Symbol.Border.IsVisible = false;
 
-                //band upper
-                double[] upper = movingaverage_yData.ToList().Select(x => Convert.ToDouble(m_oS.StandardDeviation) + x).ToArray();
-                LineItem 
-                maCurveUpper = pane.AddCurve("", null, upper, Color.AliceBlue);
-                maCurveUpper.Line.IsVisible = true;
-                maCurveUpper.Line.Width = 0.5F;
-                maCurveUpper.Symbol.Fill = new Fill(new Color[] { Color.Blue, Color.Green, Color.Red });
-                maCurveUpper.Symbol.Fill.Type = FillType.Solid;
-                maCurveUpper.Symbol.Type = SymbolType.Circle;
-                maCurveUpper.Symbol.Size = 1.0F;
-                maCurveUpper.Symbol.Border.IsVisible = false;
             }
 
+   
+        
 
             
 

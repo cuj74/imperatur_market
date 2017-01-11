@@ -53,12 +53,6 @@ namespace Imperatur_v2.handler
                 }
                 ).Where(a=>a.Hit).Select(a=>a.Account).ToList();
 
-/*
-            return Accounts().Where(
-                a => m_oSearchObjects FindTextInObject(Search, a.GetCustomer().FirstName)
-                ||
-                a.GetCustomer().LastName.Contains(Search)
-                ).ToList();*/
         }
 
         public bool AddHoldingToAccount(Guid Identifier, int Quantity, string Ticker)
@@ -89,7 +83,6 @@ namespace Imperatur_v2.handler
         {
             foreach (IAccountInterface item in m_oAccounts)
             {
-                //item.SaveAccountEvent -= AccountPropertyChanged;
                 item.SaveAccountEvent -= Item_SaveAccountEvent;
                 item.SaveAccountEvent += Item_SaveAccountEvent;
             }
@@ -191,21 +184,6 @@ namespace Imperatur_v2.handler
 
         private bool SaveSingleAccount(IAccountInterface oA)
         {
-
-            //ImperaturGlobal.Kernel
-
-            //GetMappingRowToObjects(typeof(IAccountInterface), new object[] { oA })
-            //(IAccountInterface)oA.MemberwiseClone()
-
-            //Customer Customer, AccountType AccountType, string AccountName, ObservableRangeCollection<ITransactionInterface> Transactions, Guid Identifier)
-            //IAccountInterface Copy = ImperaturGlobal.Kernel.Get<IAccountInterface>(
-            //    new Ninject.Parameters.ConstructorArgument("Customer", oA.GetCustomer()),
-            //    new Ninject.Parameters.ConstructorArgument("AccountType", oA.GetAccountType()),
-            //    new Ninject.Parameters.ConstructorArgument("AccountName", oA.AccountName),
-            //    new Ninject.Parameters.ConstructorArgument("Transactions", oA.Transactions),
-            //    new Ninject.Parameters.ConstructorArgument("Identifier", oA.Identifier)
-            // );
-
             json.SerializeJSONdata.SerializeObject((Account)oA,
               string.Format(@"{0}\{1}\{2}.json", ImperaturGlobal.SystemData.SystemDirectory, ImperaturGlobal.SystemData.AcccountDirectory, oA.Identifier));
             return true;
@@ -227,7 +205,6 @@ namespace Imperatur_v2.handler
 
         public List<IAccountInterface> Accounts()
         {
-            //TODO lägg till en try
             if (TryLoadFromStorage == false)
             {
                 try
@@ -261,29 +238,9 @@ namespace Imperatur_v2.handler
 
             foreach(string Fa in files)
             {
-                //Account a = JsonConvert.DeserializeObject<Account>(json.DeserializeJSON.DeserializeObjectFromFile(Fa).ToString());
-
-                //IAccountInterface a2 = JsonConvert.DeserializeObject<Account>(json.DeserializeJSON.DeserializeObjectFromFile(Fa).ToString());
-
-                //int gg = 0;
-                //object o = json.DeserializeJSON.DeserializeObjectFromFile(Fa);
                 AccountFromFiles.Add((IAccountInterface)json.DeserializeJSON.DeserializeObjectFromFile(Fa));
-                //var settings = new Newtonsoft.Json.JsonSerializerSettings() { ContractResolver = new json.AllFieldsContractResolver(), TypeNameHandling = TypeNameHandling.All };
-                //IAccountInterface oa =JsonConvert.DeserializeObject<IAccountInterface>(o.ToString(), settings);
-
-                //AccountFromFiles.Add((IAccountInterface)o);
-                //IAccountInterface oa = (IAccountInterface)o;
-
-                //AccountFromFiles.Add(JsonConvert.DeserializeObject<IAccountInterface>(json.DeserializeJSON.DeserializeObjectFromFile(Fa).ToString()));
-                /*
-                AccountFromFiles.Add(
-                    (IAccountInterface)Newtonsoft.Json.JsonConvert.DeserializeObject(
-                    json.DeserializeJSON.DeserializeObjectFromFile(Fa).ToString()
-                    ));
-                    */
             }
             return AccountFromFiles;
-
 
         }
 

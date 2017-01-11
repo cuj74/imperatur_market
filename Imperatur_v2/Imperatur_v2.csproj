@@ -95,11 +95,16 @@
     <Compile Include="shared\ObjectReflection.cs" />
     <Compile Include="shared\ObjectTextSearch.cs" />
     <Compile Include="shared\ObservableRangeCollection.cs" />
+    <Compile Include="trade\analysis\ElliottWaveDefinition.cs" />
+    <Compile Include="trade\analysis\ElliottWaveDefinitionInterface.cs" />
     <Compile Include="trade\analysis\PolynomialRegression.cs" />
     <Compile Include="trade\analysis\SecurityAnalysis.cs" />
     <Compile Include="trade\analysis\SecurityAnalysisInterface.cs" />
+    <Compile Include="trade\analysis\VolumeIndicator.cs" />
     <Compile Include="trade\Holding.cs" />
     <Compile Include="trade\HoldingInterface.cs" />
+    <Compile Include="trade\recommendation\TradingRecommendation.cs" />
+    <Compile Include="trade\recommendation\TradingRecommendationInterface.cs" />
     <Compile Include="trade\Trade.cs" />
     <Compile Include="trade\TradeInterface.cs" />
   </ItemGroup>
@@ -176,6 +181,7 @@
       <LastGenOutput>Reference.cs</LastGenOutput>
     </None>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

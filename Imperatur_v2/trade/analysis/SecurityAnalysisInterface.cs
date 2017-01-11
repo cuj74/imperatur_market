@@ -16,7 +16,9 @@ namespace Imperatur_v2.trade.analysis
         bool RangeConvergeWithElliotForSell(int IntervalInDays);
         bool HasValue { get; }
         List<double> MovingAverageForRange(DateTime Start, DateTime End);
+        List<List<double>> BollingerForRange(DateTime Start, DateTime End);
         List<HistoricalQuoteDetails> GetDataForRange(DateTime Start, DateTime End);
+        List<Tuple<DateTime, VolumeIndicator>> GetRangeOfVolumeIndicator(DateTime Start, DateTime End);
 
     }
 }
