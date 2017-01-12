@@ -337,6 +337,7 @@ namespace Imperatur_Market_Client
 
         private void SaveSystemLocationToCache(ImperaturData oNewSystem)
         {
+            string DefaultMarker = ":def:";
             string SystemLocationCacheFilePath = AppDomain.CurrentDomain.BaseDirectory + @"\" + this.SystemLocationCacheFile;
             string PossibleNewSystem = (oNewSystem != null && oNewSystem.SystemDirectory != null && oNewSystem.SystemDirectory != "") ?
                     oNewSystem.SystemDirectory
@@ -345,7 +346,7 @@ namespace Imperatur_Market_Client
             {
                 try
                 {
-                    File.AppendAllText(SystemLocationCacheFilePath, PossibleNewSystem + Environment.NewLine);
+                    File.AppendAllText(SystemLocationCacheFilePath, DefaultMarker + PossibleNewSystem + Environment.NewLine);
                 }
                 catch(Exception ex)
                 {
@@ -356,11 +357,27 @@ namespace Imperatur_Market_Client
             else
             {
                 //is the directory already in the cache?
-                try { 
-                    if (Array.Find(File.ReadAllLines(SystemLocationCacheFilePath), element => element.Equals(PossibleNewSystem)) != null)
+                try {
+                    string[] SystemLocationsFromFile = File.ReadAllLines(SystemLocationCacheFilePath);
+
+                    //system exists without default marker
+                    if (Array.Find(SystemLocationsFromFile, element => element.Equals(PossibleNewSystem)) != null)
+                    {
+                        //add the defaultmarker and save
+                        //first remove file
+                        File.Delete(SystemLocationCacheFilePath);
+                        File.AppendAllText(SystemLocationCacheFilePath, string.Join(Environment.NewLine, SystemLocationsFromFile
+                            .Where(element => !element.Equals(PossibleNewSystem)).ToArray()) + Environment.NewLine);
+                        File.AppendAllText(SystemLocationCacheFilePath, DefaultMarker + PossibleNewSystem + Environment.NewLine);
                         return;
-                    else
+                    }
+                    //system does not exists with default marker
+                    else if (Array.Find(SystemLocationsFromFile, element => element.Equals(DefaultMarker + PossibleNewSystem)) == null)
+                    {
                         File.AppendAllText(SystemLocationCacheFilePath, PossibleNewSystem + Environment.NewLine);
+                    }
+
+                        
                 }
                 catch(Exception ex)
                 {

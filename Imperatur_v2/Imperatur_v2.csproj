@@ -76,6 +76,12 @@
     <Compile Include="monetary\MoneyInterface.cs" />
     <Compile Include="monetary\Transaction.cs" />
     <Compile Include="monetary\TransactionInterface.cs" />
+    <Compile Include="order\Order.cs" />
+    <Compile Include="order\OrderInterface.cs" />
+    <Compile Include="order\OrderQueue.cs" />
+    <Compile Include="order\OrderQueueInterface.cs" />
+    <Compile Include="order\Trigger.cs" />
+    <Compile Include="order\TriggerInterface.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="rest\Rest.cs" />
     <Compile Include="rest\RestInterface.cs" />

@@ -48,6 +48,14 @@ namespace Imperatur_v2.trade.analysis
             }
         }
 
+        public Instrument Instrument
+        {
+            get
+            {
+                return this.m_oH.Instrument;
+            }
+        }
+
         public decimal ChangeSince(DateTime From)
         {
             return (GetValueOfDate(DateTime.Now) / GetValueOfDate(From)) * 100;
@@ -344,18 +352,34 @@ namespace Imperatur_v2.trade.analysis
             return Statistics.MovingAverage(Sample, Sample.Count()).ToList();
         }
 
+        private List<HistoricalQuoteDetails> GetExternalDataForRange(DateTime Start, DateTime End, int Interval)
+        {
+            //fix the dates, since google keeps sending to much
+            GoogleHistoricalDataInterpreter g = new GoogleHistoricalDataInterpreter();
+            return g.GetHistoricalDataWithInterval(m_oH.Instrument, m_oH.Exchange, Start, Interval).HistoricalQuoteDetails
+                .Where(h => h.Date.Date >= Start.Date && h.Date.Date <= End.Date)
+                .OrderBy(x => x.Date)
+                .ToList();
+        }
+
         public List<HistoricalQuoteDetails> GetDataForRange(DateTime Start, DateTime End)
         {
-            if ((int)(End - Start).TotalDays <= 31)
+            int Interval = 0;
+
+            if ((int)(End - Start).TotalDays <= 1)
             {
-                //fix the dates, since google keeps sending to much
-                GoogleHistoricalDataInterpreter g = new GoogleHistoricalDataInterpreter();
-                return g.GetHistoricalDataWithInterval(m_oH.Instrument, m_oH.Exchange, Start, GoogleHistoricalDataInterpreter.HOURINSECONDS).HistoricalQuoteDetails
-                    .Where(h => h.Date.Date >= Start.Date && h.Date.Date <= End.Date)
-                    .OrderBy(x => x.Date)
-                    .ToList();
+                Interval = GoogleHistoricalDataInterpreter.MINUTEINSECONDS * 10;
+            }
+            else if ((int)(End - Start).TotalDays <= 31)
+            {
+                Interval = GoogleHistoricalDataInterpreter.HOURINSECONDS;
             }
             
+            if (Interval > 0)
+            {
+                return GetExternalDataForRange(Start, End, Interval);
+            }
+                       
 
             List<HistoricalQuoteDetails> oH = m_oH.HistoricalQuoteDetails
                     .Where(h => h.Date.Date >= Start.Date && h.Date.Date <= End.Date)
@@ -364,48 +388,85 @@ namespace Imperatur_v2.trade.analysis
 
             return oH;
         }
-
-        public List<List<double>> BollingerForRange(DateTime Start, DateTime End)
+        /// <summary>
+        /// Returns a list of lists of double:
+        /// List of doubles acting as a centerline with a windowsize of variable Period.
+        /// List of doubles containing points for the upperband, with a standard deviation for each point plus times the Mulitply.
+        /// List of doubles containing points for the lowerband, with a standard deviation for each point minus times the Mulitply.
+        /// </summary>
+        /// <param name="Start">The start of the range to get data from.</param>
+        /// <param name="End">The end of the range to get data from.</param>
+        /// <param name="Period">The period to calculate the moving average window. Default is 20.</param>
+        /// <param name="Multiply">The multiply for the upper and lower points. Defualt is 2.</param>
+        /// <returns>List of List of doubles, first the upper, then the center and last is the lower</returns>
+        public List<List<double>> StandardBollingerForRange(DateTime Start, DateTime End, int Period =20, double Multiply = 2)
         {
-            //-20 to calc std, will not work since we are mixing days and hours....
-            double[] DataRange = GetDataForRange(Start, End).Select(q => Convert.ToDouble(q.Close)).ToArray();
-
-
-            List<double> StdList = new List<double>();
-
-            double[] CenterLine = Statistics.MovingAverage(DataRange, 20).ToArray();
-            //start by adding 1 to the standard deviation
-
-            int skip = 0;
-            int take = 1;
-            int maxtake = 20;
-
-            for (int i = 1; i < DataRange.Length; i++)
+            return BollingerForRange(Start, End, Period, new double[] { Multiply});
+        }
+        private List<List<double>> BollingerForRange(DateTime Start, DateTime End, int Period, double[] Multiplies)
+        {
+            List<List<double>> BollingerBands = new List<List<double>>();
+            double[] CenterLine = Statistics.MovingAverage(GetDataForRange(Start, End).Select(q => Convert.ToDouble(q.Close)).ToArray(), Period).ToArray();
+            double[] StandardDevation = GetStandardDeviationPointsOfCenterLine(CenterLine, Period);
+            BollingerBands.Add(CenterLine.ToList());
+            for (int i = 0; i < Multiplies.Length; i++)
             {
-                take = i;
-                if (take > maxtake)
-                    take = maxtake;    
-                StdList.Add(DataRange.Skip(skip).Take(take).StandardDeviation());
-                skip++;
+                BollingerBands.Add(GetExtendedBandOfCenterLine(CenterLine, StandardDevation, Multiplies[i], true).ToList());
+                BollingerBands.Add(GetExtendedBandOfCenterLine(CenterLine, StandardDevation, Multiplies[i], false).ToList());
             }
-            while (DataRange.Length > StdList.Count)
-            {
-                StdList.Insert(0, 0);
-            }
-
-            double[] UpperLine = CenterLine.Select((s, i2) => new { i2, s })
-                              .Select(t => t.s + StdList[t.i2]).ToArray();
-            double[] LowerLine = CenterLine.Select((s, i2) => new { i2, s })
-                  .Select(t => t.s - StdList[t.i2]).ToArray();
-            //double[] UpperLine = CenterLine.ToList().Select(u=>u+(Std * 2)).ToArray();
-            //double[] LowerLine = CenterLine.ToList().Select(u => u - (Std * 2)).ToArray();
-            List<List<double>> oLD = new List<List<double>>();
-            oLD.Add(UpperLine.ToList());
-            oLD.Add(CenterLine.ToList());
-            oLD.Add(LowerLine.ToList());
-            return oLD;
+            return BollingerBands;
 
         }
+
+        /// <summary>
+        /// Calculates either the upper or lowerband according to the boolean direction
+        /// </summary>
+        /// <param name="CenterLine">The centerline to work from</param>
+        /// <param name="StandardDevationPoints">The standard deviation points from the centerlines data</param>
+        /// <param name="Multiply">The multiplier of the standard devation to add</param>
+        /// <param name="Direction">true is upper, false is lower</param>
+        /// <returns>Array of double</returns>
+        private double[] GetExtendedBandOfCenterLine(double[] CenterLine, double[] StandardDevationPoints, double Multiply, bool Direction)
+        {
+            return CenterLine.Select((s, i2) => new { i2, s })
+                    .Select(t => t.s + (!double.IsNaN(StandardDevationPoints[t.i2]) ?
+                    ((
+                    Direction? 
+                    StandardDevationPoints[t.i2] : -StandardDevationPoints[t.i2]
+                    )
+                    * Multiply
+                    )
+                    :
+                    0))
+                    .ToArray();
+        }
+        /// <summary>
+        /// Returns a list of doubles containing the standard devation for each point of CenterLine, based on the Window size
+        /// </summary>
+        /// <param name="CenterLine">Array of doubles</param>
+        /// <param name="Window">The window size to calculate the standard deviation from</param>
+        /// <returns>Array of double</returns>
+        private double[] GetStandardDeviationPointsOfCenterLine(double[] CenterLine, int Window)
+        {
+            List<double> StdList = new List<double>();
+            int skip = 0;
+            int take = 1;
+            for (int i = 1; i < CenterLine.Length; i++)
+            {
+                take = i;
+                if (take > Window)
+                    take = Window;
+                StdList.Add(CenterLine.Skip(skip).Take(take).StandardDeviation());
+                skip++;
+            }
+            //add items where there are no possibility to calculate the standard deviation
+            while (CenterLine.Length > StdList.Count)
+            {
+                StdList.Insert(0, 1);
+            }
+            return StdList.ToArray();
+        }
+
 
         public List<Tuple<DateTime, VolumeIndicator>> GetRangeOfVolumeIndicator(DateTime Start, DateTime End)
         {

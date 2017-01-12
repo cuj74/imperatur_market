@@ -11,15 +11,18 @@ using Newtonsoft.Json.Linq;
 using Imperatur_v2.monetary;
 using System.IO;
 using Imperatur_v2.trade;
+using Imperatur_v2.trade.analysis;
 using Ninject;
 
 namespace Imperatur_v2.handler
 {
     public class TradeHandler : ITradeHandlerInterface
     {
-
+        private ISecurityAnalysis m_oSecurityAnalysis;
         //TODO: move the quotes to an class by itself. Remember SOLID
         private List<Quote> m_oQuotes;
+
+
         public event ImperaturMarket.QuoteUpdateHandler QuoteUpdateEvent;
 
 
@@ -105,6 +108,7 @@ namespace Imperatur_v2.handler
 
         private List<Quote> GetQuotesFromExternalSource(string URL, List<string> SymbolsToRetrieve)
         {
+            //TODO, move to another class, it has nothing do here, remember SOLID
             List<Quote> QuotesRet = new List<Quote>();
             string json;
             rest.Rest oG = new rest.Rest();
@@ -116,17 +120,28 @@ namespace Imperatur_v2.handler
 
             var v = JArray.Parse(json);
 
+            
+
             foreach (var i in v)
             {
                 if (i.SelectToken("t") != null && Convert.ToDecimal(i.SelectToken("l")) != 0)
                 {
                     try
                     {
-                        if (i.SelectToken("t") != null &&
-                            ImperaturGlobal.Instruments.Where(ins => ins.Symbol.Replace(" ", "-").Equals(i.SelectToken("t").ToString())).Count() > 0)
+                        if (i.SelectToken("t") != null 
+                            &&
+                            ImperaturGlobal.Instruments.Where(ins => ins.Symbol.Replace(" ", "-").Equals(i.SelectToken("t").ToString())).Count() > 0
+                            &&
+                            i.SelectToken("e").ToString().Equals(ImperaturGlobal.SystemData.Exchange) //Only the correct Exchange
+                            )
                         {
+                            //todo, fix the conversion of decimals to be more stable!
                             QuotesRet.Add(new Quote
                             {
+                                Change = ImperaturGlobal.GetMoney(
+                                Convert.ToDecimal(Convert.ToDecimal(i.SelectToken("c").ToString().Replace(".", ","))), i.SelectToken("l_cur").ToString().Substring(0, 3)
+                                ),
+                                ChangePercent = Convert.ToDecimal(i.SelectToken("cp").ToString().Replace(".", ",")),
                                 InternalLoggedat = DateTime.Now,
                                 Symbol = i.SelectToken("t").ToString().Replace("-", " "),
                                 Exchange = i.SelectToken("e").ToString(),
@@ -137,7 +152,8 @@ namespace Imperatur_v2.handler
                                 LastTradeSize = Convert.ToInt32(i.SelectToken("s").ToString()),
                                 PreviousClosePrice = ImperaturGlobal.GetMoney(
                                 Convert.ToDecimal(i.SelectToken("pcls_fix")), i.SelectToken("l_cur").ToString().Substring(0, 3)
-                                )
+                               
+                               )
                             });
                         }
                     }
@@ -160,22 +176,6 @@ namespace Imperatur_v2.handler
         public ITradeInterface GetTrade(string Symbol, decimal Quantity)
         {
             return GetTrade(Symbol, Quantity, DateTime.Now, null);
-            /*
-            Quote oHoldingTicker = GetQuote(Symbol);
-            IMoney TradeAmount = oHoldingTicker.LastTradePrice.Multiply(Quantity);
-            Security NewSecurity = new Security()
-            {
-                Price = oHoldingTicker.LastTradePrice,
-                Symbol = Symbol
-            };
-
-            ITradeInterface oNewTrade = ImperaturGlobal.Kernel.Get<ITradeInterface>(
-             new Ninject.Parameters.ConstructorArgument("Quantity", Quantity),
-             new Ninject.Parameters.ConstructorArgument("Security", NewSecurity),
-             new Ninject.Parameters.ConstructorArgument("TradeAmount", TradeAmount)
-             );
-
-            return oNewTrade;*/
         }
 
         public ITradeInterface GetTrade(string Symbol, decimal Quantity, DateTime TradeDateTime, IMoney Revenue)
@@ -202,6 +202,33 @@ namespace Imperatur_v2.handler
         public void CacheQuotes()
         {
             UpdateQuotesFromExternalSource();
+        }
+
+        public ISecurityAnalysis GetSecurityAnalysis(string Symbol)
+        {
+            if (ImperaturGlobal.Instruments.Where(i => i.Symbol.Equals(Symbol)).Count() > 0)
+            {
+                return GetSecurityAnalysis(ImperaturGlobal.Instruments.Where(i => i.Symbol.Equals(Symbol)).First());
+            }
+            else
+            {
+                throw new Exception("Instrument symbol doesn't exists");
+            }
+            
+        }
+
+        public ISecurityAnalysis GetSecurityAnalysis(Instrument Instrument)
+        {
+            if (m_oSecurityAnalysis != null && m_oSecurityAnalysis.Instrument.Equals(Instrument))
+            {
+                return m_oSecurityAnalysis;
+            }
+            else
+            m_oSecurityAnalysis = ImperaturGlobal.Kernel.Get<ISecurityAnalysis>(
+              new Ninject.Parameters.ConstructorArgument("Instrument", Instrument)
+              );
+            return m_oSecurityAnalysis;
+
         }
     }
 }

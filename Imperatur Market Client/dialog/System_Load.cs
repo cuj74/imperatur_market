@@ -21,7 +21,15 @@ namespace Imperatur_Market_Client.dialog
             InitializeComponent();
             CreateNewSystem = false;
             SystemLocation = "";
-            string[] CheckedSystemLocations = AutoCompeleteSystemLocation.ToList().Where(x => Directory.Exists(x).Equals(true)).ToArray();
+            string LastSystemToLoad = "";
+            if (AutoCompeleteSystemLocation.Where(ac=>ac.StartsWith(":def:")).Count() > 0)
+            {
+                LastSystemToLoad = AutoCompeleteSystemLocation.Where(ac => ac.StartsWith(":def:")).First().Replace(":def:", "");
+            }
+            string[] CheckedSystemLocations = AutoCompeleteSystemLocation
+                .Select(ac=>ac.Replace(":def:", ""))
+                .Where(x => Directory.Exists(x).Equals(true)).ToArray();
+
             if (AutoCompeleteSystemLocation != null && AutoCompeleteSystemLocation.Count() > 0)
             {
                 AutoCompleteStringCollection list = new AutoCompleteStringCollection();
@@ -31,9 +39,13 @@ namespace Imperatur_Market_Client.dialog
                 comboBox_SystemDirectory.AutoCompleteCustomSource = list;
                 comboBox_SystemDirectory.DataSource = CheckedSystemLocations.ToList();
             }
-            if (AutoCompeleteSystemLocation != null && AutoCompeleteSystemLocation.Count() > 1)
+            if (LastSystemToLoad == "" && AutoCompeleteSystemLocation != null && AutoCompeleteSystemLocation.Count() > 1)
             {
                 comboBox_SystemDirectory.Text = "";
+            }
+            else if (LastSystemToLoad != "")
+            {
+                comboBox_SystemDirectory.Text = LastSystemToLoad;
             }
             comboBox_SystemDirectory.Focus();
         }
