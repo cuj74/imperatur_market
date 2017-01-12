@@ -437,7 +437,7 @@ namespace Imperatur_v2.trade.analysis
                     * Multiply
                     )
                     :
-                    0))
+                    1))
                     .ToArray();
         }
         /// <summary>

@@ -6,6 +6,7 @@ using System.Windows.Forms.VisualStyles;
 
 namespace Imperatur_Market_Client.control
 {
+    
     public class ListViewExtender : IDisposable
     {
         private readonly Dictionary<int, ListViewColumn> _columns = new Dictionary<int, ListViewColumn>();

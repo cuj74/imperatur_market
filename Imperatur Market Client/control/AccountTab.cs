@@ -36,8 +36,21 @@ namespace Imperatur_Market_Client.control
             InitializeComponent();
             m_AccountHandler = AccountHandler;
             m_oTradeHandler = TradeHandler;
+            //this.KeyDown += AccountTab_KeyDown;
             typeof(TableLayoutPanel).GetProperty("DoubleBuffered", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).SetValue(tlp_Account, true, null);
         }
+        /*
+        private void AccountTab_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode.Equals(Keys.F3))
+            { 
+                OControl_Account_Search_ToggleSearchDialog(this, new events.ToggleSearchEvents
+                {
+                    Collapse = false
+                });
+            }
+
+        }*/
 
         private void AccountTab_Load(object sender, EventArgs e)
         {

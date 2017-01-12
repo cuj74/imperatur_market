@@ -1,0 +1,7 @@
+C:\temp\cb\CheckBoxComboBox\bin\Debug\CheckBoxComboBox.dll
+C:\temp\cb\CheckBoxComboBox\bin\Debug\CheckBoxComboBox.pdb
+C:\temp\cb\CheckBoxComboBox\obj\Debug\CheckBoxComboBox.csprojResolveAssemblyReference.cache
+C:\temp\cb\CheckBoxComboBox\obj\Debug\PresentationControls.PopupComboBox.resources
+C:\temp\cb\CheckBoxComboBox\obj\Debug\CheckBoxComboBox.csproj.GenerateResource.Cache
+C:\temp\cb\CheckBoxComboBox\obj\Debug\CheckBoxComboBox.dll
+C:\temp\cb\CheckBoxComboBox\obj\Debug\CheckBoxComboBox.pdb

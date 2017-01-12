@@ -33,6 +33,25 @@ namespace Imperatur_Market_Client.control
         private Instrument m_oI;
         private bool ShowMovingAverage = false;
         private bool ShowVolume = false;
+        private List<Tuple<int,string, bool>> m_oDateRanges;
+        private List<Tuple<TA_Indicator, string, bool>> m_oIndicator;
+        private List<Tuple<TA_Settings, string, bool>> m_oGraphSettings;
+
+        private enum TA_Indicator
+        {
+            Trend,
+            MA,
+            MA20_50_200,
+            EMA,
+            Bollinger,
+            Crossover
+        }
+
+        private enum TA_Settings
+        {
+            Volume,
+            High_Low
+        }
 
         public Account_Trade(IAccountHandlerInterface AccountHandler, ITradeHandlerInterface TradeHandler)
         {
@@ -52,6 +71,93 @@ namespace Imperatur_Market_Client.control
             this.textBox_Quantity.KeyDown += TextBox_Quantity_KeyDown;
             tableLayoutPanel_Graph.Visible = false;
             m_oGraphSettingDays = 7;
+
+            m_oDateRanges = new List<Tuple<int, string, bool>>();
+            m_oIndicator = new List<Tuple<TA_Indicator, string, bool>>();
+            m_oGraphSettings = new List<Tuple<TA_Settings, string, bool>>();
+
+            //DateRanges
+            m_oDateRanges.Add(new Tuple<int, string, bool>(1, "1 day", false));
+            m_oDateRanges.Add(new Tuple<int, string, bool>(3, "3 days", false));
+            m_oDateRanges.Add(new Tuple<int, string, bool>(7, "7 days", false));
+            m_oDateRanges.Add(new Tuple<int, string, bool>(90, "3 months", false));
+            m_oDateRanges.Add(new Tuple<int, string, bool>(365, "1 year", false));
+
+            //Indicators
+            foreach (TA_Indicator indicator in Enum.GetValues(typeof(TA_Indicator)))
+            {
+                m_oIndicator.Add(new Tuple<TA_Indicator, string, bool>(indicator, indicator.ToString(), false));
+            }
+
+            foreach (TA_Settings setting in Enum.GetValues(typeof(TA_Settings)))
+            {
+                m_oGraphSettings.Add(new Tuple<TA_Settings, string, bool>(setting, setting.ToString(), false));
+            }
+            foreach (var dr in m_oDateRanges)
+            {
+                comboBox_daterange.Items.Add(dr.Item2);
+            }
+            comboBox_daterange.SelectedIndexChanged += ComboBox_daterange_SelectedIndexChanged;
+
+            foreach (var dr in m_oIndicator)
+            {
+                checkBoxComboBox_TA.Items.Add(dr.Item2);
+            }
+
+            checkBoxComboBox_TA.CheckBoxCheckedChanged += CheckBoxComboBox_TA_CheckBoxCheckedChanged;
+            //checkBoxComboBox_TA.DropDownClosed += CheckBoxComboBox_TA_DropDownClosed;
+            foreach (var dr in m_oGraphSettings)
+            {
+                checkBoxComboBox_Settings.Items.Add(dr.Item2);
+            }
+            checkBoxComboBox_Settings.CheckBoxCheckedChanged += CheckBoxComboBox_Settings_CheckBoxCheckedChanged;
+            SetDateRangeToNumber(7);
+            
+        }
+        /*
+        private void CheckBoxComboBox_TA_DropDownClosed(object sender, EventArgs e)
+        {
+            foreach (var t in checkBoxComboBox_TA.CheckBoxItems)
+            {
+                if (t.Checked)
+                {
+                    m_oGraphSettings = m_oGraphSettings.Select(x => new Tuple<TA_Settings, string, bool>(x.Item1, x.Item2, x.Item1.Equals(t.Text) ? true : x.Item3)).ToList();
+                }
+            }
+            ChangeGraph();
+        }*/
+
+        private void CheckBoxComboBox_Settings_CheckBoxCheckedChanged(object sender, EventArgs e)
+        {
+            foreach (var t in checkBoxComboBox_Settings.CheckBoxItems)
+            {
+                if (t.Checked)
+                {
+                    m_oGraphSettings = m_oGraphSettings.Select(x => new Tuple<TA_Settings, string, bool>(x.Item1, x.Item2, x.Item1.Equals(t.Text) ? true : x.Item3)).ToList();
+                }
+            }
+            ChangeGraph();
+        }
+
+        private void CheckBoxComboBox_TA_CheckBoxCheckedChanged(object sender, EventArgs e)
+        {
+       
+
+        }
+
+
+        private void SetDateRangeToNumber(int Range)
+        {
+            m_oDateRanges = m_oDateRanges.Select(x => new Tuple<int, string, bool>(x.Item1, x.Item2, x.Item1.Equals(Range))).ToList();
+        }
+
+        private void ComboBox_daterange_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (comboBox_daterange.SelectedItem != null)
+            {
+                SetDateRangeToNumber(m_oDateRanges.Where(x => x.Item2.Equals(comboBox_daterange.SelectedItem.ToString())).First().Item1);
+            }
+            ChangeGraph();
         }
 
         private void TextBox_Quantity_KeyDown(object sender, KeyEventArgs e)
@@ -115,6 +221,178 @@ namespace Imperatur_Market_Client.control
             }
         }
 
+        private void ChangeGraph()
+        {
+            int days = m_oDateRanges.Where(x => x.Item3).First().Item1;
+            List<HistoricalQuoteDetails> oH = m_oSecAnalysis.GetDataForRange(DateTime.Now.AddDays(-days), DateTime.Now);
+            string[] xData = days > 1 ?
+                oH.Select(h => h.Date.ToShortDateString()).ToArray()
+                :
+                oH.Select(h => h.Date.ToShortTimeString()).ToArray();
+            double[] yData = oH.Select(h => Convert.ToDouble(h.Close)).ToArray();
+
+            ZedGraphControl PriceGraph = CreatePriceGraph(xData, yData);
+
+            List<Tuple<string, double[]>> AdditionalGraphs = new List<Tuple<string,double[]>>();
+
+            foreach(var TA in m_oIndicator)
+            {
+                switch(TA.Item1)
+                {
+                    case TA_Indicator.Trend:
+                        break;
+                    case TA_Indicator.MA:
+                        break;
+                    case TA_Indicator.MA20_50_200:
+                        break;
+                    case TA_Indicator.EMA:
+                        break;
+                    case TA_Indicator.Bollinger:
+                        if (TA.Item3)
+                        {
+                            GetBollinger(days).ForEach(x =>
+                             AdditionalGraphs.Add(new Tuple<string, double[]>(TA_Indicator.Bollinger.ToString(), x.ToArray()
+                            )));
+                        }
+                        break;
+                    case TA_Indicator.Crossover:
+                        break;
+                    default:
+                        break;
+                }
+
+            }
+            foreach (var GS in m_oGraphSettings)
+            {
+                switch (GS.Item1)
+                {
+                    case TA_Settings.Volume:
+                        if (!GS.Item3)
+                        {
+                            break;
+                        }
+                        var oVolumeInfoList = m_oSecAnalysis.GetRangeOfVolumeIndicator(DateTime.Now.AddDays(-days), DateTime.Now)
+                        .Where(h => h.Item1.Date >= DateTime.Now.AddDays(-days).Date && h.Item1.Date <= DateTime.Now.Date)
+                        .OrderBy(x => x.Item1)
+                        .ToList();
+
+                        if (oVolumeInfoList.Count() > 0)
+                        {
+                            foreach (VolumeIndicatorType VolumeType in Enum.GetValues(typeof(VolumeIndicatorType)))
+                            {
+                                AdditionalGraphs.Add(new Tuple<string, double[]>(VolumeType.ToString(),
+                            yData.Select((s, i2) => new { i2, s })
+                            .Select(t => (t.i2 < oVolumeInfoList.Count()) ? oVolumeInfoList[t.i2].Item2.VolumeIndicatorType.Equals(VolumeType) ? t.s : 0 : 0).ToArray()));
+                            }
+                        }
+                            break;
+                    case TA_Settings.High_Low:
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+
+            var pane = PriceGraph.GraphPane;
+            AdditionalGraphs.ForEach(x =>
+            pane.CurveList.Add(CreateLineItemFromData(x.Item2, x.Item1)
+            ));
+
+
+            PriceGraph.Refresh();
+            PriceGraph.Name = "StockChart";
+            PriceGraph.Dock = DockStyle.Fill;
+            if (!panel_chart.Controls.ContainsKey(PriceGraph.Name))
+            {
+                panel_chart.Controls.Add(PriceGraph);
+                //if (AdditionalGraphs.Where(x=>x.Item1.Equals(TA_Settings.Volume.ToString())).Count() > 0)
+                //if (Volume.Count() > 0 && ShowVolume)
+                //    panel_vol.Controls.Add(oZGP_vol);
+            }
+            else
+            {
+                panel_chart.Controls.RemoveByKey(PriceGraph.Name);
+                panel_chart.Controls.Add(PriceGraph);
+
+               // panel_vol.Controls.RemoveByKey(oZGP_vol.Name);
+                //if (Volume.Count() > 0 && ShowVolume)
+                //    panel_vol.Controls.Add(oZGP_vol);
+            }
+
+            tableLayoutPanel_Graph.Visible = true;
+
+        }
+        private List<List<double>> GetBollinger(int days)
+        {
+           return m_oSecAnalysis.StandardBollingerForRange(DateTime.Now.AddDays(-days), DateTime.Now);
+        }
+
+        private ZedGraphControl CreatePriceGraph(string[] xData, double[] yData)
+        {
+            ZedGraphControl oZGP = new ZedGraphControl();
+            //generate pane
+            var pane = oZGP.GraphPane;
+            pane.Title.Text = string.Format("{0} ({1})", m_oI.Name, m_oI.Symbol);
+
+            pane.YAxis.Title.Text = m_oI.CurrencyCode.ToString();
+
+            pane.XAxis.Scale.IsVisible = true;
+            pane.YAxis.Scale.IsVisible = true;
+
+            pane.XAxis.MajorGrid.IsVisible = false;
+            pane.YAxis.MajorGrid.IsVisible = false;
+
+            pane.XAxis.Scale.TextLabels = xData;
+            pane.XAxis.Type = AxisType.Text;
+
+            var curve1 = new LineItem(null, yData.Select((s, i2) => new { i2, s })
+                               .Select(t => Convert.ToDouble(t.i2)).ToArray(),
+               yData, Color.Black, SymbolType.None);
+            curve1.Line.IsAntiAlias = true;
+
+            pane.CurveList.Add(curve1);
+            pane.AxisChange();
+            return oZGP;
+
+        }
+
+        private LineItem CreateLineItemFromData(double[] yData, string Identifier)
+        {
+            LineItem oRet = new LineItem(null, null, yData, Color.PaleVioletRed, SymbolType.None);
+            if (Identifier.Equals(TA_Indicator.Bollinger.ToString()))
+            {
+                oRet = new LineItem(null, null, yData, Color.PaleVioletRed, SymbolType.None);
+            }
+            else if (Identifier.Equals(VolumeIndicatorType.VolumeClimaxUp.ToString()))
+            {
+                oRet = new LineItem(null, null, yData, Color.Red, SymbolType.Triangle);
+                oRet.Line.IsVisible = false;
+                oRet.Symbol.Fill = new Fill(Color.Red);
+            }
+            else if (Identifier.Equals(VolumeIndicatorType.VolumeClimaxDown.ToString()))
+            {
+                oRet = new LineItem(null, null, yData, Color.Green, SymbolType.TriangleDown);
+                oRet.Line.IsVisible = false;
+                oRet.Symbol.Fill = new Fill(Color.Green);
+            }
+            else if (Identifier.Equals(VolumeIndicatorType.HighVolumeChurn.ToString()))
+            {
+                oRet = new LineItem(null, null, yData, Color.Blue, SymbolType.Diamond);
+                oRet.Line.IsVisible = false;
+                oRet.Symbol.Fill = new Fill(Color.Green);
+            }
+            else if (Identifier.Equals(VolumeIndicatorType.LowVolume.ToString()))
+            {
+                oRet = new LineItem(null, null, yData, Color.YellowGreen, SymbolType.Circle);
+                oRet.Line.IsVisible = false;
+                oRet.Symbol.Fill = new Fill(Color.YellowGreen);
+            }
+
+            
+            return oRet;
+
+        }
         private void ChangeGraph(int days, bool AddMovingAverage = false, bool AddVolume = false)
         {
             if (m_oSecAnalysis != null)
@@ -147,6 +425,7 @@ namespace Imperatur_Market_Client.control
 
         private void CreateGraph(double[] yData, string[] xData, bool ShowTimeInX, List<List<double>> movingaverage_yData, List<double> Volume, List<Tuple<DateTime, VolumeIndicator>> VI)
         {
+            /*
             string ButtonName = "b_daterange0";
             if (!tableLayoutPanel_Graph.Controls.ContainsKey(ButtonName))
             {
@@ -176,8 +455,21 @@ namespace Imperatur_Market_Client.control
                 bvol.Text = "VOL";
                 bvol.Click += BChartChange_Click;
                 this.tableLayoutPanel_Graph.Controls.Add(bvol, 6, 2);
-            }
 
+                PresentationControls.CheckBoxComboBox TestCombo = new PresentationControls.CheckBoxComboBox();
+
+                TestCombo.Items.Add("Item 1");
+                TestCombo.Items.Add("Item 2");
+                TestCombo.Items.Add("Item 3");
+                TestCombo.Items.Add("Item 4");
+                TestCombo.Items.Add("Item 5");
+                TestCombo.Items.Add("Item 6");
+                TestCombo.Items.Add("Item 7");
+                TestCombo.Items.Add("Item 8");
+                this.tableLayoutPanel_Graph.Controls.Add(TestCombo, 7, 2);
+
+            }
+            */
             ZedGraphControl oZGP = new ZedGraphControl();
             //generate pane
             var pane = oZGP.GraphPane;

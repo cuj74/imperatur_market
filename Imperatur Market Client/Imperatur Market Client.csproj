@@ -87,6 +87,28 @@
     <Compile Include="control\Account_Trade.Designer.cs">
       <DependentUpon>Account_Trade.cs</DependentUpon>
     </Compile>
+    <Compile Include="control\comboboxextended\CheckBoxComboBox.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="control\comboboxextended\CheckBoxComboBox.Designer.cs">
+      <DependentUpon>CheckBoxComboBox.cs</DependentUpon>
+    </Compile>
+    <Compile Include="control\comboboxextended\GripBounds.cs" />
+    <Compile Include="control\comboboxextended\NativeMethods.cs" />
+    <Compile Include="control\comboboxextended\Popup.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="control\comboboxextended\Popup.Designer.cs">
+      <DependentUpon>Popup.cs</DependentUpon>
+    </Compile>
+    <Compile Include="control\comboboxextended\PopupComboBox.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="control\comboboxextended\PopupComboBox.Designer.cs">
+      <DependentUpon>PopupComboBox.cs</DependentUpon>
+    </Compile>
+    <Compile Include="control\comboboxextended\Selection Wrappers\ListSelectionWrapper.cs" />
+    <Compile Include="control\comboboxextended\Selection Wrappers\ObjectSelectionWrapper.cs" />
     <Compile Include="control\CreateControlFromObject.cs" />
     <Compile Include="control\Expander.cs">
       <SubType>UserControl</SubType>
@@ -142,6 +164,10 @@
     </EmbeddedResource>
     <EmbeddedResource Include="control\Account_Trade.resx">
       <DependentUpon>Account_Trade.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="control\comboboxextended\PopupComboBox.resx">
+      <DependentUpon>PopupComboBox.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="control\SellDialog.resx">
       <DependentUpon>SellDialog.cs</DependentUpon>

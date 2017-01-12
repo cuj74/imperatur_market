@@ -10,6 +10,7 @@ using System.Windows.Forms;
 
 namespace Imperatur_Market_Client.control
 {
+    /*
     public partial class Expander : UserControl
     {
         private DockStyle InitialDockStyle;

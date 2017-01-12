@@ -28,6 +28,8 @@
         /// </summary>
         private void InitializeComponent()
         {
+            PresentationControls.CheckBoxProperties checkBoxProperties1 = new PresentationControls.CheckBoxProperties();
+            PresentationControls.CheckBoxProperties checkBoxProperties2 = new PresentationControls.CheckBoxProperties();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.tableLayoutPanel_Trade = new System.Windows.Forms.TableLayoutPanel();
             this.panel1 = new System.Windows.Forms.Panel();
@@ -42,6 +44,9 @@
             this.tableLayoutPanel_Graph = new System.Windows.Forms.TableLayoutPanel();
             this.panel_chart = new System.Windows.Forms.Panel();
             this.panel_vol = new System.Windows.Forms.Panel();
+            this.comboBox_daterange = new System.Windows.Forms.ComboBox();
+            this.checkBoxComboBox_TA = new PresentationControls.CheckBoxComboBox();
+            this.checkBoxComboBox_Settings = new PresentationControls.CheckBoxComboBox();
             this.groupBox1.SuspendLayout();
             this.tableLayoutPanel_Trade.SuspendLayout();
             this.panel1.SuspendLayout();
@@ -171,17 +176,20 @@
             // 
             // tableLayoutPanel_Graph
             // 
-            this.tableLayoutPanel_Graph.ColumnCount = 8;
-            this.tableLayoutPanel_Graph.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 67F));
-            this.tableLayoutPanel_Graph.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 67F));
-            this.tableLayoutPanel_Graph.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 67F));
-            this.tableLayoutPanel_Graph.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 67F));
-            this.tableLayoutPanel_Graph.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 67F));
-            this.tableLayoutPanel_Graph.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 67F));
-            this.tableLayoutPanel_Graph.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 67F));
+            this.tableLayoutPanel_Graph.ColumnCount = 6;
+            this.tableLayoutPanel_Graph.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 100F));
+            this.tableLayoutPanel_Graph.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 100F));
+            this.tableLayoutPanel_Graph.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 100F));
+            this.tableLayoutPanel_Graph.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 100F));
+            this.tableLayoutPanel_Graph.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 100F));
             this.tableLayoutPanel_Graph.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
+            this.tableLayoutPanel_Graph.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 20F));
+            this.tableLayoutPanel_Graph.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 20F));
             this.tableLayoutPanel_Graph.Controls.Add(this.panel_chart, 0, 0);
             this.tableLayoutPanel_Graph.Controls.Add(this.panel_vol, 0, 1);
+            this.tableLayoutPanel_Graph.Controls.Add(this.comboBox_daterange, 0, 2);
+            this.tableLayoutPanel_Graph.Controls.Add(this.checkBoxComboBox_TA, 1, 2);
+            this.tableLayoutPanel_Graph.Controls.Add(this.checkBoxComboBox_Settings, 2, 2);
             this.tableLayoutPanel_Graph.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel_Graph.Location = new System.Drawing.Point(3, 50);
             this.tableLayoutPanel_Graph.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
@@ -195,7 +203,7 @@
             // 
             // panel_chart
             // 
-            this.tableLayoutPanel_Graph.SetColumnSpan(this.panel_chart, 8);
+            this.tableLayoutPanel_Graph.SetColumnSpan(this.panel_chart, 6);
             this.panel_chart.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panel_chart.Location = new System.Drawing.Point(4, 4);
             this.panel_chart.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
@@ -205,13 +213,46 @@
             // 
             // panel_vol
             // 
-            this.tableLayoutPanel_Graph.SetColumnSpan(this.panel_vol, 8);
+            this.tableLayoutPanel_Graph.SetColumnSpan(this.panel_vol, 6);
             this.panel_vol.Dock = System.Windows.Forms.DockStyle.Fill;
             this.panel_vol.Location = new System.Drawing.Point(4, 123);
             this.panel_vol.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.panel_vol.Name = "panel_vol";
             this.panel_vol.Size = new System.Drawing.Size(524, 27);
             this.panel_vol.TabIndex = 3;
+            // 
+            // comboBox_daterange
+            // 
+            this.comboBox_daterange.FormattingEnabled = true;
+            this.comboBox_daterange.Location = new System.Drawing.Point(3, 157);
+            this.comboBox_daterange.Name = "comboBox_daterange";
+            this.comboBox_daterange.Size = new System.Drawing.Size(94, 24);
+            this.comboBox_daterange.TabIndex = 4;
+            this.comboBox_daterange.Text = "Range";
+            // 
+            // checkBoxComboBox_TA
+            // 
+            checkBoxProperties1.ForeColor = System.Drawing.SystemColors.ControlText;
+            this.checkBoxComboBox_TA.CheckBoxProperties = checkBoxProperties1;
+            this.checkBoxComboBox_TA.DisplayMemberSingleItem = "";
+            this.checkBoxComboBox_TA.FormattingEnabled = true;
+            this.checkBoxComboBox_TA.Location = new System.Drawing.Point(103, 157);
+            this.checkBoxComboBox_TA.Name = "checkBoxComboBox_TA";
+            this.checkBoxComboBox_TA.Size = new System.Drawing.Size(94, 24);
+            this.checkBoxComboBox_TA.TabIndex = 5;
+            this.checkBoxComboBox_TA.Text = "TA";
+            // 
+            // checkBoxComboBox_Settings
+            // 
+            checkBoxProperties2.ForeColor = System.Drawing.SystemColors.ControlText;
+            this.checkBoxComboBox_Settings.CheckBoxProperties = checkBoxProperties2;
+            this.checkBoxComboBox_Settings.DisplayMemberSingleItem = "";
+            this.checkBoxComboBox_Settings.FormattingEnabled = true;
+            this.checkBoxComboBox_Settings.Location = new System.Drawing.Point(203, 157);
+            this.checkBoxComboBox_Settings.Name = "checkBoxComboBox_Settings";
+            this.checkBoxComboBox_Settings.Size = new System.Drawing.Size(94, 24);
+            this.checkBoxComboBox_Settings.TabIndex = 6;
+            this.checkBoxComboBox_Settings.Text = "Settings";
             // 
             // Account_Trade
             // 
@@ -246,5 +287,8 @@
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel_Graph;
         private System.Windows.Forms.Panel panel_chart;
         private System.Windows.Forms.Panel panel_vol;
+        private System.Windows.Forms.ComboBox comboBox_daterange;
+        private PresentationControls.CheckBoxComboBox checkBoxComboBox_TA;
+        private PresentationControls.CheckBoxComboBox checkBoxComboBox_Settings;
     }
 }
