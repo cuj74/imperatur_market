@@ -129,20 +129,16 @@ namespace Imperatur_Market_Client.control
 
         private void CheckBoxComboBox_Settings_CheckBoxCheckedChanged(object sender, EventArgs e)
         {
-            foreach (var t in checkBoxComboBox_Settings.CheckBoxItems)
-            {
-                if (t.Checked)
-                {
-                    m_oGraphSettings = m_oGraphSettings.Select(x => new Tuple<TA_Settings, string, bool>(x.Item1, x.Item2, x.Item1.Equals(t.Text) ? true : x.Item3)).ToList();
-                }
-            }
+            var t = (PresentationControls.CheckBoxComboBoxItem)sender;
+            m_oGraphSettings = m_oGraphSettings.Select(x => new Tuple<TA_Settings, string, bool>(x.Item1, x.Item2, x.Item2.Equals(t.Text) ? t.Checked : x.Item3)).ToList();
             ChangeGraph();
         }
 
         private void CheckBoxComboBox_TA_CheckBoxCheckedChanged(object sender, EventArgs e)
         {
-       
-
+            var t = (PresentationControls.CheckBoxComboBoxItem)sender;
+            m_oIndicator = m_oIndicator.Select(x => new Tuple<TA_Indicator, string, bool>(x.Item1, x.Item2, x.Item2.Equals(t.Text) ? t.Checked : x.Item3)).ToList();
+            ChangeGraph();
         }
 
 
@@ -212,7 +208,7 @@ namespace Imperatur_Market_Client.control
                         
                     m_oSecAnalysis = m_oTradeHandler.GetSecurityAnalysis(m_oI);
                     label3.Text = string.Format("Today: {0} / {1}", oQ.ChangePercent, oQ.Change);
-                    ChangeGraph(m_oGraphSettingDays, ShowMovingAverage, ShowVolume);
+                    ChangeGraph();
                     
 
                 }
@@ -235,7 +231,7 @@ namespace Imperatur_Market_Client.control
 
             List<Tuple<string, double[]>> AdditionalGraphs = new List<Tuple<string,double[]>>();
 
-            foreach(var TA in m_oIndicator)
+            foreach(var TA in m_oIndicator.Where(t=>t.Item3 == true).ToList())
             {
                 switch(TA.Item1)
                 {
@@ -248,12 +244,9 @@ namespace Imperatur_Market_Client.control
                     case TA_Indicator.EMA:
                         break;
                     case TA_Indicator.Bollinger:
-                        if (TA.Item3)
-                        {
-                            GetBollinger(days).ForEach(x =>
+                        GetBollinger(days).ForEach(x =>
                              AdditionalGraphs.Add(new Tuple<string, double[]>(TA_Indicator.Bollinger.ToString(), x.ToArray()
                             )));
-                        }
                         break;
                     case TA_Indicator.Crossover:
                         break;
@@ -262,15 +255,11 @@ namespace Imperatur_Market_Client.control
                 }
 
             }
-            foreach (var GS in m_oGraphSettings)
+            foreach (var GS in m_oGraphSettings.Where(t => t.Item3 == true).ToList())
             {
                 switch (GS.Item1)
                 {
                     case TA_Settings.Volume:
-                        if (!GS.Item3)
-                        {
-                            break;
-                        }
                         var oVolumeInfoList = m_oSecAnalysis.GetRangeOfVolumeIndicator(DateTime.Now.AddDays(-days), DateTime.Now)
                         .Where(h => h.Item1.Date >= DateTime.Now.AddDays(-days).Date && h.Item1.Date <= DateTime.Now.Date)
                         .OrderBy(x => x.Item1)
@@ -280,13 +269,24 @@ namespace Imperatur_Market_Client.control
                         {
                             foreach (VolumeIndicatorType VolumeType in Enum.GetValues(typeof(VolumeIndicatorType)))
                             {
-                                AdditionalGraphs.Add(new Tuple<string, double[]>(VolumeType.ToString(),
-                            yData.Select((s, i2) => new { i2, s })
-                            .Select(t => (t.i2 < oVolumeInfoList.Count()) ? oVolumeInfoList[t.i2].Item2.VolumeIndicatorType.Equals(VolumeType) ? t.s : 0 : 0).ToArray()));
+                                if ((VolumeType != VolumeIndicatorType.Unknown && VolumeType != VolumeIndicatorType.VolumeClimaxPlusHighVolumeChurn) && oVolumeInfoList.Where(z => z.Item2.VolumeIndicatorType.Equals(VolumeType)).Count() > 0)
+                                { 
+                                    AdditionalGraphs.Add(new Tuple<string, double[]>(VolumeType.ToString(),
+                                    yData.Select((s, i2) => new { i2, s })
+                                    .Select(t => (t.i2 < oVolumeInfoList.Count()) ? oVolumeInfoList[t.i2].Item2.VolumeIndicatorType.Equals(VolumeType) ? t.s : 0 : 0).ToArray()));
+                                }
                             }
                         }
                             break;
                     case TA_Settings.High_Low:
+                        PriceGraph.GraphPane.GraphObjList.Add(DrawLine(yData.Max(), yData.Count(), GS.Item1.ToString()));
+                        var text = new TextObj("High", 1, yData.Max()-10, CoordType.ChartFraction, AlignH.Left, AlignV.Top);
+                        text.ZOrder = ZOrder.A_InFront;
+                        PriceGraph.GraphPane.GraphObjList.Add(text);
+                        PriceGraph.GraphPane.GraphObjList.Add(DrawLine(yData.Min(), yData.Count(), GS.Item1.ToString()));
+                        var textlow = new TextObj("Low", 1, yData.Min() + 10, CoordType.ChartFraction, AlignH.Left, AlignV.Top);
+                        textlow.ZOrder = ZOrder.A_InFront;
+                        PriceGraph.GraphPane.GraphObjList.Add(textlow);
                         break;
                     default:
                         break;
@@ -359,7 +359,7 @@ namespace Imperatur_Market_Client.control
 
         private LineItem CreateLineItemFromData(double[] yData, string Identifier)
         {
-            LineItem oRet = new LineItem(null, null, yData, Color.PaleVioletRed, SymbolType.None);
+            LineItem oRet = new LineItem(null, null, yData, Color.Gainsboro, SymbolType.None);
             if (Identifier.Equals(TA_Indicator.Bollinger.ToString()))
             {
                 oRet = new LineItem(null, null, yData, Color.PaleVioletRed, SymbolType.None);
@@ -388,10 +388,26 @@ namespace Imperatur_Market_Client.control
                 oRet.Line.IsVisible = false;
                 oRet.Symbol.Fill = new Fill(Color.YellowGreen);
             }
+ 
+            oRet.Line.IsAntiAlias = true;
 
-            
             return oRet;
 
+        }
+        private LineObj DrawLine(double y, double xMax, string Identifier)
+        {
+             if (Identifier.Equals(TA_Settings.High_Low.ToString()))
+            {
+                LineObj threshHoldLine = new LineObj(
+                    Color.Plum,
+                    1,
+                    y,
+                    xMax,
+                    y);
+                
+                return threshHoldLine;
+            }
+            return null;
         }
         private void ChangeGraph(int days, bool AddMovingAverage = false, bool AddVolume = false)
         {
