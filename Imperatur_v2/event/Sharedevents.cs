@@ -15,5 +15,9 @@ namespace Imperatur_v2.events
     {
         public Guid Identifier;
     }
+    public class SaveOrderEventArg : EventArgs
+    {
+        public Guid Identifier;
+    }
 
 }

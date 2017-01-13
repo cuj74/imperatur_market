@@ -6,7 +6,8 @@ using System.Threading.Tasks;
 
 namespace Imperatur_v2.order
 {
-    interface OrderQueueInterface
+    public interface IOrderQueue
     {
+        bool EvaluateOrdersInQueue();
     }
 }

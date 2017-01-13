@@ -12,6 +12,7 @@ using Imperatur_v2.trade;
 using Imperatur_v2.securites;
 using Imperatur_v2.trade.analysis;
 using Imperatur_v2.trade.recommendation;
+using Imperatur_v2.order;
 
 
 
@@ -31,6 +32,7 @@ namespace Imperatur_v2
             Bind<ITradeInterface>().To<Trade>();
             Bind<ITradeHandlerInterface>().To<TradeHandler>();
             Bind<ISecurityAnalysis>().To<SecurityAnalysis>();
+            Bind<IOrder>().To<Order>();
 
             /*
             Bind<IBFSDataHandler>().To<BFSDataHandler>();

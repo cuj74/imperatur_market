@@ -21,36 +21,49 @@ namespace Imperatur_v2.order
 
     public class Trigger : ITrigger
     {
-        public TriggerOperator Operator;
-        public TriggerValueType ValueType;
-        public decimal TradePriceValue;
-        public decimal PercentageValue;
+        private TriggerOperator m_oOperator;
+        private TriggerValueType m_oValueType;
+        private decimal m_oTradePriceValue;
+        private decimal m_oPercentageValue;
+
+        public Trigger(TriggerOperator Operator, TriggerValueType ValueType, decimal TradePriceValue, decimal PercentageValue)
+        {
+            m_oOperator = Operator;
+            m_oValueType = ValueType;
+            m_oTradePriceValue = TradePriceValue;
+            m_oPercentageValue = PercentageValue;
+            if (m_oTradePriceValue == m_oPercentageValue && m_oPercentageValue == 0)
+            {
+                throw new Exception("TradePriceValue and PercentageValue cant both be zero!");
+            }
+
+        }
 
         public bool Evaluate(Instrument Instrument)
         {
             decimal TradePriceValueEval = -1;
-            switch (ValueType)
+            switch (m_oValueType)
             {
                 case TriggerValueType.TradePrice:
                     TradePriceValueEval = ImperaturGlobal.Quotes.Where(q => q.Symbol.Equals(Instrument.Symbol)).First().LastTradePrice.Amount;
-                    switch (Operator)
+                    switch (m_oOperator)
                     {
                         case TriggerOperator.EqualOrGreater:
-                            return TradePriceValueEval >= TradePriceValue;
+                            return TradePriceValueEval >= m_oTradePriceValue;
                         case TriggerOperator.EqualOrless:
-                            return TradePriceValueEval <= TradePriceValue;
+                            return TradePriceValueEval <= m_oTradePriceValue;
                         default:
                             break;
                     }
                     break;
                 case TriggerValueType.Percentage:
                     TradePriceValueEval = ImperaturGlobal.Quotes.Where(q => q.Symbol.Equals(Instrument.Symbol)).First().LastTradePrice.Amount;
-                    switch (Operator)
+                    switch (m_oOperator)
                     {
                         case TriggerOperator.EqualOrGreater:
-                            return (TradePriceValueEval/TradePriceValue)*100 >= PercentageValue;
+                            return (TradePriceValueEval/m_oTradePriceValue)*100 >= m_oPercentageValue;
                         case TriggerOperator.EqualOrless:
-                            return (TradePriceValueEval / TradePriceValue) * 100 <= PercentageValue;
+                            return (TradePriceValueEval / m_oTradePriceValue) * 100 <= m_oPercentageValue;
                         default:
                             break;
                     }

@@ -24,6 +24,7 @@ namespace Imperatur_v2
         public string QuoteRefreshTime;
         public bool IsAutomaticMaintained = false;
         public string Exchange;
+        public string OrderDirectory;
 
     }
 
@@ -43,6 +44,7 @@ namespace Imperatur_v2
         public static string ULR_Quotes = "http://finance.google.com/finance/info?client=ig&q={exchange}%3A";
         public static string QuoteRefreshTime = "15";
         public static string Exchange = "STO";
+        public static string OrderDirectory = "order";
     }
 
   
