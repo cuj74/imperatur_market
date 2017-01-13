@@ -21,13 +21,16 @@ namespace Imperatur_v2.trade.analysis
 
     public class SecurityAnalysis : ISecurityAnalysis
     {
-        HistoricalQuote m_oH;
-        ElliottWaveDefinition m_oED;
+        private HistoricalQuote m_oH;
+        private ElliottWaveDefinition m_oED;
+        private List<Tuple<DateTime, List<HistoricalQuoteDetails>, int>> m_oCache;
+        private const int CacheSeconds = 180;
 
         public SecurityAnalysis(Instrument Instrument)
         {
             m_oH = ImperaturGlobal.HistoricalQuote(Instrument);
             m_oED = new ElliottWaveDefinition();
+            m_oCache = new List<Tuple<DateTime, List<HistoricalQuoteDetails>, int>>();
         }
 
         public decimal StandardDeviation
@@ -362,7 +365,22 @@ namespace Imperatur_v2.trade.analysis
                 .ToList();
         }
 
-        public List<HistoricalQuoteDetails> GetDataForRange(DateTime Start, DateTime End)
+        private List<HistoricalQuoteDetails> GetCachedDataForRange(DateTime Start, DateTime End, int Interval)
+        {
+            //start by removing obselete cacheobjects
+            m_oCache = m_oCache.Where(x => x.Item1.AddSeconds(CacheSeconds).CompareTo(DateTime.Now) > 0).ToList();
+            //find matching daterange and interval
+            if(m_oCache.Exists(x=>x.Item2.Min(h=>h.Date.Date).Equals(Start.Date) && x.Item2.Max(h => h.Date.Date).Equals(End.Date) && x.Item3.Equals(Interval)))
+            {
+                return m_oCache.Where(x => x.Item2.Min(h => h.Date.Date).Equals(Start) && x.Item2.Max(h => h.Date.Date).Equals(End) && x.Item3.Equals(Interval)).First().Item2;
+            }
+
+            m_oCache.Add(new Tuple<DateTime, List<HistoricalQuoteDetails>, int>(DateTime.Now, GetExternalDataForRange(Start, End, Interval), Interval));
+            return m_oCache.Last().Item2;
+
+        }
+
+        private int GetIntervalFromDateRange(DateTime Start, DateTime End)
         {
             int Interval = 0;
 
@@ -374,10 +392,19 @@ namespace Imperatur_v2.trade.analysis
             {
                 Interval = GoogleHistoricalDataInterpreter.HOURINSECONDS;
             }
+            return Interval;
+
+        }
+
+        //m_oCache = new Tuple<DateTime, List<HistoricalQuoteDetails>>();
+
+        public List<HistoricalQuoteDetails> GetDataForRange(DateTime Start, DateTime End)
+        {
+            int Interval = GetIntervalFromDateRange(Start, End);
             
             if (Interval > 0)
             {
-                return GetExternalDataForRange(Start, End, Interval);
+                return GetCachedDataForRange(Start, End, Interval);
             }
                        
 
