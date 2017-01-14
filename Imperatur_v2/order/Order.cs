@@ -70,7 +70,7 @@ namespace Imperatur_v2.order
 
         }
 
-        public DateTime OValidToDate
+        public DateTime ValidToDate
         {
             get
             {
@@ -113,7 +113,7 @@ namespace Imperatur_v2.order
                 m_oStopLossPercentage = StopLossPercentage;
                 m_oStopLossDaysValid = StopLossValidDays;
             }
-            SaveOrderEvent(this, new SaveOrderEventArg() { Identifier = m_oIdentifier}));
+            SaveOrderEvent(this, new SaveOrderEventArg() { Identifier = m_oIdentifier});
         }
 
         private Order CreateStopLossOrder(decimal TradePrice)
@@ -157,7 +157,7 @@ namespace Imperatur_v2.order
             }
         }
 
-        public bool ExecuteOrder(IAccountHandlerInterface AccountHandler, ITradeHandlerInterface TradeHandler, out Order StopLossOrder)
+        public bool ExecuteOrder(IAccountHandlerInterface AccountHandler, ITradeHandlerInterface TradeHandler, out IOrder StopLossOrder)
         {
             StopLossOrder = this;
             if (EvaluateTriggerOnOrder())

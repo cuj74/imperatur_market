@@ -12,7 +12,7 @@ using MathNet.Numerics.LinearAlgebra;
 using MathNet.Numerics.LinearRegression;
 using Imperatur_v2.monetary;
 using MathNet.Numerics.LinearAlgebra.Complex;
-
+using Imperatur_v2.trade.recommendation;
 
 namespace Imperatur_v2.trade.analysis
 {
@@ -147,7 +147,32 @@ namespace Imperatur_v2.trade.analysis
             return oD;
 
         }
-        
+
+        public List<TradingRecommendation> GetTradingRecommendations()
+        {
+
+            List<TradingRecommendation> Recommendations = new List<TradingRecommendation>(); ;
+            //Recommendations.Add(get)
+            //start with Elliot
+            bool bReccomend;
+            int[] Intervals = { 20, 50, 100, 180 };
+
+            TradingRecommendation Recommendation = new TradingRecommendation();
+
+            foreach (int Interval in Intervals)
+            {
+                bReccomend = RangeConvergeWithElliotForBuy(Interval, out Recommendation);
+                if (bReccomend)
+                {
+                    Recommendations.Add(Recommendation);
+                    break;
+                }
+
+
+            }
+            return Recommendations;
+        }
+
         private TradingRecommendation GetTradingRecommendationFromWaves(List<ConfirmedElliottWave> ConfirmedWaves, DateTime Start, DateTime End )
         {
             //only calc on 4 and up
@@ -171,11 +196,14 @@ namespace Imperatur_v2.trade.analysis
                 double x = MaxConfirmedWaveObject.Wave.SourceIndex / 4;
                 //DateTime ActionDateToTrade = Start.AddDays((int)x);
                 //Last wave for buy!
-                return new TradingRecommendation()
-                {
-                    BuyAtPrice = Convert.ToDecimal(MaxConfirmedWaveObject.Wave.End),
-                    PredictedBuyDate = Start.AddDays((int)x)
-                };
+                return new TradingRecommendation(
+                    Instrument,
+                    ImperaturGlobal.GetMoney(Convert.ToDecimal(MaxConfirmedWaveObject.Wave.End), Instrument.CurrencyCode),
+                    ImperaturGlobal.GetMoney(0, Instrument.CurrencyCode),
+                    Start.AddDays((int)x),
+                    Start.AddDays((int)x),
+                    TradingForecastMethod.Elliott
+                );
             }
 
                 
@@ -210,13 +238,15 @@ namespace Imperatur_v2.trade.analysis
             double XWaveIndex  = (ToCompare.Select(x => x.SourceIndex).Max() + PredictedLenght)/4;
             DateTime ActionDateToTrade = Start.AddDays((int)XWaveIndex);
 
-            return new TradingRecommendation
-            {
-                BuyAtPrice = oE.Momentum.Equals(Momentum.Negative) ? Convert.ToDecimal(ConfirmedWaves.Where(c => c.WaveNumber.Equals(MaxConfirmedWave)).Last().Wave.End + (PredictedLenght * SlopeAvg)) : (decimal?)null,
-                SellAtPrice = oE.Momentum.Equals(Momentum.Positive) ? Convert.ToDecimal(ConfirmedWaves.Where(c => c.WaveNumber.Equals(MaxConfirmedWave)).Last().Wave.End + (PredictedLenght * SlopeAvg)) : (decimal?)null,
-                PredictedBuyDate = oE.Momentum.Equals(Momentum.Negative) ? ActionDateToTrade : (DateTime?)null,
-                PredictedSellDate = oE.Momentum.Equals(Momentum.Positive) ? ActionDateToTrade : (DateTime?)null
-            };
+            return new TradingRecommendation(Instrument,
+                ImperaturGlobal.GetMoney(
+                oE.Momentum.Equals(Momentum.Negative) ? Convert.ToDecimal(ConfirmedWaves.Where(c => c.WaveNumber.Equals(MaxConfirmedWave)).Last().Wave.End + (PredictedLenght * SlopeAvg)) : 0, Instrument.CurrencyCode),
+                ImperaturGlobal.GetMoney(
+                oE.Momentum.Equals(Momentum.Positive) ? Convert.ToDecimal(ConfirmedWaves.Where(c => c.WaveNumber.Equals(MaxConfirmedWave)).Last().Wave.End + (PredictedLenght * SlopeAvg)) : 0, Instrument.CurrencyCode),
+                ActionDateToTrade,
+                ActionDateToTrade,
+                TradingForecastMethod.Elliott
+            );
 
         }
 
@@ -582,13 +612,14 @@ namespace Imperatur_v2.trade.analysis
         public Momentum Momentum;
     }
 
+    /*
     public struct TradingRecommendation
     {
         public decimal? SellAtPrice;
         public decimal? BuyAtPrice;
         public DateTime? PredictedBuyDate;
         public DateTime? PredictedSellDate;
-    }
+    }*/
     
     //public class ElliotWaveDefinition
     //{

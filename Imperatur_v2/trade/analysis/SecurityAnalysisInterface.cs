@@ -1,4 +1,5 @@
 ﻿using Imperatur_v2.securites;
+using Imperatur_v2.trade.recommendation;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,6 +21,6 @@ namespace Imperatur_v2.trade.analysis
         List<List<double>> StandardBollingerForRange(DateTime Start, DateTime End, int Period = 20, double Multiply = 2);
         List<HistoricalQuoteDetails> GetDataForRange(DateTime Start, DateTime End);
         List<Tuple<DateTime, VolumeIndicator>> GetRangeOfVolumeIndicator(DateTime Start, DateTime End);
-
+        List<TradingRecommendation> GetTradingRecommendations();
     }
 }

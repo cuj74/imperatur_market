@@ -14,7 +14,8 @@ namespace Imperatur_v2.trade.recommendation
         Bollinger,
         Crossover,
         LongShortCrossover,
-        TripleCrossover
+        TripleCrossover,
+        Undefined
     }
 
     public class TradingRecommendation : ITradingRecommendation
@@ -25,6 +26,21 @@ namespace Imperatur_v2.trade.recommendation
         private DateTime m_oPredictedBuyDate;
         private DateTime m_oPredictedSellDate;
         private TradingForecastMethod m_oTradingForecastMethod;
+
+        public TradingRecommendation()
+        {
+            m_oTradingForecastMethod = TradingForecastMethod.Undefined;
+        }
+        public TradingRecommendation(Instrument Instrument, IMoney BuyPrice, IMoney SellPrice, DateTime PredictedBuyDate, DateTime PredictedSellDate, TradingForecastMethod TradingForeCastMehtod)
+        {
+            m_oTradingForecastMethod = TradingForecastMethod;
+            m_oInstrument = Instrument;
+            m_oBuyPrice = BuyPrice;
+            m_oSellPrice = SellPrice;
+            m_oPredictedBuyDate = PredictedBuyDate;
+            m_oPredictedSellDate = PredictedSellDate;
+        }
+
 
         public Instrument Instrument
         {

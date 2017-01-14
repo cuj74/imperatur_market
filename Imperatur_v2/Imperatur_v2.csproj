@@ -101,6 +101,7 @@
     <Compile Include="shared\ObjectReflection.cs" />
     <Compile Include="shared\ObjectTextSearch.cs" />
     <Compile Include="shared\ObservableRangeCollection.cs" />
+    <Compile Include="trade\analysis\BollingerBandDefintion.cs" />
     <Compile Include="trade\analysis\ElliottWaveDefinition.cs" />
     <Compile Include="trade\analysis\ElliottWaveDefinitionInterface.cs" />
     <Compile Include="trade\analysis\PolynomialRegression.cs" />

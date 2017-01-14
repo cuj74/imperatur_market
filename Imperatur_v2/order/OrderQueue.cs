@@ -5,19 +5,24 @@ using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 using Imperatur_v2.shared;
+using Imperatur_v2.handler;
 
 namespace Imperatur_v2.order
 {
     public class OrderQueue : IOrderQueue
     {
         private ObservableRangeCollection<IOrder> m_oOrders;
+        private IAccountHandlerInterface m_oAccountHandler;
+        private ITradeHandlerInterface m_oTradeHandler;
         private bool TryLoadFromStorage;
         private string m_oLastErrorMessage;
-        public OrderQueue()
+        public OrderQueue(IAccountHandlerInterface AccountHandler, ITradeHandlerInterface TradeHandler)
         {
             TryLoadFromStorage = false;
             m_oLastErrorMessage = "";
             m_oOrders = new ObservableRangeCollection<IOrder>();
+            m_oAccountHandler = AccountHandler;
+            m_oTradeHandler = TradeHandler;
         }
 
         public delegate void SaveOrderHandler (object sender, events.SaveOrderEventArg e);
@@ -96,14 +101,29 @@ namespace Imperatur_v2.order
         {
             //remove those that are not valid any more
             m_oOrders.RemoveRange(
-                m_oOrders.Where(x=>x.
-                )
+                m_oOrders.Where(x => x.ValidToDate > DateTime.Now)
+                );
+
             if (m_oOrders.Count() == 0)
             {
                 return true;
             }
-            foreach (IOrder oI in m_oOrders.where)
-            // m_oOrders.Select(o=>o.ExecuteOrder())
+
+            bool bReturn = false;
+            foreach (IOrder oI in m_oOrders)
+            {
+                IOrder StopLoss;
+                if (oI.ExecuteOrder(m_oAccountHandler, m_oTradeHandler, out StopLoss))
+                {
+                    bReturn = true;
+                    if (!oI.Equals(StopLoss))
+                        { m_oOrders.Add(StopLoss);
+                    }
+                    m_oOrders.Remove(oI);
+                }
+                  
+            }
+            return bReturn;
         }
     }
 }
