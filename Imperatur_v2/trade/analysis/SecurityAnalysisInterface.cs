@@ -22,5 +22,6 @@ namespace Imperatur_v2.trade.analysis
         List<HistoricalQuoteDetails> GetDataForRange(DateTime Start, DateTime End);
         List<Tuple<DateTime, VolumeIndicator>> GetRangeOfVolumeIndicator(DateTime Start, DateTime End);
         List<TradingRecommendation> GetTradingRecommendations();
+        Quote QuoteFromInstrument { get; }
     }
 }

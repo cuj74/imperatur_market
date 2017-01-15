@@ -15,6 +15,7 @@ using Newtonsoft.Json.Linq;
 using Imperatur_v2.account;
 using Imperatur_v2.securites;
 using Imperatur_v2.trade.analysis;
+using Imperatur_v2.trade.recommendation;
 
 namespace Imperatur_v2
 {
@@ -86,7 +87,7 @@ namespace Imperatur_v2
      
         private System.Timers.Timer m_oQuoteTimer;
 
-
+        private List<Tuple<Instrument, List<TradingRecommendation>, VolumeIndicator>> m_oTradingOverview;
 
         public delegate void QuoteUpdateHandler(object sender, EventArgs e);
         public event QuoteUpdateHandler QuoteUpdateEvent;
@@ -290,10 +291,11 @@ namespace Imperatur_v2
 
             m_oDisplayCurrency = ImperaturGlobal.Kernel.Get<ICurrency>(new Ninject.Parameters.ConstructorArgument("CurrencyCode", m_oImperaturData.SystemCurrency));
             m_oTradeHandler.QuoteUpdateEvent += M_oTradeHandler_QuoteUpdateEvent;
-            return;
             if (m_oImperaturData.IsAutomaticMaintained)
             {
 
+                * 
+                    * /*
                 int[] Intervals = Enumerable.Range(30, 365).ToArray();
                 IAccountInterface oA = m_oAccountHandler.Accounts().Where(a => a.GetAccountType().Equals(AccountType.Customer)).Take(10).Last();
                 foreach (Instrument i in ImperaturGlobal.Instruments)
@@ -313,8 +315,43 @@ namespace Imperatur_v2
                         }
 
                     }
+                }*/
+            }
+
+        }
+
+        private void TradingRobotMain()
+        {
+            m_oTradingOverview = new List<Tuple<Instrument, List<TradingRecommendation>, VolumeIndicator>>();
+            ISecurityAnalysis oS;
+            foreach (Instrument oI in ImperaturGlobal.Instruments)
+            {
+                oS = ImperaturGlobal.Kernel.Get<ISecurityAnalysis>(new Ninject.Parameters.ConstructorArgument("Instrument", oI));
+                
+                m_oTradingOverview.Add(new Tuple<Instrument, List<TradingRecommendation>, VolumeIndicator>(
+                    oI,
+                    oS.GetTradingRecommendations(),
+                    oS.GetRangeOfVolumeIndicator(DateTime.Now.AddDays(-50), DateTime.Now).Last().Item2
+                    ));
+            }
+            foreach (IAccountInterface oA in m_oAccountHandler.Accounts().Where(a=>a.GetAccountType().Equals(AccountType.Customer)))
+            {
+                foreach (Tuple<Instrument, List<TradingRecommendation>, VolumeIndicator> oTR in m_oTradingOverview)
+                {
+                    oS = ImperaturGlobal.Kernel.Get<ISecurityAnalysis>(new Ninject.Parameters.ConstructorArgument("Instrument", oTR.Item1));
+                    IMoney oAvailableFunds = oA.GetAvailableFunds(new List<ICurrency>() { ImperaturGlobal.GetMoney(0, oTR.Item1.CurrencyCode).CurrencyCode }).First();
+                    if (oTR.Item2.Where(tr=>tr.BuyPrice.Amount > 0 && tr.SellPrice.Amount == 0).Count() >0)
+                    {
+
+                        if (oAvailableFunds.Amount >= oS.QuoteFromInstrument.LastTradePrice.Amount)
+                        {
+
+                        }
+                    }
+
                 }
             }
+
 
         }
 

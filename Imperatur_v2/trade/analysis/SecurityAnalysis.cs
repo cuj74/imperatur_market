@@ -150,7 +150,6 @@ namespace Imperatur_v2.trade.analysis
 
         public List<TradingRecommendation> GetTradingRecommendations()
         {
-
             List<TradingRecommendation> Recommendations = new List<TradingRecommendation>(); ;
             //Recommendations.Add(get)
             //start with Elliot
@@ -167,10 +166,76 @@ namespace Imperatur_v2.trade.analysis
                     Recommendations.Add(Recommendation);
                     break;
                 }
-
-
             }
+            Recommendations.Add(GetTradingRecommendationForBollinger());
             return Recommendations;
+        }
+
+        private enum BollingerBandIndication
+        {
+
+        }
+
+        private TradingRecommendation GetTradingRecommendationForBollinger()
+        {
+            int[] Intervals = { 20, 50, 100, 180 };
+            double[] Multiplies = new double[] { 2};
+
+                
+            TradingRecommendation Recommendation = new TradingRecommendation();
+            foreach (int Interval in Intervals)
+            {
+                List<List<double>> oB = BollingerForRange(DateTime.Now.AddDays(-Interval), DateTime.Now, 20, Multiplies);
+                //Now create the pricerange list as well
+                var PriceInfo = GetDataForRange(DateTime.Now.AddDays(-Interval), DateTime.Now);
+                var BDiffVariable =  oB.Select(b => b[0] - b[2]).ToArray();
+
+                double SlopeTrend = Fit.Line(
+                    PriceInfo.Select((s, i2) => new { i2, s }).Select(t => Convert.ToDouble(t.i2)).ToArray(),
+                     PriceInfo.Select(y => Convert.ToDouble(y.Close)).ToArray()
+                    ).Item2;
+
+                double StandarDevForPercentB = BDiffVariable.StandardDeviation();
+                if (BDiffVariable[BDiffVariable.Length-1] < StandarDevForPercentB && SlopeTrend > 0 && Convert.ToDouble(GetQuoteFromInstrument().LastTradePrice.Amount) <= oB[2][oB.Count()-1])
+                {
+                    return new TradingRecommendation(
+                        Instrument,
+                        GetQuoteFromInstrument().LastTradePrice,
+                        ImperaturGlobal.GetMoney(0, Instrument.CurrencyCode),
+                        DateTime.Now,
+                        DateTime.Now,
+                        TradingForecastMethod.Bollinger
+                    );
+                }
+            }
+            return new TradingRecommendation();
+        }
+
+
+        public Quote QuoteFromInstrument
+        {
+            get
+            {
+                return ImperaturGlobal.Quotes.Where(i => i.Symbol.Equals(Instrument.Symbol)).First();
+            }
+        }
+        /// <summary>
+        /// Returns an array of the indexes(integer) of an list
+        /// </summary>
+        /// <param name="L"></param>
+        /// <returns>array of ints</returns>
+        private int[] GetIntIndexFromList(List<object> L) 
+        {
+            return L.Select((s, i2) => new { i2, s }).Select(t => t.i2).ToArray();
+        }
+        /// <summary>
+        /// Returns an array of the indexes converted to double of an list
+        /// </summary>
+        /// <param name="L"></param>
+        /// <returns>array of doubles</returns>
+        private double[] GetDoubleIndexFromList(List<object> L)
+        {
+            return L.Select((s, i2) => new { i2, s }).Select(t => Convert.ToDouble(t.i2)).ToArray();
         }
 
         private TradingRecommendation GetTradingRecommendationFromWaves(List<ConfirmedElliottWave> ConfirmedWaves, DateTime Start, DateTime End )
