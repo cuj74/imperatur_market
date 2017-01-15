@@ -113,7 +113,11 @@ namespace Imperatur_v2.order
                 m_oStopLossPercentage = StopLossPercentage;
                 m_oStopLossDaysValid = StopLossValidDays;
             }
-            SaveOrderEvent(this, new SaveOrderEventArg() { Identifier = m_oIdentifier});
+            OnSaveOrder(new SaveOrderEventArg()
+            {
+                Identifier = this.Identifier
+            });
+
         }
 
         private Order CreateStopLossOrder(decimal TradePrice)
@@ -149,7 +153,7 @@ namespace Imperatur_v2.order
             try
             {
                 Instrument InstrumentToEvaluate = ImperaturGlobal.Instruments.Where(i => i.Symbol.Equals(m_oSymbol)).First();
-                return m_oTriggers.Select(t => t.Evaluate(InstrumentToEvaluate)).Max().Equals(1);
+                return (m_oTriggers.Select(t => t.Evaluate(InstrumentToEvaluate)).Where(t2 => t2.Equals(true)).Count() > 0);
             }
             catch(Exception ex)
             {

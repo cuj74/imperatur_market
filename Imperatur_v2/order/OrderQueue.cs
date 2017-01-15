@@ -100,30 +100,53 @@ namespace Imperatur_v2.order
         public bool EvaluateOrdersInQueue()
         {
             //remove those that are not valid any more
-            m_oOrders.RemoveRange(
-                m_oOrders.Where(x => x.ValidToDate > DateTime.Now)
-                );
+            if (m_oOrders.Count() == 0)
+            {
+                return true;
+            }
+
+            List<IOrder> ToRemove = m_oOrders.Where(x => x.ValidToDate < DateTime.Now).ToList();
+            m_oOrders.RemoveRange(ToRemove);
 
             if (m_oOrders.Count() == 0)
             {
                 return true;
             }
 
+
+            ToRemove.Clear();
+            List<IOrder> ToAdd = new List<IOrder>();
             bool bReturn = false;
             foreach (IOrder oI in m_oOrders)
             {
                 IOrder StopLoss;
-                if (oI.ExecuteOrder(m_oAccountHandler, m_oTradeHandler, out StopLoss))
+                try
                 {
-                    bReturn = true;
-                    if (!oI.Equals(StopLoss))
-                        { m_oOrders.Add(StopLoss);
+                    if (oI.ExecuteOrder(m_oAccountHandler, m_oTradeHandler, out StopLoss))
+                    {
+                        bReturn = true;
+                        if (!oI.Equals(StopLoss))
+                        {
+                            ToAdd.Add(StopLoss);
+                        }
+                        ToRemove.Add(oI);
                     }
-                    m_oOrders.Remove(oI);
+                }
+                catch(Exception ex)
+                {
+                    int gg = 0;
                 }
                   
             }
+            m_oOrders.RemoveRange(ToRemove);
+            m_oOrders.AddRange(ToAdd);
             return bReturn;
+        }
+
+        public bool AddOrder(IOrder Order)
+        {
+            m_oOrders.Add(Order);
+            return true;
         }
     }
 }

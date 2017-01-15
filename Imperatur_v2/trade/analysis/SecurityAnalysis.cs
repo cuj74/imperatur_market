@@ -157,16 +157,26 @@ namespace Imperatur_v2.trade.analysis
             int[] Intervals = { 20, 50, 100, 180 };
 
             TradingRecommendation Recommendation = new TradingRecommendation();
+            try
+            {
+                decimal tp = QuoteFromInstrument.LastTradePrice.Amount;
 
+            }
+            catch(Exception ex)
+            {
+                int gg = 0;
+                return Recommendations;
+            }
+            /*
             foreach (int Interval in Intervals)
             {
                 bReccomend = RangeConvergeWithElliotForBuy(Interval, out Recommendation);
                 if (bReccomend)
                 {
-                    Recommendations.Add(Recommendation);
+                   // Recommendations.Add(Recommendation);
                     break;
                 }
-            }
+            }*/
             Recommendations.Add(GetTradingRecommendationForBollinger());
             return Recommendations;
         }
@@ -188,7 +198,15 @@ namespace Imperatur_v2.trade.analysis
                 List<List<double>> oB = BollingerForRange(DateTime.Now.AddDays(-Interval), DateTime.Now, 20, Multiplies);
                 //Now create the pricerange list as well
                 var PriceInfo = GetDataForRange(DateTime.Now.AddDays(-Interval), DateTime.Now);
-                var BDiffVariable =  oB.Select(b => b[0] - b[2]).ToArray();
+                if (PriceInfo.Count() < 2)
+                {
+                    continue;
+                }
+                var BDiffVariable =  oB.Where(bc=>bc.Count() > 1).Select(b => b[0] - b[2]).ToArray();
+                if (BDiffVariable == null)
+                {
+                    continue;
+                }
 
                 double SlopeTrend = Fit.Line(
                     PriceInfo.Select((s, i2) => new { i2, s }).Select(t => Convert.ToDouble(t.i2)).ToArray(),
@@ -196,11 +214,11 @@ namespace Imperatur_v2.trade.analysis
                     ).Item2;
 
                 double StandarDevForPercentB = BDiffVariable.StandardDeviation();
-                if (BDiffVariable[BDiffVariable.Length-1] < StandarDevForPercentB && SlopeTrend > 0 && Convert.ToDouble(GetQuoteFromInstrument().LastTradePrice.Amount) <= oB[2][oB.Count()-1])
+                if (BDiffVariable[BDiffVariable.Length-1] < StandarDevForPercentB && SlopeTrend > 0 && Convert.ToDouble(QuoteFromInstrument.LastTradePrice.Amount) <= oB[2][oB.Count()-1])
                 {
                     return new TradingRecommendation(
                         Instrument,
-                        GetQuoteFromInstrument().LastTradePrice,
+                        QuoteFromInstrument.LastTradePrice,
                         ImperaturGlobal.GetMoney(0, Instrument.CurrencyCode),
                         DateTime.Now,
                         DateTime.Now,

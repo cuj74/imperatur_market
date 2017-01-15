@@ -16,6 +16,7 @@ using Imperatur_v2.account;
 using Imperatur_v2.securites;
 using Imperatur_v2.trade.analysis;
 using Imperatur_v2.trade.recommendation;
+using Imperatur_v2.order;
 
 namespace Imperatur_v2
 {
@@ -67,6 +68,7 @@ namespace Imperatur_v2
         ImperaturData GetSystemData();
         IAccountHandlerInterface GetAccountHandler();
         ITradeHandlerInterface GetTradeHandler();
+        IOrderQueue OrderQueue { get; }
         //IMoney GetMoney(decimal Amount, string CurrencyCode);
         event ImperaturMarket.QuoteUpdateHandler QuoteUpdateEvent;
         IMoney GetMoney(decimal Amount, string CurrencyCode);
@@ -81,6 +83,7 @@ namespace Imperatur_v2
         private IAccountHandlerInterface m_oAccountHandler;
         private ITradeHandlerInterface m_oTradeHandler;
         private ICurrency m_oDisplayCurrency;
+        private IOrderQueue m_oOrderQueue;
         private string m_oLastErrorMessage;
         private ImperaturData m_oImperaturData;
         private readonly string SystemDataFile = "imperatursettings.json";
@@ -88,6 +91,21 @@ namespace Imperatur_v2
         private System.Timers.Timer m_oQuoteTimer;
 
         private List<Tuple<Instrument, List<TradingRecommendation>, VolumeIndicator>> m_oTradingOverview;
+
+        public IOrderQueue OrderQueue
+        {
+            get
+            {
+                if (m_oOrderQueue == null)
+                {
+                    m_oOrderQueue = ImperaturGlobal.Kernel.Get<IOrderQueue>(
+                         new Ninject.Parameters.ConstructorArgument("AccountHandler", GetAccountHandler()),
+                         new Ninject.Parameters.ConstructorArgument("TradeHandler", GetTradeHandler())
+                     );
+                }
+                return m_oOrderQueue;
+            }
+        }
 
         public delegate void QuoteUpdateHandler(object sender, EventArgs e);
         public event QuoteUpdateHandler QuoteUpdateEvent;
@@ -243,6 +261,7 @@ namespace Imperatur_v2
         {
 
             m_oImperaturData = SystemData;
+
             ImperaturGlobal.Initialize(m_oImperaturData, InitiateNinjectKernel(), null);
             List<account.AccountCacheType> BusinessAccounts = new List<account.AccountCacheType>();
 
@@ -286,37 +305,18 @@ namespace Imperatur_v2
 
             m_oQuoteTimer = new System.Timers.Timer();
             m_oQuoteTimer.Elapsed += M_oQuoteTimer_Elapsed;
-            m_oQuoteTimer.Interval = 1000 * 60 * 2; Convert.ToInt32(m_oImperaturData.QuoteRefreshTime); //every 15 minutes
+            m_oQuoteTimer.Interval = 1000 * 60 * 200; //Convert.ToInt32(m_oImperaturData.QuoteRefreshTime); //every 15 minutes
             m_oQuoteTimer.Enabled = true;
 
             m_oDisplayCurrency = ImperaturGlobal.Kernel.Get<ICurrency>(new Ninject.Parameters.ConstructorArgument("CurrencyCode", m_oImperaturData.SystemCurrency));
             m_oTradeHandler.QuoteUpdateEvent += M_oTradeHandler_QuoteUpdateEvent;
+
+
             if (m_oImperaturData.IsAutomaticMaintained)
             {
-
-                * 
-                    * /*
-                int[] Intervals = Enumerable.Range(30, 365).ToArray();
-                IAccountInterface oA = m_oAccountHandler.Accounts().Where(a => a.GetAccountType().Equals(AccountType.Customer)).Take(10).Last();
-                foreach (Instrument i in ImperaturGlobal.Instruments)
-                {
-                    trade.analysis.SecurityAnalysis oSA = new trade.analysis.SecurityAnalysis(i);
-
-                    if (!oSA.HasValue)
-                    {
-                        continue;
-                    }
-                    TradingRecommendation oTR = new TradingRecommendation();
-                    foreach (int Interval in Intervals)
-                    {
-                        if (oSA.RangeConvergeWithElliotForBuy(DateTime.Now.AddDays(-Interval), DateTime.Now, out oTR))
-                        {
-                            int dfgdf = 0;
-                        }
-
-                    }
-                }*/
-            }
+                OrderQueue.EvaluateOrdersInQueue();
+                TradingRobotMain();
+              }
 
         }
 
@@ -327,32 +327,76 @@ namespace Imperatur_v2
             foreach (Instrument oI in ImperaturGlobal.Instruments)
             {
                 oS = ImperaturGlobal.Kernel.Get<ISecurityAnalysis>(new Ninject.Parameters.ConstructorArgument("Instrument", oI));
-                
-                m_oTradingOverview.Add(new Tuple<Instrument, List<TradingRecommendation>, VolumeIndicator>(
-                    oI,
-                    oS.GetTradingRecommendations(),
-                    oS.GetRangeOfVolumeIndicator(DateTime.Now.AddDays(-50), DateTime.Now).Last().Item2
-                    ));
+                if (oS.HasValue)
+                {
+                    m_oTradingOverview.Add(new Tuple<Instrument, List<TradingRecommendation>, VolumeIndicator>(
+                        oI,
+                        oS.GetTradingRecommendations(),
+                        oS.GetRangeOfVolumeIndicator(DateTime.Now.AddDays(-50), DateTime.Now).Last().Item2
+                        ));
+                }
+            }
+            if (m_oTradingOverview.Count() == 0)
+            {
+                return;
             }
             foreach (IAccountInterface oA in m_oAccountHandler.Accounts().Where(a=>a.GetAccountType().Equals(AccountType.Customer)))
             {
-                foreach (Tuple<Instrument, List<TradingRecommendation>, VolumeIndicator> oTR in m_oTradingOverview)
+                foreach (Tuple<Instrument, List<TradingRecommendation>, VolumeIndicator> oTR in m_oTradingOverview.Where(x=>x.Item2.Where(tr => tr.TradingForecastMethod != TradingForecastMethod.Undefined && tr.BuyPrice.Amount > 0 && tr.SellPrice.Amount == 0).Count() > 0).ToList())
                 {
                     oS = ImperaturGlobal.Kernel.Get<ISecurityAnalysis>(new Ninject.Parameters.ConstructorArgument("Instrument", oTR.Item1));
                     IMoney oAvailableFunds = oA.GetAvailableFunds(new List<ICurrency>() { ImperaturGlobal.GetMoney(0, oTR.Item1.CurrencyCode).CurrencyCode }).First();
-                    if (oTR.Item2.Where(tr=>tr.BuyPrice.Amount > 0 && tr.SellPrice.Amount == 0).Count() >0)
+                    if (oTR.Item2.Where(tr=>tr.BuyPrice.Amount > 0 && tr.SellPrice.Amount == 0).Count() >0 && (oTR.Item3.VolumeIndicatorType != VolumeIndicatorType.HighVolumeChurn || oTR.Item3.VolumeIndicatorType != VolumeIndicatorType.VolumeClimaxUp))
                     {
-
                         if (oAvailableFunds.Amount >= oS.QuoteFromInstrument.LastTradePrice.Amount)
                         {
+                            int HighestQuantity = (int)(oAvailableFunds.Amount / oS.QuoteFromInstrument.LastTradePrice.Amount);
+                            //add order
+                            if (oTR.Item3.VolumeIndicatorType != VolumeIndicatorType.VolumeClimaxDown)
+                            {
+                                //add stoploss also
 
+                                ITrigger NewTrigger = ImperaturGlobal.Kernel.Get<ITrigger>(
+                                    new Ninject.Parameters.ConstructorArgument("Operator", TriggerOperator.EqualOrless),
+                                    new Ninject.Parameters.ConstructorArgument("ValueType", TriggerValueType.TradePrice),
+                                    new Ninject.Parameters.ConstructorArgument("TradePriceValue", oS.QuoteFromInstrument.LastTradePrice.Amount),
+                                    new Ninject.Parameters.ConstructorArgument("PercentageValue", 0m)
+                                    );
+
+                                IOrder NewOrder = ImperaturGlobal.Kernel.Get<IOrder>(
+                                        new Ninject.Parameters.ConstructorArgument("Symbol", oS.Instrument.Symbol),
+                                        new Ninject.Parameters.ConstructorArgument("Trigger", new List<ITrigger> { NewTrigger}),
+                                        new Ninject.Parameters.ConstructorArgument("AccountIdentifier", oA.Identifier),
+                                        new Ninject.Parameters.ConstructorArgument("Quantity", HighestQuantity),
+                                        new Ninject.Parameters.ConstructorArgument("OrderType", OrderType.StopLoss),
+                                        new Ninject.Parameters.ConstructorArgument("ValidToDate",DateTime.Now.AddDays(2)),
+                                        new Ninject.Parameters.ConstructorArgument("StopLossValidDays", 30),
+                                        new Ninject.Parameters.ConstructorArgument("StopLossAmount", 0m),
+                                        new Ninject.Parameters.ConstructorArgument("StopLossPercentage", 5m)
+                                 );
+                                OrderQueue.AddOrder(NewOrder);
+                            }
+                            else
+                            {
+                                Trigger NewTrigger = new Trigger(TriggerOperator.EqualOrless, TriggerValueType.TradePrice, oS.QuoteFromInstrument.LastTradePrice.Amount, 0m);
+                                IOrder NewOrder = ImperaturGlobal.Kernel.Get<IOrder>(
+                                        new Ninject.Parameters.ConstructorArgument("Symbol", oS.Instrument.Symbol),
+                                        new Ninject.Parameters.ConstructorArgument("Trigger", new List<Trigger> { NewTrigger }),
+                                        new Ninject.Parameters.ConstructorArgument("AccountIdentifier", oA.Identifier),
+                                        new Ninject.Parameters.ConstructorArgument("Quantity", HighestQuantity),
+                                        new Ninject.Parameters.ConstructorArgument("OrderType", OrderType.Buy),
+                                        new Ninject.Parameters.ConstructorArgument("ValidToDate", DateTime.Now.AddDays(2)),
+                                        new Ninject.Parameters.ConstructorArgument("StopLossValidDays", 0),
+                                        new Ninject.Parameters.ConstructorArgument("StopLossAmount", 0m),
+                                        new Ninject.Parameters.ConstructorArgument("StopLossPercentage", 0m)
+                                 );
+                                OrderQueue.AddOrder(NewOrder);
+                            }
                         }
                     }
-
                 }
             }
-
-
+            OrderQueue.EvaluateOrdersInQueue();
         }
 
         private void M_oTradeHandler_QuoteUpdateEvent(object sender, EventArgs e)
@@ -363,7 +407,8 @@ namespace Imperatur_v2
             //this is also the trading robot start. 
             if (m_oImperaturData.IsAutomaticMaintained)
             {
-                //Add code here!
+                OrderQueue.EvaluateOrdersInQueue();
+                TradingRobotMain();
             }
         }
 

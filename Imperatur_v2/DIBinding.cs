@@ -33,6 +33,8 @@ namespace Imperatur_v2
             Bind<ITradeHandlerInterface>().To<TradeHandler>();
             Bind<ISecurityAnalysis>().To<SecurityAnalysis>();
             Bind<IOrder>().To<Order>();
+            Bind<IOrderQueue>().To<OrderQueue>();
+            Bind<ITrigger>().To<Trigger>();
 
             /*
             Bind<IBFSDataHandler>().To<BFSDataHandler>();

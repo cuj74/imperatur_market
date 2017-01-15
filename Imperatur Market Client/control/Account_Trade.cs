@@ -19,6 +19,7 @@ using System.Net;
 using Imperatur_v2.trade.analysis;
 using Imperatur_v2.securites;
 using ZedGraph;
+using Imperatur_v2.trade.recommendation;
 
 namespace Imperatur_Market_Client.control
 {
@@ -825,7 +826,7 @@ namespace Imperatur_Market_Client.control
                 }
                 if (bReccomend)
                 {
-                    MessageBox.Show(string.Format("Yes {0} at {1}", oTradeRec.BuyAtPrice ?? 0, oTradeRec.PredictedBuyDate ?? DateTime.MinValue));
+                    MessageBox.Show(string.Format("Yes {0} at {1}", oTradeRec.BuyPrice, oTradeRec.PredictedBuyDate));
                 }
                 else
                 {
