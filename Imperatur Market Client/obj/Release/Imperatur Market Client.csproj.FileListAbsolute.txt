@@ -22,3 +22,21 @@ C:\temp\dev\imperatur_market\Imperatur Market Client\obj\Release\Imperatur_Marke
 C:\temp\dev\imperatur_market\Imperatur Market Client\obj\Release\Imperatur Market Client.csproj.GenerateResource.Cache
 C:\temp\dev\imperatur_market\Imperatur Market Client\obj\Release\Imperatur Market Client.exe
 C:\temp\dev\imperatur_market\Imperatur Market Client\obj\Release\Imperatur Market Client.pdb
+C:\temp\dev\imperatur_market\Imperatur Market Client\bin\Release\ZedGraph.dll
+C:\temp\dev\imperatur_market\Imperatur Market Client\bin\Release\MathNet.Numerics.dll
+C:\temp\dev\imperatur_market\Imperatur Market Client\bin\Release\ZedGraph.xml
+C:\temp\dev\imperatur_market\Imperatur Market Client\bin\Release\MathNet.Numerics.xml
+C:\temp\dev\imperatur_market\Imperatur Market Client\bin\Release\de\ZedGraph.resources.dll
+C:\temp\dev\imperatur_market\Imperatur Market Client\bin\Release\es\ZedGraph.resources.dll
+C:\temp\dev\imperatur_market\Imperatur Market Client\bin\Release\fr\ZedGraph.resources.dll
+C:\temp\dev\imperatur_market\Imperatur Market Client\bin\Release\hu\ZedGraph.resources.dll
+C:\temp\dev\imperatur_market\Imperatur Market Client\bin\Release\it\ZedGraph.resources.dll
+C:\temp\dev\imperatur_market\Imperatur Market Client\bin\Release\ja\ZedGraph.resources.dll
+C:\temp\dev\imperatur_market\Imperatur Market Client\bin\Release\pt\ZedGraph.resources.dll
+C:\temp\dev\imperatur_market\Imperatur Market Client\bin\Release\ru\ZedGraph.resources.dll
+C:\temp\dev\imperatur_market\Imperatur Market Client\bin\Release\sk\ZedGraph.resources.dll
+C:\temp\dev\imperatur_market\Imperatur Market Client\bin\Release\sv\ZedGraph.resources.dll
+C:\temp\dev\imperatur_market\Imperatur Market Client\bin\Release\tr\ZedGraph.resources.dll
+C:\temp\dev\imperatur_market\Imperatur Market Client\bin\Release\zh-cn\ZedGraph.resources.dll
+C:\temp\dev\imperatur_market\Imperatur Market Client\bin\Release\zh-tw\ZedGraph.resources.dll
+C:\temp\dev\imperatur_market\Imperatur Market Client\obj\Release\PresentationControls.PopupComboBox.resources

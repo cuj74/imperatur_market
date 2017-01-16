@@ -23,39 +23,45 @@ namespace Imperatur_v2.order
             m_oOrders = new ObservableRangeCollection<IOrder>();
             m_oAccountHandler = AccountHandler;
             m_oTradeHandler = TradeHandler;
+            InitOrders();
         }
+
+
 
         public delegate void SaveOrderHandler (object sender, events.SaveOrderEventArg e);
         public List<IOrder> Orders
         {
-
             get
             {
-                if (TryLoadFromStorage == false)
-                {
-                    try
-                    {
-                        m_oOrders = LoadOrders();
-                        m_oOrders.CollectionChanged -= M_oOrders_CollectionChanged;
-                        m_oOrders.CollectionChanged += M_oOrders_CollectionChanged;
-
-                        foreach (IOrder item in m_oOrders)
-                        {
-                            item.SaveOrderEvent -= Item_SaveOrderEvent;
-                            item.SaveOrderEvent += Item_SaveOrderEvent;
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        m_oOrders = new ObservableRangeCollection<IOrder>();
-
-                    }
-                }
-                TryLoadFromStorage = true;
-
-                return new List<IOrder>((IEnumerable<IOrder>)m_oOrders);
+                 return InitOrders();
             }
-            
+        }
+
+        private List<IOrder> InitOrders()
+        {
+            if (TryLoadFromStorage == false)
+            {
+                try
+                {
+                    m_oOrders = LoadOrders();
+                    m_oOrders.CollectionChanged -= M_oOrders_CollectionChanged;
+                    m_oOrders.CollectionChanged += M_oOrders_CollectionChanged;
+                    /*
+                    foreach (IOrder item in m_oOrders)
+                    {
+                        item.SaveOrderEvent -= Item_SaveOrderEvent;
+                        item.SaveOrderEvent += Item_SaveOrderEvent;
+                    }*/
+                }
+                catch (Exception ex)
+                {
+                    m_oOrders = new ObservableRangeCollection<IOrder>();
+
+                }
+            }
+            TryLoadFromStorage = true;
+
+            return new List<IOrder>((IEnumerable<IOrder>)m_oOrders);
         }
 
         public bool SaveOrder(Guid Identifier)
@@ -66,10 +72,27 @@ namespace Imperatur_v2.order
             }
             return true;
         }
+        public bool SaveOrders()
+        {
+            foreach (IOrder oO in m_oOrders)
+            {
+                SaveSingleOrder(oO);
+            }
+            return true;
+        }
+
+
         private bool SaveSingleOrder(IOrder oI)
         {
-            json.SerializeJSONdata.SerializeObject((Order)oI,
-              string.Format(@"{0}\{1}\{2}.json", ImperaturGlobal.SystemData.SystemDirectory, ImperaturGlobal.SystemData.AcccountDirectory, oI.Identifier));
+            try
+            {
+                json.SerializeJSONdata.SerializeObject((Order)oI,
+                  string.Format(@"{0}\{1}\{2}.json", ImperaturGlobal.SystemData.SystemDirectory, ImperaturGlobal.SystemData.OrderDirectory, oI.Identifier));
+            }
+            catch(Exception ex)
+            {
+                int gg = 0;
+            }
             return true;
         }
 
@@ -80,9 +103,22 @@ namespace Imperatur_v2.order
 
         private void M_oOrders_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
-            throw new NotImplementedException();
+            /*
+            foreach (IOrder item in m_oOrders)
+            {
+                item.SaveOrderEvent -= Item_SaveOrderEvent;
+                item.SaveOrderEvent += Item_SaveOrderEvent;
+            }
+            */
+            SaveOrders();
         }
 
+        /*
+        private void Item_SaveOrderEvent(object sender, events e)
+        {
+            SaveAccount(e.Identifier);
+        }
+        */
         private ObservableRangeCollection<IOrder> LoadOrders()
         {
             //TODO create new generic class for the load of different data!!
@@ -96,9 +132,27 @@ namespace Imperatur_v2.order
             }
             return OrdersFromFiles;
         }
+        private void RemoveFilesFromStorage(List<IOrder> ToRemove)
+        {
+
+            DirectoryInfo di = new DirectoryInfo(string.Format(@"{0}\{1}\", ImperaturGlobal.SystemData.SystemDirectory, ImperaturGlobal.SystemData.OrderDirectory));
+            var files = di.GetFiles();
+
+            var FilesToDelete =
+                from f in files
+                join torem in ToRemove on f.Name equals torem.Identifier + ".json"
+                select f;
+
+            FilesToDelete.AsParallel().ForAll((f) => f.Delete()); 
+           
+        }
 
         public bool EvaluateOrdersInQueue()
         {
+            if (ImperaturGlobal.ExchangeStatus != ExchangeStatus.Open)
+            {
+                return false;
+            }
             //remove those that are not valid any more
             if (m_oOrders.Count() == 0)
             {
@@ -107,6 +161,7 @@ namespace Imperatur_v2.order
 
             List<IOrder> ToRemove = m_oOrders.Where(x => x.ValidToDate < DateTime.Now).ToList();
             m_oOrders.RemoveRange(ToRemove);
+            RemoveFilesFromStorage(ToRemove);
 
             if (m_oOrders.Count() == 0)
             {
@@ -139,6 +194,7 @@ namespace Imperatur_v2.order
                   
             }
             m_oOrders.RemoveRange(ToRemove);
+            RemoveFilesFromStorage(ToRemove);
             m_oOrders.AddRange(ToAdd);
             return bReturn;
         }
@@ -146,6 +202,8 @@ namespace Imperatur_v2.order
         public bool AddOrder(IOrder Order)
         {
             m_oOrders.Add(Order);
+            m_oOrders.CollectionChanged -= M_oOrders_CollectionChanged;
+            m_oOrders.CollectionChanged += M_oOrders_CollectionChanged;
             return true;
         }
     }

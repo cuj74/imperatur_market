@@ -88,7 +88,7 @@ namespace Imperatur_Market_Client
             SaveSystemLocationToCache(oNewSystem);
 
             this.toolStripStatusLabel_system.Text =
-                string.Format("{0} | {1}", m_Ic.GetSystemData().SystemDirectory, m_Ic.GetSystemData().SystemCurrency);
+                string.Format("{0} | {1} | {2}", m_Ic.GetSystemData().SystemDirectory, m_Ic.GetSystemData().SystemCurrency, m_Ic.SystemExchangeStatus.ToString());
                 
 
             //StandardKernel kernel = new StandardKernel();
@@ -110,7 +110,7 @@ namespace Imperatur_Market_Client
         {
             
             this.toolStripStatusLabel_system.Text =
-               string.Format("{0} | {1} | last update {2}", m_Ic.GetSystemData().SystemDirectory, m_Ic.GetSystemData().SystemCurrency, DateTime.Now.ToString());
+               string.Format("{0} | {1} | {2} | last update {3}", m_Ic.GetSystemData().SystemDirectory, m_Ic.GetSystemData().SystemCurrency,m_Ic.SystemExchangeStatus.ToString(), DateTime.Now.ToString());
             //TODO: needs invoke
             /*
             if (m_oAccountTab.InvokeRequired)

@@ -225,6 +225,18 @@ namespace Imperatur_v2.trade.analysis
                         TradingForecastMethod.Bollinger
                     );
                 }
+                if (BDiffVariable[BDiffVariable.Length - 1] > StandarDevForPercentB && SlopeTrend < 0 && Convert.ToDouble(QuoteFromInstrument.LastTradePrice.Amount) > oB[2][oB.Count() - 1])
+                {
+                    return new TradingRecommendation(
+                        Instrument,
+                        ImperaturGlobal.GetMoney(0, Instrument.CurrencyCode),
+                        QuoteFromInstrument.LastTradePrice,
+                        DateTime.Now,
+                        DateTime.Now,
+                        TradingForecastMethod.Bollinger
+                    );
+                }
+
             }
             return new TradingRecommendation();
         }
@@ -483,9 +495,15 @@ namespace Imperatur_v2.trade.analysis
             //start by removing obselete cacheobjects
             m_oCache = m_oCache.Where(x => x.Item1.AddSeconds(CacheSeconds).CompareTo(DateTime.Now) > 0).ToList();
             //find matching daterange and interval
-            if(m_oCache.Exists(x=>x.Item2.Min(h=>h.Date.Date).Equals(Start.Date) && x.Item2.Max(h => h.Date.Date).Equals(End.Date) && x.Item3.Equals(Interval)))
+            //if range exists in cached range and interval exists return this
+            if (
+                m_oCache.Exists(x => x.Item2.Where(h=>h.Date.Date>= Start.Date).Count() > 0
+                && x.Item2.Where(h => h.Date.Date <= End.Date).Count() > 0
+                && x.Item3.Equals(Interval)))
             {
-                return m_oCache.Where(x => x.Item2.Min(h => h.Date.Date).Equals(Start) && x.Item2.Max(h => h.Date.Date).Equals(End) && x.Item3.Equals(Interval)).First().Item2;
+                return m_oCache.Where(x => x.Item2.Where(h => h.Date.Date >= Start.Date).Count() > 0
+                && x.Item2.Where(h => h.Date.Date <= End.Date).Count() > 0
+                && x.Item3.Equals(Interval)).First().Item2;
             }
 
             m_oCache.Add(new Tuple<DateTime, List<HistoricalQuoteDetails>, int>(DateTime.Now, GetExternalDataForRange(Start, End, Interval), Interval));
@@ -508,8 +526,6 @@ namespace Imperatur_v2.trade.analysis
             return Interval;
 
         }
-
-        //m_oCache = new Tuple<DateTime, List<HistoricalQuoteDetails>>();
 
         public List<HistoricalQuoteDetails> GetDataForRange(DateTime Start, DateTime End)
         {
@@ -537,22 +553,41 @@ namespace Imperatur_v2.trade.analysis
         /// <param name="Start">The start of the range to get data from.</param>
         /// <param name="End">The end of the range to get data from.</param>
         /// <param name="Period">The period to calculate the moving average window. Default is 20.</param>
-        /// <param name="Multiply">The multiply for the upper and lower points. Defualt is 2.</param>
+        /// <param name="Multiply">The multiply for the upper and lower points. Default is 2.</param>
         /// <returns>List of List of doubles, first the upper, then the center and last is the lower</returns>
-        public List<List<double>> StandardBollingerForRange(DateTime Start, DateTime End, int Period =20, double Multiply = 2)
+        public List<List<double>> StandardBollingerForRange(DateTime Start, DateTime End, int Period =20, double Multiply = 4)
         {
             return BollingerForRange(Start, End, Period, new double[] { Multiply});
         }
         private List<List<double>> BollingerForRange(DateTime Start, DateTime End, int Period, double[] Multiplies)
         {
             List<List<double>> BollingerBands = new List<List<double>>();
-            double[] CenterLine = Statistics.MovingAverage(GetDataForRange(Start, End).Select(q => Convert.ToDouble(q.Close)).ToArray(), Period).ToArray();
-            double[] StandardDevation = GetStandardDeviationPointsOfCenterLine(CenterLine, Period);
+            double[] PriceArray;
+            //get system calculated interval
+            int Interval = GetIntervalFromDateRange(Start, End);
+            if (Interval > 0)
+            {
+                //small intervalls add the desired amount of time and then skip at the end
+                PriceArray = GetCachedDataForRange(Start.AddSeconds(-(Interval * Period)), End, Interval).Select(q => Convert.ToDouble(q.Close)).ToArray();
+            }
+            else
+            {
+                PriceArray = GetDataForRange(Start.AddDays(-Period), End).Select(q => Convert.ToDouble(q.Close)).ToArray();
+            }
+            //cant compute std on small amounts of data
+            if (PriceArray.Count() < 2)
+            {
+                return BollingerBands;
+            } 
+
+            double[] CenterLine = Statistics.MovingAverage(PriceArray, Period).ToArray();
+            double[] StandardDevation = GetStandardDeviationPointsOfCenterLine(PriceArray, Period);
+            
             BollingerBands.Add(CenterLine.ToList());
             for (int i = 0; i < Multiplies.Length; i++)
             {
-                BollingerBands.Add(GetExtendedBandOfCenterLine(CenterLine, StandardDevation, Multiplies[i], true).ToList());
-                BollingerBands.Add(GetExtendedBandOfCenterLine(CenterLine, StandardDevation, Multiplies[i], false).ToList());
+                BollingerBands.Add(GetExtendedBandOfCenterLine(CenterLine, StandardDevation.ToArray(), Multiplies[i], true).ToList());
+                BollingerBands.Add(GetExtendedBandOfCenterLine(CenterLine, StandardDevation.ToArray(), Multiplies[i], false).ToList());
             }
             return BollingerBands;
 
@@ -568,6 +603,7 @@ namespace Imperatur_v2.trade.analysis
         /// <returns>Array of double</returns>
         private double[] GetExtendedBandOfCenterLine(double[] CenterLine, double[] StandardDevationPoints, double Multiply, bool Direction)
         {
+            
             return CenterLine.Select((s, i2) => new { i2, s })
                     .Select(t => t.s + (!double.IsNaN(StandardDevationPoints[t.i2]) ?
                     ((
@@ -600,11 +636,22 @@ namespace Imperatur_v2.trade.analysis
                 skip++;
             }
             //add items where there are no possibility to calculate the standard deviation
-            while (CenterLine.Length > StdList.Count)
+            //remove the NaN
+            double FirstRealValue = StdList.Where(x => !double.IsNaN(x)).First();
+            /*
+            for (int i = 0; i < StdList.Count-1; i++)
             {
-                StdList.Insert(0, 1);
+                if (!double.IsNaN(StdList[i]))
+                {
+
+                }
+            }*/
+
+            while (CenterLine.Length > StdList.Count && StdList.Count > 0)
+            {
+                StdList.Insert(0, StdList[0]);
             }
-            return StdList.ToArray();
+            return StdList.Select(x=> !double.IsNaN(x) ? x : FirstRealValue).ToArray();
         }
 
 

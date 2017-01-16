@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Imperatur_v2.securites;
 using Imperatur_v2.shared;
+using Newtonsoft.Json;
 
 namespace Imperatur_v2.order
 {
@@ -26,6 +27,20 @@ namespace Imperatur_v2.order
         private decimal m_oTradePriceValue;
         private decimal m_oPercentageValue;
 
+        [JsonConstructor]
+        public Trigger(TriggerOperator m_oOperator, TriggerValueType m_oValueType, decimal m_oTradePriceValue, decimal m_oPercentageValue)
+        {
+            this.m_oOperator = m_oOperator;
+            this.m_oValueType = m_oValueType;
+            this.m_oTradePriceValue = m_oTradePriceValue;
+            this.m_oPercentageValue = m_oPercentageValue;
+            if (m_oTradePriceValue == m_oPercentageValue && m_oPercentageValue == 0)
+            {
+                throw new Exception("TradePriceValue and PercentageValue cant both be zero!");
+            }
+        }
+        /*
+
         public Trigger(TriggerOperator Operator, TriggerValueType ValueType, decimal TradePriceValue, decimal PercentageValue)
         {
             m_oOperator = Operator;
@@ -37,7 +52,7 @@ namespace Imperatur_v2.order
                 throw new Exception("TradePriceValue and PercentageValue cant both be zero!");
             }
 
-        }
+        }*/
 
         public bool Evaluate(Instrument Instrument)
         {

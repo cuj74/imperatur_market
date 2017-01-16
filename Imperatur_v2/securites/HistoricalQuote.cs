@@ -89,10 +89,92 @@ namespace Imperatur_v2.securites
         private const string INTERVAL = "INTERVAL=";
         private const string INTERVALDELIMITER = "a";
         private const string TIMEZONE_OFFSET = "TIMEZONE_OFFSET";
+        private const string MARKET_OPEN_MINUTE = "MARKET_OPEN_MINUTE";
+        private const string MARKET_CLOSE_MINUTE = "MARKET_CLOSE_MINUTE";
+        
 
         public const int DAYINSECONDS = 86400;
         public const int HOURINSECONDS = 3600;
         public const int MINUTEINSECONDS = 60;
+
+
+        public Tuple<DateTime, DateTime> GetStartEndOfExchange(Instrument DefaultInstrument, Exchange Exchange)
+        {
+            string Symbol = DefaultInstrument.Symbol.Replace(" ", "-");
+            TimeSpan epochTicks = new TimeSpan(new DateTime(1970, 1, 1).Ticks);
+            TimeSpan unixTicks = new TimeSpan(DateTime.Now.AddDays(-3).Ticks) - epochTicks;
+
+            string URL = string.Format("http://www.google.com/finance/getprices?q={0}&x={1}&i={2}&ts={3}&f=d,c,v,k,o,h,l", Symbol, Exchange.ExhangeCode, DAYINSECONDS.ToString(), ((int)unixTicks.TotalSeconds).ToString());
+            string ResponseData = "";
+            int TimeZoneOffset = 0;
+            int TIME_MARKET_OPEN_MINUTE = 0;
+            int TIME_MARKET_CLOSE_MINUTE = 0;
+            using (WebClient wc = new WebClient())
+            {
+                ResponseData = wc.DownloadString(URL);
+            }
+            if (ResponseData != "")
+            {
+
+                //Find line that starts with "MARKET_OPEN_MINUTE"
+                foreach (string ResponseLine in new LineReader(() => new StringReader(ResponseData)))
+                {
+                    if (TIME_MARKET_OPEN_MINUTE > 0 && TIME_MARKET_CLOSE_MINUTE > 0 && TimeZoneOffset > 0)
+                    {
+                        break;
+                    }
+                    if (ResponseLine.StartsWith(TIMEZONE_OFFSET, false, System.Globalization.CultureInfo.CurrentCulture))
+                    {
+                        TimeZoneOffset = Convert.ToInt32(ResponseLine.Substring(TIMEZONE_OFFSET.Length + 1));
+                    }
+
+                    if (ResponseLine.StartsWith(MARKET_OPEN_MINUTE, false, System.Globalization.CultureInfo.CurrentCulture))
+                    {
+                        TIME_MARKET_OPEN_MINUTE = Convert.ToInt32(ResponseLine.Substring(MARKET_OPEN_MINUTE.Length + 1));
+                    }
+
+                    if (ResponseLine.StartsWith(MARKET_CLOSE_MINUTE, false, System.Globalization.CultureInfo.CurrentCulture))
+                    {
+                        TIME_MARKET_CLOSE_MINUTE = Convert.ToInt32(ResponseLine.Substring(MARKET_CLOSE_MINUTE.Length + 1));
+                    }
+                }
+
+                if (Exchange.ExhangeCode.Equals("STO") )
+                {
+                    //month, day
+                    List<Tuple<int, int>> Closed = new List<Tuple<int, int>>();
+                    List<Tuple<int, int>> HalfDay = new List<Tuple<int, int>>();
+
+                    Closed.Add(new Tuple<int, int>(1, 1));
+                    Closed.Add(new Tuple<int, int>(1, 6));
+                    Closed.Add(new Tuple<int, int>(3, 28));
+                    Closed.Add(new Tuple<int, int>(5, 5));
+                    Closed.Add(new Tuple<int, int>(6, 6));
+                    Closed.Add(new Tuple<int, int>(6, 24));
+                    Closed.Add(new Tuple<int, int>(6, 26));
+
+                    //to 13:00
+                    HalfDay.Add(new Tuple<int, int>(1, 5));
+                    HalfDay.Add(new Tuple<int, int>(3, 24));
+                    HalfDay.Add(new Tuple<int, int>(5, 4));
+                    HalfDay.Add(new Tuple<int, int>(11, 4));
+
+
+                    Tuple<int, int> ToDay = new Tuple<int, int>(DateTime.Now.Month, DateTime.Now.Day);
+                    if (Closed.Find(x=>x.Equals(ToDay)) != null)
+                    {
+                        return new Tuple<DateTime, DateTime>(DateTime.Now.Date, DateTime.Now.Date);
+                    }
+                    if (HalfDay.Find(x => x.Equals(ToDay)) != null)
+                    {
+                        return new Tuple<DateTime, DateTime>(DateTime.Now.Date.AddMinutes(TIME_MARKET_OPEN_MINUTE), DateTime.Now.Date.AddHours(13));
+                    }
+                }
+                return new Tuple<DateTime, DateTime>(DateTime.Now.Date.AddMinutes(TIME_MARKET_OPEN_MINUTE), DateTime.Now.Date.AddMinutes(TIME_MARKET_CLOSE_MINUTE));
+            }
+            return new Tuple<DateTime, DateTime>(DateTime.Now.Date, DateTime.Now.Date);
+
+        }
 
 
         public HistoricalQuote GetHistoricalDataWithInterval(Instrument Instrument, Exchange Exchange, DateTime? FromDate, int IntervalSeconds)

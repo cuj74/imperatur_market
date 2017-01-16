@@ -327,6 +327,7 @@ namespace Imperatur_v2.account
                 oH.CurrentAmount = HoldingQuote.LastTradePrice.Multiply(oH.Quantity);
                 oH.Change = oH.CurrentAmount.Subtract(oH.PurchaseAmount);
                 oH.ChangePercent = oH.PurchaseAmount.Amount != 0 ? (oH.CurrentAmount.Divide(oH.PurchaseAmount).Amount - 1) * 100 : 0;
+                oH.Symbol = Ticker;
                 Holdings.Add(oH);
             }
 

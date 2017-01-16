@@ -16,7 +16,7 @@ namespace Imperatur_v2.order
         string LastErrorMessage { get; }
         Guid Identifier { get; }
         DateTime ValidToDate { get; }
-        event OrderQueue.SaveOrderHandler SaveOrderEvent;
+        //event OrderQueue.SaveOrderHandler SaveOrderEvent;
         
     }
 }

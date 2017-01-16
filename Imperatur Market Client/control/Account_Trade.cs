@@ -296,10 +296,15 @@ namespace Imperatur_Market_Client.control
 
 
             var pane = PriceGraph.GraphPane;
+            
             AdditionalGraphs.ForEach(x =>
             pane.CurveList.Add(CreateLineItemFromData(x.Item2, x.Item1)
             ));
-
+            if (AdditionalGraphs.Count() > 0)
+            {
+                pane.YAxis.Scale.Max = AdditionalGraphs.Select(x => x.Item2.Max()).Max() * 1.0005;
+                pane.YAxis.Scale.Min = AdditionalGraphs.SelectMany(d=>d.Item2).Where(x=>x >0).Min() * 0.9995;
+            }
 
             PriceGraph.Refresh();
             PriceGraph.Name = "StockChart";
@@ -774,66 +779,30 @@ namespace Imperatur_Market_Client.control
 
         private void button_buy_recommdation_Click(object sender, EventArgs e)
         {
-            Instrument i;
+            //Instrument i;
             if (m_oAccountData != null && comboBox_Symbols.SelectedItem.ToString().Length > 0)
             {
-                i = ImperaturGlobal.Instruments.Where(ins => ins.Symbol.Equals(comboBox_Symbols.SelectedItem.ToString())).First();
+                //i = ImperaturGlobal.Instruments.Where(ins => ins.Symbol.Equals(comboBox_Symbols.SelectedItem.ToString())).First();
+                List<TradingRecommendation> oT =  ImperaturGlobal.GetTradingRecommendation(comboBox_Symbols.SelectedItem.ToString());
+                if (oT != null && oT.Count() > 0) {
+                    int BuyRecommendation = oT.Where(t => t.BuyPrice.Amount > 0 && t.SellPrice.Amount == 0).Count();
+                    int SellRecommendation = oT.Where(t => t.BuyPrice.Amount == 0 && t.SellPrice.Amount < 0).Count();
+                    int KeepRecommendation = oT.Where(t => t.TradingForecastMethod.Equals(TradingForecastMethod.Undefined)).Count();
 
-                int[] Intervals = Enumerable.Range(30, 180).ToArray();
-                //int[] Intervals = new int[200];
-                //for (int inv = 0; inv < 199; inv++)
-                //{
-                //    Intervals[inv] = 40 + (inv*2);
-                //}
-                SecurityAnalysis oSA = new SecurityAnalysis(i);
-                if (!oSA.HasValue)
-                {
-                    return;
-                }
-                TradingRecommendation oTradeRec = new TradingRecommendation();
-                bool bReccomend = false;
-                foreach (int Interval in Intervals)
-                {
-                    if (m_oAccountData.GetAvailableFunds(new List<ICurrency> { ImperaturGlobal.GetMoney(0, i.CurrencyCode).CurrencyCode }).Count > 0 && m_oAccountData.GetAvailableFunds(new List<ICurrency> { ImperaturGlobal.GetMoney(0, i.CurrencyCode).CurrencyCode }).First().Amount < 1000m)
+                    if (BuyRecommendation.Equals(SellRecommendation) && SellRecommendation.Equals(KeepRecommendation))
                     {
-                        break;
+                        MessageBox.Show("Keep");
                     }
-                    bReccomend = oSA.RangeConvergeWithElliotForBuy(Interval, out oTradeRec);
-                    if (bReccomend)
-                        break;
-
-                    /*if (oSA.RangeConvergeWithElliotForBuy(Interval, out SaleValue))
+                    else
                     {
-                        MessageBox.Show("Yes + " + SaleValue.ToString());
-
-                        
-                                            int Quantity = (int)(oA.GetAvailableFunds(new List<ICurrency> { GetMoney(0, i.CurrencyCode).CurrencyCode }).First().Amount
-                                                /
-                                                ImperaturGlobal.Quotes.Where(q => q.Symbol.Equals(i.Symbol)).First().LastTradePrice.Amount);
-
-
-                                            //ImperaturGlobal.Quotes.Where(q => q.Symbol.Equals(comboBox_Symbols.SelectedItem.ToString())).First().LastTradePrice.Multiply(Convert.ToDecimal(QuantityToBuy))
-                                            m_oAccountHandler.Accounts()[0].AddHoldingToAccount(
-                                                Quantity - 1,
-                                                i.Symbol,
-                                                m_oTradeHandler
-                                                );
-                                                
-
-
-                    }*/
-
-                }
-                if (bReccomend)
-                {
-                    MessageBox.Show(string.Format("Yes {0} at {1}", oTradeRec.BuyPrice, oTradeRec.PredictedBuyDate));
+                        MessageBox.Show(string.Format("buy: {0}, sell {1}, keep {2}", BuyRecommendation, SellRecommendation, KeepRecommendation));
+                    }
                 }
                 else
                 {
-                    MessageBox.Show("No reccomendation");
+                    MessageBox.Show("Keep (no info)");
                 }
 
-                //moving range??
             }
         }
     }

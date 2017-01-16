@@ -165,12 +165,23 @@ namespace Imperatur_Market_Client.control
                     ReadOnly = true
                 }
             );
+            TransactionGrid.Columns.Add(
+                new DataGridViewTextBoxColumn()
+                {
+                    CellTemplate = new DataGridViewTextBoxCell(),
+                    Name = "Revenue",
+                    HeaderText = "Revenue",
+                    DataPropertyName = "Revenue",
+                    ReadOnly = true
+                }
+            );
 
             DataTable TransactionsDT = new DataTable();
             TransactionsDT.Columns.Add("Amount");
             TransactionsDT.Columns.Add("TransactionDate");
             TransactionsDT.Columns.Add("TransactionType");
             TransactionsDT.Columns.Add("Symbol");
+            TransactionsDT.Columns.Add("Revenue");
 
             DataRow row = null;
             foreach (ITransactionInterface oT in m_oA.Transactions)
@@ -180,7 +191,7 @@ namespace Imperatur_Market_Client.control
                 row["TransactionDate"] = oT.TransactionDate;
                 row["TransactionType"] = oT.TransactionType.ToString();
                 row["Symbol"] = oT.SecuritiesTrade != null ? oT.SecuritiesTrade.Security.Symbol : "";
-
+                row["Revenue"] = oT.SecuritiesTrade != null && oT.SecuritiesTrade.Revenue != null ? oT.SecuritiesTrade.Revenue.ToString() : "";
                 TransactionsDT.Rows.Add(row);
 
             }

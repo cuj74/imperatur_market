@@ -14,9 +14,17 @@ using Newtonsoft.Json;
 using Ninject;
 using Imperatur_v2.events;
 using Imperatur_v2.json;
+using Imperatur_v2.trade.recommendation;
 
 namespace Imperatur_v2.shared
 {
+    public enum ExchangeStatus
+    {
+        Closed,
+        Open,
+        Undefined
+    }
+
     public sealed class ImperaturGlobal
     {
         //private static void OnTimedEvent(object source, ElapsedEventArgs e)
@@ -33,15 +41,18 @@ namespace Imperatur_v2.shared
         public static string BusinessAccountCache = "BUSINESSACCOUNTCACHE";
         public static ImperaturData SystemData;
         public static List<Instrument> Instruments;
+        public static List<TradingRecommendation> TradingRecommendations;
         public static List<Quote> Quotes;
         private static List<CurrencyInfo> m_oCurrencyRates;
+        private static ExchangeStatus m_oExchangeStatus;
+        private static Tuple<DateTime, DateTime> m_oOpeningHours;
 
         private static StandardKernel m_oKernel;
 
         #endregion
 
         #region Init
-
+        
         static ICurrencyExhangeHandler _CurrencyExchangeHandler = null;
         public static StandardKernel Kernel
         {
@@ -64,6 +75,15 @@ namespace Imperatur_v2.shared
                 }
                 return m_oCurrencyRates;
             }
+        }
+
+        public static List<TradingRecommendation> GetTradingRecommendation(string Symbol)
+        {
+            if (TradingRecommendations != null && TradingRecommendations.Count() > 0 && TradingRecommendations.Where(tr => tr.Instrument != null && tr.Instrument.Symbol.Equals(Symbol)).Count() > 0)
+            {
+                return TradingRecommendations.Where(tr => tr.Instrument != null && tr.Instrument.Symbol.Equals(Symbol)).ToList();
+            }
+            return null;
         }
 
         public static decimal GetPriceForCurrencyToday(ICurrency Currency)
@@ -110,6 +130,16 @@ namespace Imperatur_v2.shared
             }
         }
 
+        public static ExchangeStatus ExchangeStatus
+        {
+            get
+            {
+                return CurrentExchangeStatus(new Exchange { ExhangeCode = SystemData.Exchange });
+            }
+        }
+
+ 
+
         internal static void Initialize(ImperaturData SystemDataToCache, StandardKernel NinjectKernel, List<account.AccountCacheType> BusinessAccounts)
         {
             if (SystemData == null)
@@ -139,7 +169,13 @@ namespace Imperatur_v2.shared
 
             m_oCurrencyRates = new CurrencyDataFromExternalSource().GetCurrentCurrencyExchangeRate();
 
+            /*
+            if (m_o.Equals(ExchangeStatus.Undefined))
+            {
+                OExchangeStatus = CurrentExchangeStatus(new Exchange { ExhangeCode = SystemData.Exchange });
 
+            }
+            */
         }
 
         private static void SetCurrencyExhangeRatesForToday()
@@ -212,17 +248,13 @@ namespace Imperatur_v2.shared
                 */
         }
 
+        //add to another class
         private static void BuildHistoricalPriceCache()
         {
 
             //return;
             foreach (Instrument i in Instruments)
             {
-                //for debug!
-               /* if (!i.Symbol.Equals("ELUX A"))
-                {
-                    continue;
-                }*/
                 HistoricalQuote oH = new HistoricalQuote(null, null, null);
                 DateTime oDataFromNeeded = DateTime.Now;
                 bool bReadMore = false;
@@ -281,6 +313,31 @@ namespace Imperatur_v2.shared
             int gg = 0;
         }
 
+
+        public static ExchangeStatus CurrentExchangeStatus(Exchange exchange)
+        {
+            try
+            {
+                if (m_oOpeningHours == null)
+                {
+                    GoogleHistoricalDataInterpreter oGHDI = new GoogleHistoricalDataInterpreter();
+                    m_oOpeningHours = oGHDI.GetStartEndOfExchange(Instruments[0], exchange);
+                }
+                if ((DateTime.Now >= m_oOpeningHours.Item1 && DateTime.Now <= m_oOpeningHours.Item2))
+                {
+                    m_oExchangeStatus = ExchangeStatus.Open;
+                }
+                else
+                {
+                    m_oExchangeStatus = ExchangeStatus.Closed;
+                }
+            }
+            catch
+            {
+                m_oExchangeStatus = ExchangeStatus.Undefined;
+            }
+            return m_oExchangeStatus;
+        }
 
         public static HistoricalQuote GetHistoricalQuoteOnline(Instrument instrument, Exchange exchange)
         {

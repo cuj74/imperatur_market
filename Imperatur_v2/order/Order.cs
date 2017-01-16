@@ -27,21 +27,10 @@ namespace Imperatur_v2.order
         private OrderType m_oOrderType;
         private decimal m_oStopLossAmount;
         private decimal m_oStopLossPercentage;
-        private Order m_oStopLossSellOrder;
+       
         private DateTime m_oValidToDate;
         private int m_oStopLossDaysValid;
         private Guid m_oIdentifier;
-
-        [SerializeAttribute(SerializeAttributeType.DontSerialize)]
-        public event OrderQueue.SaveOrderHandler SaveOrderEvent;
-
-        #region proctectedMethods
-        protected virtual void OnSaveOrder(SaveOrderEventArg e)
-        {
-            if (SaveOrderEvent != null)
-                SaveOrderEvent(this, e);
-        }
-        #endregion
 
         public string Symbol
         {
@@ -113,10 +102,11 @@ namespace Imperatur_v2.order
                 m_oStopLossPercentage = StopLossPercentage;
                 m_oStopLossDaysValid = StopLossValidDays;
             }
+            /*
             OnSaveOrder(new SaveOrderEventArg()
             {
                 Identifier = this.Identifier
-            });
+            });*/
 
         }
 
@@ -127,10 +117,10 @@ namespace Imperatur_v2.order
             {
                 StopLossTriggers.Add(
                     ImperaturGlobal.Kernel.Get<ITrigger>(
-                    new Ninject.Parameters.ConstructorArgument("Operator", TriggerOperator.EqualOrless),
-                    new Ninject.Parameters.ConstructorArgument("ValueType", TriggerValueType.Percentage),
-                    new Ninject.Parameters.ConstructorArgument("TradePriceValue", TradePrice),
-                    new Ninject.Parameters.ConstructorArgument("PercentageValue", m_oStopLossPercentage)
+                    new Ninject.Parameters.ConstructorArgument("m_oOperator", TriggerOperator.EqualOrless),
+                    new Ninject.Parameters.ConstructorArgument("m_oValueType", TriggerValueType.Percentage),
+                    new Ninject.Parameters.ConstructorArgument("m_oTradePriceValue", TradePrice),
+                    new Ninject.Parameters.ConstructorArgument("m_oPercentageValue", m_oStopLossPercentage)
                     )
                 );
              }
@@ -138,10 +128,10 @@ namespace Imperatur_v2.order
             {
                 StopLossTriggers.Add(
                   ImperaturGlobal.Kernel.Get<ITrigger>(
-                    new Ninject.Parameters.ConstructorArgument("Operator", TriggerOperator.EqualOrless),
-                    new Ninject.Parameters.ConstructorArgument("ValueType", TriggerValueType.TradePrice),
-                    new Ninject.Parameters.ConstructorArgument("TradePriceValue", m_oStopLossAmount),
-                    new Ninject.Parameters.ConstructorArgument("PercentageValue", 0)
+                    new Ninject.Parameters.ConstructorArgument("m_oOperator", TriggerOperator.EqualOrless),
+                    new Ninject.Parameters.ConstructorArgument("m_oValueType", TriggerValueType.TradePrice),
+                    new Ninject.Parameters.ConstructorArgument("m_oTradePriceValue", m_oStopLossAmount),
+                    new Ninject.Parameters.ConstructorArgument("m_oPercentageValue", 0)
                     )
                 );
             }
