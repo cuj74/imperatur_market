@@ -485,27 +485,28 @@ namespace Imperatur_v2.trade.analysis
             //fix the dates, since google keeps sending to much
             GoogleHistoricalDataInterpreter g = new GoogleHistoricalDataInterpreter();
             return g.GetHistoricalDataWithInterval(m_oH.Instrument, m_oH.Exchange, Start, Interval).HistoricalQuoteDetails
-                .Where(h => h.Date.Date >= Start.Date && h.Date.Date <= End.Date)
+                .Where(h => h.Date >= Start && h.Date <= End)
                 .OrderBy(x => x.Date)
                 .ToList();
         }
 
         private List<HistoricalQuoteDetails> GetCachedDataForRange(DateTime Start, DateTime End, int Interval)
         {
+            /*
             //start by removing obselete cacheobjects
             m_oCache = m_oCache.Where(x => x.Item1.AddSeconds(CacheSeconds).CompareTo(DateTime.Now) > 0).ToList();
             //find matching daterange and interval
             //if range exists in cached range and interval exists return this
             if (
-                m_oCache.Exists(x => x.Item2.Where(h=>h.Date.Date>= Start.Date).Count() > 0
-                && x.Item2.Where(h => h.Date.Date <= End.Date).Count() > 0
+                m_oCache.Exists(x => x.Item2.Where(h=>h.Date>= Start).Count() > 0
+                && x.Item2.Where(h => h.Date <= End).Count() > 0
                 && x.Item3.Equals(Interval)))
             {
-                return m_oCache.Where(x => x.Item2.Where(h => h.Date.Date >= Start.Date).Count() > 0
-                && x.Item2.Where(h => h.Date.Date <= End.Date).Count() > 0
+                return m_oCache.Where(x => x.Item2.Where(h => h.Date >= Start).Count() > 0
+                && x.Item2.Where(h => h.Date <= End).Count() > 0
                 && x.Item3.Equals(Interval)).First().Item2;
             }
-
+            */
             m_oCache.Add(new Tuple<DateTime, List<HistoricalQuoteDetails>, int>(DateTime.Now, GetExternalDataForRange(Start, End, Interval), Interval));
             return m_oCache.Last().Item2;
 
@@ -555,42 +556,81 @@ namespace Imperatur_v2.trade.analysis
         /// <param name="Period">The period to calculate the moving average window. Default is 20.</param>
         /// <param name="Multiply">The multiply for the upper and lower points. Default is 2.</param>
         /// <returns>List of List of doubles, first the upper, then the center and last is the lower</returns>
-        public List<List<double>> StandardBollingerForRange(DateTime Start, DateTime End, int Period =20, double Multiply = 4)
+        public List<List<double>> StandardBollingerForRange(DateTime Start, DateTime End, int Period =20, double Multiply = 2)
         {
             return BollingerForRange(Start, End, Period, new double[] { Multiply});
         }
         private List<List<double>> BollingerForRange(DateTime Start, DateTime End, int Period, double[] Multiplies)
         {
+            //DateTime StartCorrectedForSma = Start.AddDays(-20);
             List<List<double>> BollingerBands = new List<List<double>>();
-            double[] PriceArray;
+            double[] PriceArray;// = GetDataForRange(StartCorrectedForSma, End).Select(q => Convert.ToDouble(q.Close)).ToArray();
             //get system calculated interval
+            
             int Interval = GetIntervalFromDateRange(Start, End);
+            int skip = 0;
             if (Interval > 0)
             {
                 //small intervalls add the desired amount of time and then skip at the end
-                PriceArray = GetCachedDataForRange(Start.AddSeconds(-(Interval * Period)), End, Interval).Select(q => Convert.ToDouble(q.Close)).ToArray();
+                PriceArray = GetCachedDataForRange(Start.AddSeconds(-(Interval * Period*2)), End, Interval).Select(q => Convert.ToDouble(q.Close)).ToArray();
+                //double[] PriceArray2 = GetCachedDataForRange(Start, End, Interval).Select(q => Convert.ToDouble(q.Close)).ToArray();
+                skip = PriceArray.Count()- GetCachedDataForRange(Start, End, Interval).Select(q => Convert.ToDouble(q.Close)).Count();
             }
             else
             {
-                PriceArray = GetDataForRange(Start.AddDays(-Period), End).Select(q => Convert.ToDouble(q.Close)).ToArray();
+                PriceArray = GetDataForRange(Start.AddDays(-Period*2), End).Select(q => Convert.ToDouble(q.Close)).ToArray();
+                //double[] PriceArray2 = GetDataForRange(Start, End).Select(q => Convert.ToDouble(q.Close)).ToArray();
+                skip = PriceArray.Count() - GetDataForRange(Start, End).Select(q => Convert.ToDouble(q.Close)).Count();
             }
+            
             //cant compute std on small amounts of data
             if (PriceArray.Count() < 2)
             {
                 return BollingerBands;
             } 
 
-            double[] CenterLine = Statistics.MovingAverage(PriceArray, Period).ToArray();
+            double[] CenterLine = Statistics.MovingAverage(
+                PriceArray
+                , Period).ToArray();
+
+            double[] CenterLine2 = MymMoving(PriceArray, Period);
+
             double[] StandardDevation = GetStandardDeviationPointsOfCenterLine(PriceArray, Period);
             
-            BollingerBands.Add(CenterLine.ToList());
+            BollingerBands.Add(CenterLine.Skip(skip).ToList());
             for (int i = 0; i < Multiplies.Length; i++)
             {
-                BollingerBands.Add(GetExtendedBandOfCenterLine(CenterLine, StandardDevation.ToArray(), Multiplies[i], true).ToList());
-                BollingerBands.Add(GetExtendedBandOfCenterLine(CenterLine, StandardDevation.ToArray(), Multiplies[i], false).ToList());
+                BollingerBands.Add(GetExtendedBandOfCenterLine(CenterLine, StandardDevation.ToArray(), Multiplies[i], true).Skip(skip).ToList());
+                BollingerBands.Add(GetExtendedBandOfCenterLine(CenterLine, StandardDevation.ToArray(), Multiplies[i], false).Skip(skip).ToList());
             }
             return BollingerBands;
 
+        }
+        private double[] MymMoving(double[] Input, int period)
+        {
+            List<double> sma = new List<double>();
+            int offset = 0;
+            foreach (var Close in Input)
+            {
+                if (offset >= period)
+                {
+                    int NewPeriod = (Input.Count() - offset < period) ? Input.Count() - offset : period;
+                    sma.Add(Convert.ToDouble(Input.Skip(offset-period).Take(NewPeriod).Sum() / NewPeriod));
+                }
+                else
+                { 
+                    sma.Add(double.NaN);
+                }
+                offset++;
+            }
+
+            //foreach (var Close in Input)
+            //{
+            //    int divider = (offset > Input.Count() - period) ? Input.Count() - offset : period;
+            //    sma.Add(Convert.ToDouble(Input.Skip(offset).Take(period).Sum() / divider));
+            //    offset++;
+            //}
+            return sma.ToArray();
         }
 
         /// <summary>
