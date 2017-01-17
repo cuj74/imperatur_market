@@ -141,31 +141,12 @@ namespace Imperatur_v2.securites
 
                 if (Exchange.ExhangeCode.Equals("STO") )
                 {
-                    //month, day
-                    List<Tuple<int, int>> Closed = new List<Tuple<int, int>>();
-                    List<Tuple<int, int>> HalfDay = new List<Tuple<int, int>>();
-
-                    Closed.Add(new Tuple<int, int>(1, 1));
-                    Closed.Add(new Tuple<int, int>(1, 6));
-                    Closed.Add(new Tuple<int, int>(3, 28));
-                    Closed.Add(new Tuple<int, int>(5, 5));
-                    Closed.Add(new Tuple<int, int>(6, 6));
-                    Closed.Add(new Tuple<int, int>(6, 24));
-                    Closed.Add(new Tuple<int, int>(6, 26));
-
-                    //to 13:00
-                    HalfDay.Add(new Tuple<int, int>(1, 5));
-                    HalfDay.Add(new Tuple<int, int>(3, 24));
-                    HalfDay.Add(new Tuple<int, int>(5, 4));
-                    HalfDay.Add(new Tuple<int, int>(11, 4));
-
-
                     Tuple<int, int> ToDay = new Tuple<int, int>(DateTime.Now.Month, DateTime.Now.Day);
-                    if (Closed.Find(x=>x.Equals(ToDay)) != null)
+                    if (ImperaturGlobal.BankDays.Find(x=>x.Equals(ToDay)) != null)
                     {
                         return new Tuple<DateTime, DateTime>(DateTime.Now.Date, DateTime.Now.Date);
                     }
-                    if (HalfDay.Find(x => x.Equals(ToDay)) != null)
+                    if (ImperaturGlobal.HalfDay.Find(x => x.Equals(ToDay)) != null)
                     {
                         return new Tuple<DateTime, DateTime>(DateTime.Now.Date.AddMinutes(TIME_MARKET_OPEN_MINUTE), DateTime.Now.Date.AddHours(13));
                     }

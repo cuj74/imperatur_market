@@ -31,3 +31,10 @@ C:\temp\dev\imperatur_market\Imperatur_Test\obj\Debug\Imperatur_Test.csprojResol
 F:\visualstudioprojects\Imperatur\imperatur_market\Imperatur_Test\bin\Debug\Imperatur_Test.exe.config
 F:\visualstudioprojects\Imperatur\imperatur_market\Imperatur_Test\obj\Debug\Imperatur_Test.exe
 F:\visualstudioprojects\Imperatur\imperatur_market\Imperatur_Test\obj\Debug\Imperatur_Test.pdb
+F:\visualstudioprojects\Imperatur\imperatur_market\Imperatur_Test\bin\Debug\Imperatur_Test.exe
+F:\visualstudioprojects\Imperatur\imperatur_market\Imperatur_Test\bin\Debug\Imperatur_Test.pdb
+F:\visualstudioprojects\Imperatur\imperatur_market\Imperatur_Test\bin\Debug\Imperatur.dll
+F:\visualstudioprojects\Imperatur\imperatur_market\Imperatur_Test\bin\Debug\Newtonsoft.Json.dll
+F:\visualstudioprojects\Imperatur\imperatur_market\Imperatur_Test\bin\Debug\Imperatur.pdb
+F:\visualstudioprojects\Imperatur\imperatur_market\Imperatur_Test\bin\Debug\Newtonsoft.Json.xml
+F:\visualstudioprojects\Imperatur\imperatur_market\Imperatur_Test\obj\Debug\Imperatur_Test.csprojResolveAssemblyReference.cache

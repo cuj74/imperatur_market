@@ -578,7 +578,16 @@ namespace Imperatur_v2.trade.analysis
             }
             else
             {
-                PriceArray = GetDataForRange(Start.AddDays(-Period*2), End).Select(q => Convert.ToDouble(q.Close)).ToArray();
+                int ExtendedPeriod = 0;
+                int AddDays = 0;
+                while (ExtendedPeriod < 20)
+                {
+                    AddDays++;
+
+                    ExtendedPeriod = ImperaturGlobal.BusinessDaysUntil(Start.AddDays(-AddDays), Start);
+                }
+                
+                PriceArray = GetDataForRange(Start.AddDays(-AddDays), End).Select(q => Convert.ToDouble(q.Close)).ToArray();
                 //double[] PriceArray2 = GetDataForRange(Start, End).Select(q => Convert.ToDouble(q.Close)).ToArray();
                 skip = PriceArray.Count() - GetDataForRange(Start, End).Select(q => Convert.ToDouble(q.Close)).Count();
             }
@@ -694,7 +703,37 @@ namespace Imperatur_v2.trade.analysis
             return StdList.Select(x=> !double.IsNaN(x) ? x : FirstRealValue).ToArray();
         }
 
+        private double[] GetStandardDeviationPointsOfCenterLine2(double[] CenterLine, int Window)
+        {
+            List<double> StdList = new List<double>();
+            int skip = 0;
+            int take = 1;
+            for (int i = 1; i < CenterLine.Length; i++)
+            {
+                take = i;
+                if (take > Window)
+                    take = Window;
+                StdList.Add(CenterLine.Skip(skip).Take(take).StandardDeviation());
+                skip++;
+            }
+            //add items where there are no possibility to calculate the standard deviation
+            //remove the NaN
+            double FirstRealValue = StdList.Where(x => !double.IsNaN(x)).First();
+            /*
+            for (int i = 0; i < StdList.Count-1; i++)
+            {
+                if (!double.IsNaN(StdList[i]))
+                {
 
+                }
+            }*/
+
+            while (CenterLine.Length > StdList.Count && StdList.Count > 0)
+            {
+                StdList.Insert(0, StdList[0]);
+            }
+            return StdList.Select(x => !double.IsNaN(x) ? x : FirstRealValue).ToArray();
+        }
         public List<Tuple<DateTime, VolumeIndicator>> GetRangeOfVolumeIndicator(DateTime Start, DateTime End)
         {
             List<Tuple<DateTime, VolumeIndicator>> oVolumeIndicatorData = new List<Tuple<DateTime, VolumeIndicator>>();
