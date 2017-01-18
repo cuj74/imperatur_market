@@ -109,9 +109,16 @@ namespace Imperatur_v2.securites
             int TimeZoneOffset = 0;
             int TIME_MARKET_OPEN_MINUTE = 0;
             int TIME_MARKET_CLOSE_MINUTE = 0;
-            using (WebClient wc = new WebClient())
+            try
             {
-                ResponseData = wc.DownloadString(URL);
+                using (WebClient wc = new WebClient())
+                {
+                    ResponseData = wc.DownloadString(URL);
+                }
+            }
+            catch(Exception ex)
+            {
+                int gg = 0;
             }
             if (ResponseData != "")
             {
@@ -175,9 +182,16 @@ namespace Imperatur_v2.securites
             }
             string ResponseData = "";
 
-            using (WebClient wc = new WebClient())
+            try
             {
-                ResponseData = wc.DownloadString(URL);
+                using (WebClient wc = new WebClient())
+                {
+                    ResponseData = wc.DownloadString(URL);
+                }
+            }
+            catch(Exception ex)
+            {
+                int gg = 0;
             }
 
             if (ResponseData != "")

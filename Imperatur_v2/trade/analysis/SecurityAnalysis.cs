@@ -167,24 +167,98 @@ namespace Imperatur_v2.trade.analysis
                 int gg = 0;
                 return Recommendations;
             }
-            /*
+            
             foreach (int Interval in Intervals)
             {
                 bReccomend = RangeConvergeWithElliotForBuy(Interval, out Recommendation);
                 if (bReccomend)
                 {
-                   // Recommendations.Add(Recommendation);
+                    Recommendations.Add(Recommendation);
                     break;
                 }
-            }*/
+            }
             Recommendations.Add(GetTradingRecommendationForBollinger());
-            return Recommendations;
+            Recommendations.Add(GetTradingRecommendationForCrossOver());
+            return Recommendations.Where(r => !r.TradingForecastMethod.Equals(TradingForecastMethod.Undefined)).ToList();
         }
 
-        private enum BollingerBandIndication
+
+
+
+        private TradingRecommendation GetTradingRecommendationForCrossOver()
         {
+            int[] Intervals = { 20, 50 };
+            TradingRecommendation Recommendation = new TradingRecommendation();
+            List<double[]> MovingAverageObject = new List<double[]>();
+
+
+            List<double> d1 = Statistics.MovingAverage(
+                                                GetBusinessDayDataForRange(DateTime.Now, Intervals[0]).
+                                                Select(s => Convert.ToDouble(s.Close)).ToArray(), Intervals[0]).ToList();
+            List<double> d2 = Statistics.MovingAverage(
+                                           GetBusinessDayDataForRange(DateTime.Now, Intervals[1]).
+                                          Select(s => Convert.ToDouble(s.Close)).ToArray(), Intervals[1]).ToList();
+
+
+            CubicSpline Curvedata = CubicSpline.InterpolateAkima(
+            d1.Select((s, i2) => new { i2, s })
+            .Select(t => Convert.ToDouble(t.i2)).ToArray(),
+             d1);
+
+
+            while (d1.Count() != d2.Count())
+            {
+                if (d1.Count() > d2.Count())
+                {
+                    d2.Insert(0, double.NaN);
+                }
+                else
+                {
+                    d1.Insert(0, double.NaN);
+                }
+            }
+           List<Tuple<int, double>> Intersects = new List<Tuple<int, double>>();
+            int i = 0;
+            foreach (double di in d1)
+            {
+                //need to add a little bit of gliding here as well...
+                if (!double.IsNaN(di) && !double.IsNaN(d2[i]) && (di <= d2[i]*0.92 && di >= d2[i] * 1.07))
+                {
+                    Intersects.Add(new Tuple<int, double>(i, di));
+                }
+                i++;
+            }
+
+            int Sellmax = (Intersects.Where(x => Curvedata.Differentiate(x.Item2) < 0).Count() > 0) ?  Intersects.Where(x => Curvedata.Differentiate(x.Item2) < 0).Last().Item1 : 0;
+            int Buymax = (Intersects.Where(x => Curvedata.Differentiate(x.Item2) > 0).Count() > 0) ? Intersects.Where(x => Curvedata.Differentiate(x.Item2) < 0).Last().Item1 : 0;
+
+            if (Sellmax>Buymax && Sellmax > 0)
+            {
+                return new TradingRecommendation(
+                    Instrument,
+                    ImperaturGlobal.GetMoney(0, Instrument.CurrencyCode),
+                    ImperaturGlobal.GetMoney(Convert.ToDecimal(Intersects.Where(x =>x.Item1.Equals(Sellmax)).Last().Item2), Instrument.CurrencyCode),
+                    DateTime.Now,
+                    DateTime.Now,
+                    TradingForecastMethod.Crossover
+                );
+            }
+            if (Buymax > Sellmax && Buymax > 0)
+            {
+                return new TradingRecommendation(
+                    Instrument,
+                    ImperaturGlobal.GetMoney(0, Instrument.CurrencyCode),
+                    ImperaturGlobal.GetMoney(Convert.ToDecimal(Intersects.Where(x => x.Item1.Equals(Sellmax)).Last().Item2), Instrument.CurrencyCode),
+                    DateTime.Now,
+                    DateTime.Now,
+                    TradingForecastMethod.Crossover
+                );
+            }
+
+            return Recommendation;
 
         }
+
 
         private TradingRecommendation GetTradingRecommendationForBollinger()
         {
@@ -492,7 +566,7 @@ namespace Imperatur_v2.trade.analysis
 
         private List<HistoricalQuoteDetails> GetCachedDataForRange(DateTime Start, DateTime End, int Interval)
         {
-            /*
+            
             //start by removing obselete cacheobjects
             m_oCache = m_oCache.Where(x => x.Item1.AddSeconds(CacheSeconds).CompareTo(DateTime.Now) > 0).ToList();
             //find matching daterange and interval
@@ -506,7 +580,7 @@ namespace Imperatur_v2.trade.analysis
                 && x.Item2.Where(h => h.Date <= End).Count() > 0
                 && x.Item3.Equals(Interval)).First().Item2;
             }
-            */
+            
             m_oCache.Add(new Tuple<DateTime, List<HistoricalQuoteDetails>, int>(DateTime.Now, GetExternalDataForRange(Start, End, Interval), Interval));
             return m_oCache.Last().Item2;
 
@@ -528,15 +602,29 @@ namespace Imperatur_v2.trade.analysis
 
         }
 
-        public List<HistoricalQuoteDetails> GetDataForRange(DateTime Start, DateTime End)
+        private List<HistoricalQuoteDetails> GetBusinessDayDataForRange(DateTime End, int Interval)
         {
-            int Interval = GetIntervalFromDateRange(Start, End);
-            
-            if (Interval > 0)
+            int NewInterval = 1;
+            int i = 1;
+            while (NewInterval < Interval)
             {
-                return GetCachedDataForRange(Start, End, Interval);
+                NewInterval = ImperaturGlobal.BusinessDaysUntil(End.AddDays(-i), End);
+                i++;
             }
-                       
+            return GetDataForRange(End.AddDays(-i), End, true);
+        }
+
+        public List<HistoricalQuoteDetails> GetDataForRange(DateTime Start, DateTime End, bool AlwaysUseDays = false)
+        {
+            if (!AlwaysUseDays)
+            {
+                int Interval = GetIntervalFromDateRange(Start, End);
+
+                if (Interval > 0)
+                {
+                    return GetCachedDataForRange(Start, End, Interval);
+                }
+            }         
 
             List<HistoricalQuoteDetails> oH = m_oH.HistoricalQuoteDetails
                     .Where(h => h.Date.Date >= Start.Date && h.Date.Date <= End.Date)
@@ -580,7 +668,7 @@ namespace Imperatur_v2.trade.analysis
             {
                 int ExtendedPeriod = 0;
                 int AddDays = 0;
-                while (ExtendedPeriod < 20)
+                while (ExtendedPeriod <= 20)
                 {
                     AddDays++;
 
@@ -604,7 +692,7 @@ namespace Imperatur_v2.trade.analysis
 
             double[] CenterLine2 = MymMoving(PriceArray, Period);
 
-            double[] StandardDevation = GetStandardDeviationPointsOfCenterLine(PriceArray, Period);
+            double[] StandardDevation = GetStandardDeviationPointsOfCenterLine2(PriceArray, Period);
             
             BollingerBands.Add(CenterLine.Skip(skip).ToList());
             for (int i = 0; i < Multiplies.Length; i++)
@@ -713,6 +801,10 @@ namespace Imperatur_v2.trade.analysis
                 take = i;
                 if (take > Window)
                     take = Window;
+                if (CenterLine.Count()-skip < take)
+                {
+                    take = CenterLine.Count() - skip;
+                }
                 StdList.Add(CenterLine.Skip(skip).Take(take).StandardDeviation());
                 skip++;
             }
@@ -820,215 +912,7 @@ namespace Imperatur_v2.trade.analysis
         public int SourceIndex;
         public Momentum Momentum;
     }
-
-    /*
-    public struct TradingRecommendation
-    {
-        public decimal? SellAtPrice;
-        public decimal? BuyAtPrice;
-        public DateTime? PredictedBuyDate;
-        public DateTime? PredictedSellDate;
-    }*/
     
-    //public class ElliotWaveDefinition
-    //{
-    //    /*
-    //    * Wave
-    //   Classical Relations between Waves
-    //   1
-    //   -
-    //   2
-    //   0.382, 0.5 or 0.618 of Wave 1 length
-    //   3
-    //   1.618 or 2.618 of Wave 1 length
-    //   4
-    //   0.382 or 0.5 of Wave 1 length
-    //   5
-    //   0.382, 0.5 or 0,618 of Wave 1 length
-    //   A
-    //   0.382, 0.5 or 0,618 of Wave 1 length
-    //   B
-    //   0.382 or 0.5 of Wave A length
-    //   C
-    //   1.618, 0.618 or 0.5 of Wave A length
-
-    //    Wave 2 cannot retrace more than 100% of Wave 1.
-    //    Wave 3 can never be the shortest of waves 1, 3, and 5.
-    //    Wave 4 can never overlap Wave 1.
-    //    * 
-    //    */
-
-
-    //    private List<ElliotWave> m_oElliotWaveDefintion;
-    //    private decimal m_oOffsetAllowed;
-
-    //    public ElliotWaveDefinition()
-    //    {
-    //        m_oOffsetAllowed = 0.1m;
-    //        m_oElliotWaveDefintion = new List<ElliotWave>();
-    //        //first
-    //        m_oElliotWaveDefintion.Add(
-    //            new ElliotWave
-    //            {
-    //                Momentum = Momentum.Negative,
-    //                WaveNumber = 1
-    //            }
-    //            );
-    //        //second
-    //        m_oElliotWaveDefintion.Add(
-    //        new ElliotWave
-    //        {
-    //            Momentum = Momentum.Positive,
-    //            WaveNumber = 2,
-    //            RatioToWave = new List<Tuple<int, double>>
-    //            {
-    //                new Tuple<int, double>(1, 0.382),
-    //                new Tuple<int, double>(1, 0.5),
-    //                new Tuple<int, double>(1, 0.618),
-    //            }
-    //        }
-    //        );
-    //        //third
-    //        m_oElliotWaveDefintion.Add(
-    //            new ElliotWave
-    //            {
-    //                Momentum = Momentum.Negative,
-    //                WaveNumber = 3,
-    //                RatioToWave = new List<Tuple<int, double>>
-    //                {
-    //                                new Tuple<int, double>(1, 2.618),
-    //                                new Tuple<int, double>(1, 1.618),
-    //                }
-    //            }
-    //            );
-    //        //Fourth
-    //        m_oElliotWaveDefintion.Add(
-    //        new ElliotWave
-    //        {
-    //            Momentum = Momentum.Positive,
-    //            WaveNumber = 4,
-    //            RatioToWave = new List<Tuple<int, double>>
-    //            {
-    //                                        new Tuple<int, double>(1, 0.382),
-    //                                        new Tuple<int, double>(1, 0.5),
-    //            }
-    //        }
-    //        );
-    //        //Fifth
-    //        m_oElliotWaveDefintion.Add(
-    //        new ElliotWave
-    //        {
-    //            Momentum = Momentum.Negative,
-    //            WaveNumber = 5,
-    //            RatioToWave = new List<Tuple<int, double>>
-    //            {
-    //                                        new Tuple<int, double>(1, 0.382),
-    //                                        new Tuple<int, double>(1, 0.5),
-    //                                        new Tuple<int, double>(1, 0.618),
-    //            }
-    //        }
-    //        );
-    //    }
-
-    //    public List<ElliotWave> ElliotWaveDefinitions
-    //    {
-    //        get { return m_oElliotWaveDefintion; }
-    //    }
-
-    //    private bool EvaluteWave(List<Wave> Waves, int WaveIndexToEvalute, ElliotWave ElliotWaveToUse)
-    //    {
-    //        bool isElliotWaveDef;
-    //        if (!ElliotWaveToUse.Momentum.Equals(Waves[WaveIndexToEvalute].Momentum))
-    //        {
-    //            return false;
-    //        }
-    //        if (ElliotWaveToUse.RatioToWave != null && ElliotWaveToUse.RatioToWave.Count() > 0)
-    //        {
-    //            bool bRatioPassed = false;
-    //            foreach (Tuple<int, double> WaveDef in ElliotWaveToUse.RatioToWave)
-    //            {
-    //                if (WaveIndexToEvalute - ElliotWaveToUse.WaveNumber - WaveDef.Item1 < 0)
-    //                {
-    //                    return false;
-    //                }
-    //                Wave ToCompare = Waves[WaveIndexToEvalute - ElliotWaveToUse.WaveNumber - WaveDef.Item1];
-    //                if (IsWaveElliot(ToCompare.Length, Waves[WaveIndexToEvalute].Length, new double[] { WaveDef.Item2 }))
-    //                {
-    //                    bRatioPassed = true;
-    //                    break;
-    //                }
-    //            }
-    //            isElliotWaveDef = bRatioPassed;
-    //        }
-    //        else
-    //        {
-    //            isElliotWaveDef =  true;
-    //        }
-    //        return isElliotWaveDef;
-    //    }
-    //    private bool IsWaveElliot(decimal Wave1Lenght, decimal Wave2Lenght, decimal[] WaveDef)
-    //    {
-    //        decimal divider = Wave2Lenght / Wave1Lenght;
-    //        foreach (decimal oDef in WaveDef)
-    //        {
-    //            if (divider >= Offset(oDef, m_oOffsetAllowed, false) && divider <= Offset(oDef, m_oOffsetAllowed, true))
-    //            {
-    //                return true;
-    //            }
-    //        }
-    //        return false;
-    //    }
-
-    //    public bool IsWaveElliot(double Wave1Lenght, double Wave2Lenght, double[] WaveDef)
-    //    {
-    //        double divider = Wave2Lenght / Wave1Lenght;
-    //        foreach (double oDef in WaveDef)
-    //        {
-    //            if (divider >= Offset(Convert.ToDouble(m_oOffsetAllowed), oDef, false) && divider <= Offset(Convert.ToDouble(m_oOffsetAllowed), oDef, true))
-    //            {
-    //                return true;
-    //            }
-    //        }
-    //        return false;
-    //    }
-
-    //    private decimal Offset(decimal Offset, decimal Value, bool Add)
-    //    {
-    //        return Add ? Value - Value * Offset : Value + Value * Offset;
-    //    }
-
-    //    private double Offset(double Offset, double Value, bool Add)
-    //    {
-    //        return Add ? Value + (Value * Offset) : Value - (Value * Offset);
-    //    }
-
-
-    //    public bool FindElliottDefinitioninWaves(List<Wave> Waves, out int LastWaveNumber, out List<ConfirmedElliotWave> ConfirmedElliotWaves)
-    //    {
-    //        List<Wave> oElliotConfirmedWaves = new List<Wave>();
-    //        ConfirmedElliotWaves = new List<ConfirmedElliotWave>();
-    //        LastWaveNumber = 0;
-    //        foreach (var ElliotDef in m_oElliotWaveDefintion)
-    //        {
-                
-    //            oElliotConfirmedWaves = Waves.Where(wl => EvaluteWave(Waves, Waves.FindIndex(a => a.Equals(wl)), ElliotDef)).ToList();
-    //            if (oElliotConfirmedWaves.Count() == 0)
-    //            {
-    //                return false;
-    //            }
-    //            else
-    //            {
-    //                LastWaveNumber = ElliotDef.WaveNumber;
-    //                ConfirmedElliotWaves.AddRange(oElliotConfirmedWaves.Select(w => new ConfirmedElliotWave
-    //                {
-    //                    Wave = w,
-    //                    WaveNumber = ElliotDef.WaveNumber
-    //                }).ToList());
-    //            }
-    //        }
-    //        return true;
-            
-    //    }
     //}
    
 }

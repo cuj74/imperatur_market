@@ -19,7 +19,7 @@ namespace Imperatur_v2.trade.analysis
         bool HasValue { get; }
         List<double> MovingAverageForRange(DateTime Start, DateTime End);
         List<List<double>> StandardBollingerForRange(DateTime Start, DateTime End, int Period = 20, double Multiply = 2);
-        List<HistoricalQuoteDetails> GetDataForRange(DateTime Start, DateTime End);
+        List<HistoricalQuoteDetails> GetDataForRange(DateTime Start, DateTime End, bool AlwaysUseDays = false);
         List<Tuple<DateTime, VolumeIndicator>> GetRangeOfVolumeIndicator(DateTime Start, DateTime End);
         List<TradingRecommendation> GetTradingRecommendations();
         Quote QuoteFromInstrument { get; }

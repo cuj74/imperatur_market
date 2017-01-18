@@ -112,6 +112,8 @@
     <Compile Include="trade\HoldingInterface.cs" />
     <Compile Include="trade\recommendation\TradingRecommendation.cs" />
     <Compile Include="trade\recommendation\TradingRecommendationInterface.cs" />
+    <Compile Include="trade\rss\RSSReader.cs" />
+    <Compile Include="trade\rss\RSSReaderInterface.cs" />
     <Compile Include="trade\Trade.cs" />
     <Compile Include="trade\TradeInterface.cs" />
   </ItemGroup>
@@ -188,7 +190,9 @@
       <LastGenOutput>Reference.cs</LastGenOutput>
     </None>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="trade\automation\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
