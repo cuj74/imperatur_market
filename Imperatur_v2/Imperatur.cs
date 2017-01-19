@@ -17,7 +17,7 @@ using Imperatur_v2.securites;
 using Imperatur_v2.trade.analysis;
 using Imperatur_v2.trade.recommendation;
 using Imperatur_v2.order;
-using Imperatur_v2.trade.rss;
+using Imperatur_v2.trade.automation;
 
 namespace Imperatur_v2
 {
@@ -92,8 +92,10 @@ namespace Imperatur_v2
         private readonly string SystemDataFile = "imperatursettings.json";
      
         private System.Timers.Timer m_oQuoteTimer;
+        private TradeAutomation m_oTradeAutomation;
 
-        private List<Tuple<Instrument, List<TradingRecommendation>, VolumeIndicator, int>> m_oTradingOverview;
+
+        //private List<Tuple<Instrument, List<TradingRecommendation>, VolumeIndicator, int>> m_oTradingOverview;
 
         public IOrderQueue OrderQueue
         {
@@ -330,6 +332,7 @@ namespace Imperatur_v2
             m_oTradeHandler.QuoteUpdateEvent += M_oTradeHandler_QuoteUpdateEvent;
 
             m_oOrderQueue = null;
+            m_oTradeAutomation = new TradeAutomation(GetAccountHandler());
 
 
             if (m_oImperaturData.IsAutomaticMaintained)
@@ -346,6 +349,14 @@ namespace Imperatur_v2
             {
                 return;
             }
+
+            foreach (IOrder oI in m_oTradeAutomation.RunTradeAutomation())
+            {
+                OrderQueue.AddOrder(oI);
+            }
+            OrderQueue.EvaluateOrdersInQueue();
+
+            /*
             m_oTradingOverview = new List<Tuple<Instrument, List<TradingRecommendation>, VolumeIndicator,int>>();
             ISecurityAnalysis oS;
             RSSReader oR = new RSSReader();
@@ -665,7 +676,7 @@ namespace Imperatur_v2
                         }
                     }
                 }
-            }*/
+            }
             if (m_oTradingOverview.Count() > 0)
             {
                 ImperaturGlobal.TradingRecommendations = m_oTradingOverview.Select(tr => tr.Item2).SelectMany(x => x).Distinct().ToList();
@@ -705,7 +716,7 @@ namespace Imperatur_v2
                     OrderQueue.AddOrder(NewOrder);
                 }
 
-            }
+            }*/
             OrderQueue.EvaluateOrdersInQueue();
         }
 
