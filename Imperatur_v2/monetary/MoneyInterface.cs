@@ -19,6 +19,8 @@ namespace Imperatur_v2.monetary
         IMoney Subtract(Decimal Subtract);
         IMoney Subtract(IMoney Subtract);
         ICurrency CurrencyCode { get; }
+        bool GreaterOrEqualThan(IMoney ToCompare);
+        bool LesserOrEqualThan(IMoney ToCompare);
         decimal Amount { get; }
     }
 }

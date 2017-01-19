@@ -31,14 +31,14 @@ namespace Imperatur_v2.trade.recommendation
         {
             m_oTradingForecastMethod = TradingForecastMethod.Undefined;
         }
-        public TradingRecommendation(Instrument Instrument, IMoney BuyPrice, IMoney SellPrice, DateTime PredictedBuyDate, DateTime PredictedSellDate, TradingForecastMethod TradingForeCastMehtod)
+        public TradingRecommendation(Instrument instrument, IMoney buyPrice, IMoney sellPrice, DateTime predictedBuyDate, DateTime predictedSellDate, TradingForecastMethod tradingForeCastMethod)
         {
-            m_oTradingForecastMethod = TradingForecastMethod;
-            m_oInstrument = Instrument;
-            m_oBuyPrice = BuyPrice;
-            m_oSellPrice = SellPrice;
-            m_oPredictedBuyDate = PredictedBuyDate;
-            m_oPredictedSellDate = PredictedSellDate;
+            m_oTradingForecastMethod = tradingForeCastMethod;
+            m_oInstrument = instrument;
+            m_oBuyPrice = buyPrice;
+            m_oSellPrice = sellPrice;
+            m_oPredictedBuyDate = predictedBuyDate;
+            m_oPredictedSellDate = predictedSellDate;
         }
 
 

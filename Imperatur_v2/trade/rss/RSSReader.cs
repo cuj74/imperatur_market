@@ -10,11 +10,16 @@ namespace Imperatur_v2.trade.rss
     public class RSSReader : IRSSReader
     {
         private List<Tuple<DateTime, string, XDocument>> m_oSearcCache;
+
+        public RSSReader()
+        {
+            m_oSearcCache = new List<Tuple<DateTime, string, XDocument>>();
+        }
         public int GetOccurancesOfString(string[] URLs, string[] SearchData)
         {
+
             //remove entries older than 10 minutes
-            var rem = m_oSearcCache.Where(x => x.Item1 < DateTime.Now.AddMinutes(-10));
-            m_oSearcCache.Remove((Tuple<DateTime, string, XDocument>)rem);
+            m_oSearcCache.RemoveAll(x => x.Item1 < DateTime.Now.AddMinutes(-10));
 
             int count = 0;
             var Search = SearchData.Select(s=>s.ToLower()).ToList();
@@ -38,13 +43,23 @@ namespace Imperatur_v2.trade.rss
                             };
                 foreach (string se in SearchData)
                 {
-                    count += feeds.GroupBy(x => x.Title)
-                     .Select(g => new { Value = g.Key, Count = g.Count() })
-                     .Where(s => s.Value.Contains(se)).First().Count;
+                    try
+                    {
+                        count += feeds.Where(f => f.Title.Contains(se)).Count();
+                        count += feeds.Where(f => f.Description.Contains(se)).Count();
+                        /*
+                        count += feeds.GroupBy(x => x.Title)
+                         .Select(g => new { Value = g.Key, Count = g.Count() })
+                         .Where(s => s.Value.Contains(se)).First().Count;
 
-                    count += feeds.GroupBy(x => x.Description)
-                     .Select(g => new { Value = g.Key, Count = g.Count() })
-                     .Where(s => s.Value.Contains(se)).First().Count;
+                        count += feeds.GroupBy(x => x.Description)
+                         .Select(g => new { Value = g.Key, Count = g.Count() })
+                         .Where(s => s.Value.Contains(se)).First().Count;*/
+                    }
+                    catch(Exception ex)
+                    {
+                        int gg = 0;
+                    }
                 }
 
             }

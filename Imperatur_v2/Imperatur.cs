@@ -372,8 +372,201 @@ namespace Imperatur_v2
             }
 
             //group the instruments by different values, like the search or the amount of buy or sell recommendations-
+            var BuyRecommendations = m_oTradingOverview.Where(x => x.Item2.Where(tr => tr.TradingForecastMethod != TradingForecastMethod.Undefined && tr.BuyPrice.Amount > 0 && tr.SellPrice.Amount == 0).Count() > 0).ToList();
+            var BuyCounts = BuyRecommendations.GroupBy(x => x.Item1.Symbol)
+                      .Select(g => new { g.Key, Count = g.Count() });
+            var SearchCounts = BuyRecommendations.GroupBy(x => x.Item1.Symbol)
+                        .Select(g => new { g.Key, Sum = g.Sum(x=>x.Item4)});
+            var VolumeIndicator = BuyRecommendations.Where(x=>!x.Item3.VolumeIndicatorType.Equals(VolumeIndicatorType.VolumeClimaxUp)).GroupBy(x => x.Item1.Symbol)
+                        .Select(g => new { g.Key, Count = g.Count() });
+
+            var CondensedBuyData = from bc in BuyCounts
+                                   join sc in SearchCounts on bc.Key equals sc.Key
+                                   join vi in VolumeIndicator on bc.Key equals vi.Key
+                                   select new
+                                   {
+                                       bc.Key,
+                                       BuyCounts = bc.Count,
+                                       SearchSum = sc.Sum,
+                                       VolumeCount = vi.Count
+                                   };
 
 
+            var BuyDenseRanked = CondensedBuyData
+            .GroupBy(rec => new { rec.Key, rec.SearchSum, rec.BuyCounts, rec.VolumeCount })
+            .Where(@group => @group.Any())
+
+
+            .OrderBy(@group => @group.Key.BuyCounts)
+            .ThenBy(@group => @group.Key.VolumeCount)
+            .ThenBy(@group => @group.Key.SearchSum)
+            .AsEnumerable()
+
+
+             .Select((@group, i) => new
+             {
+                 Items = @group,
+                 Rank = ++i
+             })
+            .SelectMany(v => v.Items, (s, i) => new
+            {
+                Item = i,
+                DenseRank = s.Rank
+            }).ToList();
+
+
+            var SellRecommendations = m_oTradingOverview.Where(x => x.Item2.Where(tr => tr.TradingForecastMethod != TradingForecastMethod.Undefined && tr.BuyPrice.Amount == 0 && tr.SellPrice.Amount > 0).Count() > 0).ToList();
+            var SellCounts = SellRecommendations.GroupBy(x => x.Item1.Symbol)
+                      .Select(g => new { g.Key, Count = g.Count() });
+            var SellSearchCounts = SellRecommendations.GroupBy(x => x.Item1.Symbol)
+                        .Select(g => new { g.Key, Sum = g.Sum(x => x.Item4) });
+            var SellVolumeIndicator = SellRecommendations.Where(x => !x.Item3.VolumeIndicatorType.Equals(VolumeIndicatorType.VolumeClimaxDown)).GroupBy(x => x.Item1.Symbol)
+                        .Select(g => new { g.Key, Count = g.Count() });
+
+
+            var CondensedSellData = from bc in SellCounts
+                                    join sc in SellSearchCounts on bc.Key equals sc.Key
+                                   join vi in SellVolumeIndicator on bc.Key equals vi.Key
+                                   select new
+                                   {
+                                       bc.Key,
+                                       SellCounts = bc.Count,
+                                       SearchSum = sc.Sum,
+                                       VolumeCount = vi.Count
+                                   };
+
+
+            var SellDenseRanked = CondensedSellData
+            .GroupBy(rec => new { rec.Key, rec.SearchSum, rec.SellCounts, rec.VolumeCount })
+            .Where(@group => @group.Any())
+
+
+            .OrderBy(@group => @group.Key.SellCounts)
+            .ThenBy(@group => @group.Key.VolumeCount)
+            .ThenBy(@group => @group.Key.SearchSum)
+            .AsEnumerable()
+
+
+             .Select((@group, i) => new
+             {
+                 Items = @group,
+                 Rank = ++i
+             })
+            .SelectMany(v => v.Items, (s, i) => new
+            {
+                Item = i,
+                DenseRank = s.Rank
+            }).ToList();
+
+
+            var ActualBuyPositions = from b in BuyDenseRanked
+                                     join i in ImperaturGlobal.Instruments on b.Item.Key equals i.Symbol
+                                     select new
+                                     {
+                                         SecAnalysis = ImperaturGlobal.Kernel.Get<ISecurityAnalysis>(new Ninject.Parameters.ConstructorArgument("Instrument", i)),
+                                     };
+            var ActualBuyOrders = from ac in m_oAccountHandler.Accounts().Where(a => a.GetAccountType().Equals(AccountType.Customer))
+                               from bp in ActualBuyPositions
+                               where bp.SecAnalysis.HasValue && ac.GetAvailableFunds(
+                                   new List<ICurrency> {
+                                    ImperaturGlobal.GetMoney(0m, bp.SecAnalysis.Instrument.CurrencyCode).CurrencyCode
+                                   }
+                                   ).FirstOrDefault().GreaterOrEqualThan(bp.SecAnalysis.QuoteFromInstrument.LastTradePrice)
+                               select new
+                               {
+
+                                   Order = ImperaturGlobal.Kernel.Get<IOrder>(
+                                        new Ninject.Parameters.ConstructorArgument("Symbol", bp.SecAnalysis.Instrument.Symbol),
+                                        new Ninject.Parameters.ConstructorArgument("Trigger", new List<ITrigger> {
+                                           ImperaturGlobal.Kernel.Get<ITrigger>(
+                                                                new Ninject.Parameters.ConstructorArgument("m_oOperator", TriggerOperator.EqualOrless),
+                                                                new Ninject.Parameters.ConstructorArgument("m_oValueType", TriggerValueType.TradePrice),
+                                                                new Ninject.Parameters.ConstructorArgument("m_oTradePriceValue", bp.SecAnalysis.QuoteFromInstrument.LastTradePrice.Amount),
+                                                                new Ninject.Parameters.ConstructorArgument("m_oPercentageValue", 0m)
+                                                                )
+                                        }),
+                                        new Ninject.Parameters.ConstructorArgument("AccountIdentifier", ac.Identifier),
+                                        new Ninject.Parameters.ConstructorArgument("Quantity", (int)
+                                        ac.GetAvailableFunds(
+                                               new List<ICurrency> {
+                                                ImperaturGlobal.GetMoney(0m, bp.SecAnalysis.Instrument.CurrencyCode).CurrencyCode
+                                               }
+                                               ).FirstOrDefault().Divide(bp.SecAnalysis.QuoteFromInstrument.LastTradePrice).Amount
+                                        ),
+                                        new Ninject.Parameters.ConstructorArgument("OrderType", OrderType.StopLoss),
+                                        new Ninject.Parameters.ConstructorArgument("ValidToDate", DateTime.Now.AddDays(2)),
+                                        new Ninject.Parameters.ConstructorArgument("StopLossValidDays", 30),
+                                        new Ninject.Parameters.ConstructorArgument("StopLossAmount", 0m),
+                                        new Ninject.Parameters.ConstructorArgument("StopLossPercentage", 0.8m)
+                                    )
+                               };
+
+
+            var ActualSellPositions = from b in SellDenseRanked
+                                     join i in ImperaturGlobal.Instruments on b.Item.Key equals i.Symbol
+                                     select new
+                                     {
+                                         SecAnalysis = ImperaturGlobal.Kernel.Get<ISecurityAnalysis>(new Ninject.Parameters.ConstructorArgument("Instrument", i)),
+                                     };
+            try
+            {
+                var ActualSellOrders = from ac in m_oAccountHandler.Accounts().Where(a => a.GetAccountType().Equals(AccountType.Customer))
+                                       from bp in ActualSellPositions
+                                       where
+                                         bp.SecAnalysis.HasValue
+                                         &&
+                                         ac.GetHoldings().Count() > 0
+                                         &&
+                                         ac.GetHoldings().Where(h => h.Symbol != null
+                                         &&
+                                         h.Symbol.Equals(bp.SecAnalysis.Instrument.Symbol)).Count() > 0
+                                         &&
+                                         ac.GetAverageAcquisitionCostFromHolding(bp.SecAnalysis.Instrument.Symbol).Multiply(1.02m).GreaterOrEqualThan(bp.SecAnalysis.QuoteFromInstrument.LastTradePrice)
+                                       select new
+                                       {
+
+                                           Order = ImperaturGlobal.Kernel.Get<IOrder>(
+                                                new Ninject.Parameters.ConstructorArgument("Symbol", bp.SecAnalysis.Instrument.Symbol),
+                                                new Ninject.Parameters.ConstructorArgument("Trigger", new List<ITrigger> {
+                                                ImperaturGlobal.Kernel.Get<ITrigger>(
+                                                        new Ninject.Parameters.ConstructorArgument("m_oOperator", TriggerOperator.EqualOrGreater),
+                                                        new Ninject.Parameters.ConstructorArgument("m_oValueType", TriggerValueType.TradePrice),
+                                                        new Ninject.Parameters.ConstructorArgument("m_oTradePriceValue", bp.SecAnalysis.QuoteFromInstrument.LastTradePrice),
+                                                        new Ninject.Parameters.ConstructorArgument("m_oPercentageValue", 0m)
+                                                                    )
+                                                }),
+                                                new Ninject.Parameters.ConstructorArgument("AccountIdentifier", ac.Identifier),
+                                                new Ninject.Parameters.ConstructorArgument("Quantity",
+                                                Convert.ToInt32(ac.GetHoldings().Where(h => h.Symbol.Equals(bp.SecAnalysis.Instrument.Symbol)).Sum(ho => ho.Quantity))
+                                                ),
+                                                new Ninject.Parameters.ConstructorArgument("OrderType", OrderType.Sell),
+                                                new Ninject.Parameters.ConstructorArgument("ValidToDate", DateTime.Now.AddDays(2)),
+                                                new Ninject.Parameters.ConstructorArgument("StopLossValidDays", 0),
+                                                new Ninject.Parameters.ConstructorArgument("StopLossAmount", 0m),
+                                                new Ninject.Parameters.ConstructorArgument("StopLossPercentage", 0m)
+                                      )
+                                       };
+
+                if (ActualSellOrders != null && ActualSellOrders.Count() > 0)
+                {
+                    foreach (var o in ActualSellOrders)
+                    {
+                        OrderQueue.AddOrder(o.Order);
+                    }
+                }
+                if (ActualBuyOrders != null && ActualBuyOrders.Count() > 0)
+                {
+                    foreach (var o in ActualBuyOrders)
+                    {
+                        OrderQueue.AddOrder(o.Order);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                int gg = 0;
+            }
+            /*
             foreach (IAccountInterface oA in m_oAccountHandler.Accounts().Where(a => a.GetAccountType().Equals(AccountType.Customer)))
             {
                 //sell recommendations
@@ -472,7 +665,7 @@ namespace Imperatur_v2
                         }
                     }
                 }
-            }
+            }*/
             if (m_oTradingOverview.Count() > 0)
             {
                 ImperaturGlobal.TradingRecommendations = m_oTradingOverview.Select(tr => tr.Item2).SelectMany(x => x).Distinct().ToList();
@@ -480,12 +673,12 @@ namespace Imperatur_v2
 
 
 
-            //now, do an evalution of every holding and sell if profit above 1% and no recommendation exists
+            //now, do an evalution of every holding and sell if profit above 1.5% and no recommendation exists
             foreach (IAccountInterface oA in m_oAccountHandler.Accounts().Where(a => a.GetAccountType().Equals(AccountType.Customer)))
             {
                 var holdings = from h in oA.GetHoldings()
                                from tr in m_oTradingOverview.Where(x => x.Item2.Where(tr => tr.TradingForecastMethod != TradingForecastMethod.Undefined).Count() > 0).ToList().Where(t => t.Item1.Symbol.Equals(h.Symbol)).DefaultIfEmpty()
-                               where h.ChangePercent > 1m
+                               where h.ChangePercent > 1.5m
                                select h;
                 foreach (var holding in holdings)
                 {

@@ -13,6 +13,8 @@ using MathNet.Numerics.LinearRegression;
 using Imperatur_v2.monetary;
 using MathNet.Numerics.LinearAlgebra.Complex;
 using Imperatur_v2.trade.recommendation;
+using MathNet.Numerics.LinearAlgebra.Double;
+using MathNet.Numerics.LinearAlgebra.Factorization;
 
 namespace Imperatur_v2.trade.analysis
 {
@@ -178,16 +180,34 @@ namespace Imperatur_v2.trade.analysis
                 }
             }
             Recommendations.Add(GetTradingRecommendationForBollinger());
-            Recommendations.Add(GetTradingRecommendationForCrossOver());
+            TradingRecommendation RecommendationCO = GetTradingRecommendationForCrossOver();
+            Recommendations.Add(RecommendationCO);
+            //Recommendations.Add(GetTradingRecommendationForCrossOver());
             return Recommendations.Where(r => !r.TradingForecastMethod.Equals(TradingForecastMethod.Undefined)).ToList();
         }
 
 
 
+        private  double[] Polyfit(double[] x, double[] y, int degree)
+        {
+            // Vandermonde matrix
+            var v = new MathNet.Numerics.LinearAlgebra.Double.DenseMatrix(x.Length, degree + 1);
+            for (int i = 0; i < v.RowCount; i++)
+                for (int j = 0; j <= degree; j++) v[i, j] = Math.Pow(x[i], j);
+            var yv = new MathNet.Numerics.LinearAlgebra.Double.DenseVector(y).ToColumnMatrix();
+            QR<double> qr = v.QR(QRMethod.Full);
+            // Math.Net doesn't have an "economy" QR, so:
+            // cut R short to square upper triangle, then recompute Q
+            var r = qr.R.SubMatrix(0, degree + 1, 0, degree + 1);
+            var q = v.Multiply(r.Inverse());
+            var p = r.Inverse().Multiply(q.TransposeThisAndMultiply(yv));
+            return p.Column(0).ToArray();
+        }
+
 
         private TradingRecommendation GetTradingRecommendationForCrossOver()
         {
-            int[] Intervals = { 20, 50 };
+            int[] Intervals = { 50, 200 };
             TradingRecommendation Recommendation = new TradingRecommendation();
             List<double[]> MovingAverageObject = new List<double[]>();
 
@@ -198,13 +218,50 @@ namespace Imperatur_v2.trade.analysis
             List<double> d2 = Statistics.MovingAverage(
                                            GetBusinessDayDataForRange(DateTime.Now, Intervals[1]).
                                           Select(s => Convert.ToDouble(s.Close)).ToArray(), Intervals[1]).ToList();
-
+            double[] xd = d1.ToArray();
+            double[] yd = d2.Skip(d2.Count() - d1.Count()).ToArray();
 
             CubicSpline Curvedata = CubicSpline.InterpolateAkima(
             d1.Select((s, i2) => new { i2, s })
             .Select(t => Convert.ToDouble(t.i2)).ToArray(),
              d1);
 
+
+            while (d1.Count() != d2.Count())
+            {
+                if (d1.Count() > d2.Count())
+                {
+                    d2.Insert(0, 0);
+                }
+                else
+                {
+                    d1.Insert(0, 0);
+                }
+            }
+
+            double[] intersects0 = Polyfit(xd,yd, 0);
+          
+
+            List<Tuple<int, double>> Intersects = new List<Tuple<int, double>>();
+            int i = 0;
+            foreach (double di in yd)
+            {
+                if (di * 0.999 <= intersects0[0] && di * 1.001 >= intersects0[0])
+                { 
+                    Intersects.Add(new Tuple<int, double>(i, di));
+                }
+                i++;
+            }
+
+
+            /*
+
+
+            CubicSpline Curvedata = CubicSpline.InterpolateAkima(
+            d1.Select((s, i2) => new { i2, s })
+            .Select(t => Convert.ToDouble(t.i2)).ToArray(),
+             d1);
+            
 
             while (d1.Count() != d2.Count())
             {
@@ -227,34 +284,40 @@ namespace Imperatur_v2.trade.analysis
                     Intersects.Add(new Tuple<int, double>(i, di));
                 }
                 i++;
-            }
-
-            int Sellmax = (Intersects.Where(x => Curvedata.Differentiate(x.Item2) < 0).Count() > 0) ?  Intersects.Where(x => Curvedata.Differentiate(x.Item2) < 0).Last().Item1 : 0;
-            int Buymax = (Intersects.Where(x => Curvedata.Differentiate(x.Item2) > 0).Count() > 0) ? Intersects.Where(x => Curvedata.Differentiate(x.Item2) < 0).Last().Item1 : 0;
-
-            if (Sellmax>Buymax && Sellmax > 0)
+            }*/
+            try
             {
-                return new TradingRecommendation(
-                    Instrument,
-                    ImperaturGlobal.GetMoney(0, Instrument.CurrencyCode),
-                    ImperaturGlobal.GetMoney(Convert.ToDecimal(Intersects.Where(x =>x.Item1.Equals(Sellmax)).Last().Item2), Instrument.CurrencyCode),
-                    DateTime.Now,
-                    DateTime.Now,
-                    TradingForecastMethod.Crossover
-                );
-            }
-            if (Buymax > Sellmax && Buymax > 0)
-            {
-                return new TradingRecommendation(
-                    Instrument,
-                    ImperaturGlobal.GetMoney(0, Instrument.CurrencyCode),
-                    ImperaturGlobal.GetMoney(Convert.ToDecimal(Intersects.Where(x => x.Item1.Equals(Sellmax)).Last().Item2), Instrument.CurrencyCode),
-                    DateTime.Now,
-                    DateTime.Now,
-                    TradingForecastMethod.Crossover
-                );
-            }
+                int Sellmax = (Intersects.Where(x => Curvedata.Differentiate(x.Item2) < 0).Count() > 0) ? Intersects.Where(x => Curvedata.Differentiate(x.Item2) < 0).Last().Item1 : 0;
+                int Buymax = (Intersects.Where(x => Curvedata.Differentiate(x.Item2) > 0).Count() > 0) ? Intersects.Where(x => Curvedata.Differentiate(x.Item2) > 0).Last().Item1 : 0;
 
+                if (Sellmax > Buymax && Sellmax > 0)
+                {
+                    return new TradingRecommendation(
+                        Instrument,
+                        ImperaturGlobal.GetMoney(0, Instrument.CurrencyCode),
+                        ImperaturGlobal.GetMoney(Convert.ToDecimal(Intersects.Where(x => x.Item1.Equals(Sellmax)).Last().Item2), Instrument.CurrencyCode),
+                        DateTime.Now,
+                        DateTime.Now,
+                        TradingForecastMethod.Crossover
+                    );
+                }
+                if (Buymax > Sellmax && Buymax > 0)
+                {
+                    return new TradingRecommendation(
+                        Instrument,
+                        ImperaturGlobal.GetMoney(Convert.ToDecimal(Intersects.Where(x => x.Item1.Equals(Buymax)).Last().Item2), Instrument.CurrencyCode),
+                        ImperaturGlobal.GetMoney(0, Instrument.CurrencyCode),
+                        DateTime.Now,
+                        DateTime.Now,
+                        TradingForecastMethod.Crossover
+                    );
+                }
+            }
+            catch(Exception ex)
+            {
+                int gg = 0;
+            }
+            
             return Recommendation;
 
         }

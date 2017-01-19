@@ -16,6 +16,7 @@ using Imperatur_Market_Client.events;
 using Imperatur_v2.shared;
 using System.IO;
 using Imperatur_v2.account;
+using Imperatur_v2.monetary;
 
 namespace Imperatur_Market_Client
 {
@@ -28,6 +29,7 @@ namespace Imperatur_Market_Client
         public delegate void SelectedAccountEventHandler(object sender, SelectedAccountEventArg e);
         public delegate void ToggleSearchDialogHandler(object sender, ToggleSearchEvents e);
         public delegate void SelectedSymbolEventHandler(object sender, SelectedSymbolEventArg e);
+        private Timer UpdateLatestTransactions;
 
 
         private AccountTab m_oAccountTab;
@@ -39,6 +41,151 @@ namespace Imperatur_Market_Client
             //typeof(TableLayoutPanel).GetProperty("DoubleBuffered", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).SetValue(tlp_Account, true, null);
             m_oKernel = new StandardKernel();
             m_oKernel.Load(Assembly.GetExecutingAssembly());
+            UpdateLatestTransactions = new Timer();
+            UpdateLatestTransactions.Interval = 1000 * 60; //every minute
+            UpdateLatestTransactions.Tick += UpdateLatestTransactions_Tick;
+            UpdateLatestTransactions.Enabled = true;
+
+        }
+
+        private void UpdateLatestTransactions_Tick(object sender, EventArgs e)
+        {
+            DataGridView TransactionGrid = new DataGridView();
+
+            TransactionGrid.AutoGenerateColumns = false;
+            TransactionGrid.AllowUserToAddRows = false;
+
+            TransactionGrid.Columns.Add(
+                new DataGridViewTextBoxColumn()
+                {
+                    CellTemplate = new DataGridViewTextBoxCell(),
+                    Name = "Amount",
+                    HeaderText = "Amount",
+                    DataPropertyName = "Amount",
+                    ReadOnly = true
+                }
+            );
+            TransactionGrid.Columns.Add(
+                new DataGridViewTextBoxColumn()
+                {
+                    CellTemplate = new DataGridViewTextBoxCell(),
+                    Name = "TransactionDate",
+                    HeaderText = "Date",
+                    DataPropertyName = "TransactionDate",
+                    ReadOnly = true
+                }
+            );
+            TransactionGrid.Columns.Add(
+                new DataGridViewTextBoxColumn()
+                {
+                    CellTemplate = new DataGridViewTextBoxCell(),
+                    Name = "TransactionType",
+                    HeaderText = "Type",
+                    DataPropertyName = "TransactionType",
+                    ReadOnly = true
+                }
+            );
+            TransactionGrid.Columns.Add(
+                new DataGridViewTextBoxColumn()
+                {
+                    CellTemplate = new DataGridViewTextBoxCell(),
+                    Name = "Symbol",
+                    HeaderText = "Symbol",
+                    DataPropertyName = "Symbol",
+                    ReadOnly = true
+                }
+            );
+            TransactionGrid.Columns.Add(
+                new DataGridViewTextBoxColumn()
+                {
+                    CellTemplate = new DataGridViewTextBoxCell(),
+                    Name = "Revenue",
+                    HeaderText = "Revenue",
+                    DataPropertyName = "Revenue",
+                    ReadOnly = true
+                }
+            );
+
+            TransactionGrid.Columns.Add(
+                new DataGridViewTextBoxColumn()
+                {
+                    CellTemplate = new DataGridViewTextBoxCell(),
+                    Name = "Tradeprice",
+                    HeaderText = "Tradeprice",
+                    DataPropertyName = "Tradeprice",
+                    ReadOnly = true
+                }
+            );
+
+            TransactionGrid.Columns.Add(
+            new DataGridViewTextBoxColumn()
+            {
+                CellTemplate = new DataGridViewTextBoxCell(),
+                Name = "Quantity",
+                HeaderText = "Quantity",
+                DataPropertyName = "Quantity",
+                ReadOnly = true
+            }
+            );
+
+            DataTable TransactionsDT = new DataTable();
+            TransactionsDT.Columns.Add("Amount");
+            TransactionsDT.Columns.Add("TransactionDate");
+            TransactionsDT.Columns.Add("TransactionType");
+            TransactionsDT.Columns.Add("Symbol");
+            TransactionsDT.Columns.Add("Revenue");
+            TransactionsDT.Columns.Add("Tradeprice");
+            TransactionsDT.Columns.Add("Quantity");
+
+            DataRow row = null;
+            /*
+            List<TransactionType> BuySell = new List<TransactionType>();
+            BuySell.Add(TransactionType.Buy);
+            BuySell.Add(TransactionType.Sell);
+
+            var SumTrans = from a in m_Ic.GetAccountHandler().Accounts()
+                           select new
+                                     {
+                                         account = a.AccountName,
+                                         transactions = a.Transactions
+                                     };
+
+
+            //get all trade
+            var LatestTransactions =
+            from t in SumTrans
+            join bs in BuySell on t.transactions. equals bs
+            select t;
+            */
+
+
+            foreach (ITransactionInterface oT in m_Ic.GetAccountHandler().Accounts().SelectMany(t => t.Transactions).Where(t=>!t.TransactionType.Equals(TransactionType.Transfer)).OrderByDescending(t => t.TransactionDate).Take(20))
+            {
+                row = TransactionsDT.NewRow();
+                row["Amount"] = oT.DebitAmount.ToString();
+                row["TransactionDate"] = oT.TransactionDate;
+                row["TransactionType"] = oT.TransactionType.ToString();
+                row["Symbol"] = oT.SecuritiesTrade != null ? oT.SecuritiesTrade.Security.Symbol : "";
+                row["Revenue"] = oT.SecuritiesTrade != null && oT.SecuritiesTrade.Revenue != null ? oT.SecuritiesTrade.Revenue.ToString() : "";
+                row["Tradeprice"] = oT.SecuritiesTrade != null ? oT.SecuritiesTrade.AverageAcquisitionValue.ToString() : "";
+                row["Quantity"] = oT.SecuritiesTrade != null ? oT.SecuritiesTrade.Quantity.ToString() : "";
+                
+                TransactionsDT.Rows.Add(row);
+
+            }
+            TransactionGrid.DataSource = TransactionsDT;
+            TransactionGrid.Dock = DockStyle.Fill;
+            TransactionGrid.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.DisplayedCells;
+
+            UserControl TransactionControl = new CreateDataGridControlFromObject(
+            new DataGridForControl
+            {
+                DataGridViewToBuild = TransactionGrid,
+                GroupBoxCaption = "Latest transactions"
+            }
+            );
+            LatestTransactionsPane.Controls.Clear();
+            LatestTransactionsPane.Controls.Add(TransactionControl);
         }
 
         //public object resources { get; private set; }

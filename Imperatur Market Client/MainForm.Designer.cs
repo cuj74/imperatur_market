@@ -35,9 +35,10 @@
             this.statusStrip_imperatur = new System.Windows.Forms.StatusStrip();
             this.tabPage_systemtest = new System.Windows.Forms.TabPage();
             this.tabPage_system = new System.Windows.Forms.TabPage();
+            this.checkBox_automaticTrading = new System.Windows.Forms.CheckBox();
             this.tabControl_Imperatur_main = new System.Windows.Forms.TabControl();
             this.tabPage_account = new System.Windows.Forms.TabPage();
-            this.checkBox_automaticTrading = new System.Windows.Forms.CheckBox();
+            this.LatestTransactionsPane = new System.Windows.Forms.Panel();
             this.menuStrip1.SuspendLayout();
             this.statusStrip_imperatur.SuspendLayout();
             this.tabPage_system.SuspendLayout();
@@ -91,6 +92,7 @@
             // 
             // tabPage_system
             // 
+            this.tabPage_system.Controls.Add(this.LatestTransactionsPane);
             this.tabPage_system.Controls.Add(this.checkBox_automaticTrading);
             this.tabPage_system.Location = new System.Drawing.Point(4, 25);
             this.tabPage_system.Margin = new System.Windows.Forms.Padding(4);
@@ -100,6 +102,17 @@
             this.tabPage_system.TabIndex = 0;
             this.tabPage_system.Text = "System";
             this.tabPage_system.UseVisualStyleBackColor = true;
+            // 
+            // checkBox_automaticTrading
+            // 
+            this.checkBox_automaticTrading.AutoSize = true;
+            this.checkBox_automaticTrading.Location = new System.Drawing.Point(25, 21);
+            this.checkBox_automaticTrading.Name = "checkBox_automaticTrading";
+            this.checkBox_automaticTrading.Size = new System.Drawing.Size(140, 21);
+            this.checkBox_automaticTrading.TabIndex = 0;
+            this.checkBox_automaticTrading.Text = "Automatic trading";
+            this.checkBox_automaticTrading.UseVisualStyleBackColor = true;
+            this.checkBox_automaticTrading.CheckedChanged += new System.EventHandler(this.checkBox_automaticTrading_CheckedChanged);
             // 
             // tabControl_Imperatur_main
             // 
@@ -125,16 +138,12 @@
             this.tabPage_account.Text = "Account";
             this.tabPage_account.UseVisualStyleBackColor = true;
             // 
-            // checkBox_automaticTrading
+            // LatestTransactionsPane
             // 
-            this.checkBox_automaticTrading.AutoSize = true;
-            this.checkBox_automaticTrading.Location = new System.Drawing.Point(25, 21);
-            this.checkBox_automaticTrading.Name = "checkBox_automaticTrading";
-            this.checkBox_automaticTrading.Size = new System.Drawing.Size(140, 21);
-            this.checkBox_automaticTrading.TabIndex = 0;
-            this.checkBox_automaticTrading.Text = "Automatic trading";
-            this.checkBox_automaticTrading.UseVisualStyleBackColor = true;
-            this.checkBox_automaticTrading.CheckedChanged += new System.EventHandler(this.checkBox_automaticTrading_CheckedChanged);
+            this.LatestTransactionsPane.Location = new System.Drawing.Point(25, 65);
+            this.LatestTransactionsPane.Name = "LatestTransactionsPane";
+            this.LatestTransactionsPane.Size = new System.Drawing.Size(899, 632);
+            this.LatestTransactionsPane.TabIndex = 1;
             // 
             // MainForm
             // 
@@ -173,6 +182,7 @@
         private System.Windows.Forms.TabControl tabControl_Imperatur_main;
         private System.Windows.Forms.TabPage tabPage_account;
         private System.Windows.Forms.CheckBox checkBox_automaticTrading;
+        private System.Windows.Forms.Panel LatestTransactionsPane;
     }
 }
 
