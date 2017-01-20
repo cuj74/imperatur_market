@@ -262,7 +262,7 @@ namespace Imperatur_v2.handler
             catch
             (Exception ex)
             {
-                int fdfd = 0;
+                int gg = 0;
             }
             List<IAccountInterface> oNewList = new List<IAccountInterface>();
             oNewList.Add(

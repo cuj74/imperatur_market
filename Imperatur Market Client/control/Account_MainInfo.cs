@@ -104,7 +104,7 @@ namespace Imperatur_Market_Client.control
             }
             catch (Exception ex)
             {
-                int ggf = 0;
+                int gg = 0;
             }
             if (AccountMainInfo != null)
                 AccountMainInfo.Refresh();

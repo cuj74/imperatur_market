@@ -217,6 +217,7 @@
   <ItemGroup>
     <Content Include="ipm.ico" />
     <Content Include="License-LGPL.txt" />
+    <EmbeddedResource Include="Resources\imp_logo.png" />
     <None Include="Resources\Expand.png" />
     <None Include="Resources\Collapse.png" />
   </ItemGroup>

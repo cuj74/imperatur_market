@@ -13,6 +13,7 @@ using Imperatur_v2.trade.recommendation;
 using Imperatur_v2.handler;
 using Imperatur_v2.account;
 using Imperatur_v2.monetary;
+using Imperatur_v2.events;
 
 namespace Imperatur_v2.trade.automation
 {
@@ -23,11 +24,24 @@ namespace Imperatur_v2.trade.automation
         private RSSReader m_oRSS;
         private string[] SearchPlaces;
         private IAccountHandlerInterface m_oAccountHandler;
+        private readonly string PROCESSNAME = "Trading automation process";
+
+        public delegate void SystemNotificationHandler(object sender, IMPSystemNotificationEventArg e);
+
+        public event ImperaturMarket.SystemNotificationHandler SystemNotificationEvent;
+
+
+        protected virtual void OnSystemNotification(IMPSystemNotificationEventArg e)
+        {
+            if (SystemNotificationEvent != null)
+                SystemNotificationEvent(this, e);
+        }
 
         public TradeAutomation(IAccountHandlerInterface AccountHandler)
         {
             m_oTradingOverview = new List<InstrumentRecommendation>();
-            string[] SearchPlaces = new string[] {
+            //TODO, add this to an external resource
+            SearchPlaces = new string[] {
                 "http://investors.avanza.se/sv/feed/reports"
             };
             m_oRSS = new RSSReader();
@@ -40,9 +54,14 @@ namespace Imperatur_v2.trade.automation
             List<InstrumentRecommendation> InstrumentRecommendations = new List<InstrumentRecommendation>();
             foreach (Instrument oI in Instruments)
             {
+                OnSystemNotification(new IMPSystemNotificationEventArg
+                {
+                    Message = string.Format("{0} - combining trading info about {1}", PROCESSNAME, oI.Name)
+                });
+
                 m_oSA = ImperaturGlobal.Kernel.Get<ISecurityAnalysis>(new Ninject.Parameters.ConstructorArgument("Instrument", oI));
 
-                if (m_oSA.HasValue)
+                if (m_oSA.HasValue && m_oSA.Instrument != null && m_oSA.QuoteFromInstrument != null)
                 {
                     InstrumentRecommendations.Add(
                         new InstrumentRecommendation
@@ -211,14 +230,13 @@ namespace Imperatur_v2.trade.automation
                                          ac.GetAverageAcquisitionCostFromHolding(bp.SecAnalysis.Instrument.Symbol).Multiply(1.02m).GreaterOrEqualThan(bp.SecAnalysis.QuoteFromInstrument.LastTradePrice)
                                        select new
                                        {
-
                                            Order = ImperaturGlobal.Kernel.Get<IOrder>(
                                                 new Ninject.Parameters.ConstructorArgument("Symbol", bp.SecAnalysis.Instrument.Symbol),
                                                 new Ninject.Parameters.ConstructorArgument("Trigger", new List<ITrigger> {
                                                 ImperaturGlobal.Kernel.Get<ITrigger>(
                                                         new Ninject.Parameters.ConstructorArgument("m_oOperator", TriggerOperator.EqualOrGreater),
                                                         new Ninject.Parameters.ConstructorArgument("m_oValueType", TriggerValueType.TradePrice),
-                                                        new Ninject.Parameters.ConstructorArgument("m_oTradePriceValue", bp.SecAnalysis.QuoteFromInstrument.LastTradePrice),
+                                                        new Ninject.Parameters.ConstructorArgument("m_oTradePriceValue", bp.SecAnalysis.QuoteFromInstrument.LastTradePrice.Amount),
                                                         new Ninject.Parameters.ConstructorArgument("m_oPercentageValue", 0m)
                                                         )
                                                 }),
@@ -242,13 +260,18 @@ namespace Imperatur_v2.trade.automation
             //now, do an evalution of every holding and sell if profit above 1.5% and no recommendation exists
             foreach (IAccountInterface oA in m_oAccountHandler.Accounts().Where(a => a.GetAccountType().Equals(AccountType.Customer)))
             {
+                CreateSystemNoficationEvent(string.Format("Calculation sell orders by profit from {0}", oA.AccountName));
+                if (oA.GetHoldings().Count() == 0)
+                {
+                    continue;
+                }
                 var holdings = from h in oA.GetHoldings()
                                from tr in TradingRecommendations.Where(x => x.TradingRecommendations.Where(tr => tr.TradingForecastMethod != TradingForecastMethod.Undefined).Count() > 0).ToList().Where(t => t.InstrumentInfo.Symbol.Equals(h.Symbol)).DefaultIfEmpty()
                                where h.ChangePercent > 1.5m
                                select h;
                 foreach (var holding in holdings.Where(h=>h.Symbol != null))
                 {
-
+                    CreateSystemNoficationEvent(string.Format("creating sell orders by profit from {0} for {1}", oA.AccountName, holding.Symbol));
                     m_oSA = ImperaturGlobal.Kernel.Get<ISecurityAnalysis>(new Ninject.Parameters.ConstructorArgument("Instrument", ImperaturGlobal.Instruments.Where(i => i.Symbol.Equals(holding.Symbol)).First()));
                     ITrigger NewTrigger = ImperaturGlobal.Kernel.Get<ITrigger>(
                                 new Ninject.Parameters.ConstructorArgument("m_oOperator", TriggerOperator.EqualOrGreater),
@@ -280,23 +303,41 @@ namespace Imperatur_v2.trade.automation
             {
                 return new List<IOrder>();
             }
-
-            m_oTradingOverview = GetRecommendationFromInstruments(ImperaturGlobal.Instruments);
-            
-            if (m_oTradingOverview.Where(x => x.TradingRecommendations.Where(tr=>!tr.TradingForecastMethod.Equals(TradingForecastMethod.Undefined)).Count()== 0).Count() > 0) 
-            {
-                return new List<IOrder>();
-            }
-
             List<IOrder> NewOrders = new List<IOrder>();
-            NewOrders.AddRange(GetBuyOrdersFromTradingRecommencation(m_oTradingOverview));
-            NewOrders.AddRange(GetSellOrdersFromTradingRecommencation(m_oTradingOverview));
-            NewOrders.AddRange(GetSellOrdersByProfit(m_oTradingOverview));
-            if (m_oTradingOverview.Count() > 0)
+            try
             {
-                ImperaturGlobal.TradingRecommendations = m_oTradingOverview.Where(x=>x.TradingRecommendations.Where(tr=>!tr.TradingForecastMethod.Equals(TradingForecastMethod.Undefined)).Count() > 0).Select(tr => tr.TradingRecommendations).SelectMany(x => x).Distinct().ToList();
+                m_oTradingOverview = GetRecommendationFromInstruments(ImperaturGlobal.Instruments);
+
+                if (m_oTradingOverview.Where(x => x.TradingRecommendations.Where(tr => !tr.TradingForecastMethod.Equals(TradingForecastMethod.Undefined)).Count() == 0).Count() > 0)
+                {
+                    return NewOrders;
+                }
+                CreateSystemNoficationEvent("creating new buy orders");
+                NewOrders.AddRange(GetBuyOrdersFromTradingRecommencation(m_oTradingOverview));
+                CreateSystemNoficationEvent("creating new sell orders");
+                NewOrders.AddRange(GetSellOrdersFromTradingRecommencation(m_oTradingOverview));
+                CreateSystemNoficationEvent("creating new sell orders based on profit of holding");
+                NewOrders.AddRange(GetSellOrdersByProfit(m_oTradingOverview));
+                if (m_oTradingOverview.Count() > 0)
+                {
+                    CreateSystemNoficationEvent("updating trade recommendations on instruments");
+                    ImperaturGlobal.TradingRecommendations = m_oTradingOverview.Where(x => x.TradingRecommendations.Where(tr => !tr.TradingForecastMethod.Equals(TradingForecastMethod.Undefined)).Count() > 0).Select(tr => tr.TradingRecommendations).SelectMany(x => x).Distinct().ToList();
+                }
+            }
+            catch(Exception ex)
+            {
+                CreateSystemNoficationEvent("process went wrong");
+                ImperaturGlobal.GetLog().Error("Trading automation process went wrong", ex);
             }
             return NewOrders;
+        }
+        private void CreateSystemNoficationEvent(string Message)
+        {
+            OnSystemNotification(new IMPSystemNotificationEventArg
+            {
+                Message = string.Format("{0} - {1}", PROCESSNAME, Message)
+            });
+
         }
     }
 }

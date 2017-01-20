@@ -1,28 +1,52 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Imperatur_v2.handler;
 using Imperatur_v2.monetary;
-using Imperatur_v2.cache;
 using Imperatur_v2.shared;
 using Ninject;
 using System.Reflection;
 using System.IO;
 using Imperatur_v2.json;
-using Newtonsoft.Json.Linq;
 using Imperatur_v2.account;
-using Imperatur_v2.securites;
-using Imperatur_v2.trade.analysis;
-using Imperatur_v2.trade.recommendation;
 using Imperatur_v2.order;
 using Imperatur_v2.trade.automation;
+using Imperatur_v2.events;
+using log4net;
+using log4net.Config;
+using System.Threading;
 
 namespace Imperatur_v2
 {
     public static class ImperaturContainer
     {
+        public delegate void SystemNotificationHandler(object sender, IMPSystemNotificationEventArg e);
+
+        public static event SystemNotificationHandler SystemNotificationEvent = delegate { };
+
+        private static IImperaturMarket m_oImperaturMarket;
+
+        private static void CreateMarketObject()
+        {
+            var kernel = new StandardKernel();
+            kernel.Load(Assembly.GetExecutingAssembly());
+
+            m_oImperaturMarket = kernel.Get<IImperaturMarket>();
+            try
+            {
+                m_oImperaturMarket.SystemNotificationEvent += M_oImperaturMarket_SystemNotificationEvent;
+            }
+            catch(Exception ex)
+            {
+                int gg = 0;
+            }
+        }
+
+        private static void M_oImperaturMarket_SystemNotificationEvent(object sender, IMPSystemNotificationEventArg e)
+        {
+            SystemNotificationEvent(sender, e);
+        }
+
         /// <summary>
         /// Build the Imperatur Market Container
         /// </summary>
@@ -30,27 +54,15 @@ namespace Imperatur_v2
         /// <returns></returns>
         public static IImperaturMarket BuildImperaturContainer(string SystemLocation)
         {
-            //Ninject bindings
-            var kernel = new StandardKernel();
-            kernel.Load(Assembly.GetExecutingAssembly());
-
-            var ImpertaturContainer = kernel.Get<IImperaturMarket>(
-                new Ninject.Parameters.ConstructorArgument("SystemLocation", SystemLocation)
-                );
-
-            return ImpertaturContainer;
+            CreateMarketObject();
+            m_oImperaturMarket.LoadImperaturMarket(SystemLocation);
+            return m_oImperaturMarket;
         }
         public static IImperaturMarket BuildImperaturContainer(ImperaturData NewSystemData)
         {
-            //Ninject bindings
-            var kernel = new StandardKernel();
-            kernel.Load(Assembly.GetExecutingAssembly());
-
-            var ImpertaturContainer = kernel.Get<IImperaturMarket>(
-                new Ninject.Parameters.ConstructorArgument("SystemData", NewSystemData)
-                );
-
-            return ImpertaturContainer;
+            CreateMarketObject();
+            m_oImperaturMarket.LoadImperaturMarket(NewSystemData);
+            return m_oImperaturMarket;
         }
 
     }
@@ -59,44 +71,128 @@ namespace Imperatur_v2
     /// </summary>
     public interface IImperaturMarket
     {
-
-
         /// <summary>
         /// Returns the last known error message that has occurred
         /// </summary>
         /// <returns>string</returns>
         string GetLastErrorMessage();
-        ImperaturData GetSystemData();
-        IAccountHandlerInterface GetAccountHandler();
-        ITradeHandlerInterface GetTradeHandler();
-        IOrderQueue OrderQueue { get; }
-        //IMoney GetMoney(decimal Amount, string CurrencyCode);
-        event ImperaturMarket.QuoteUpdateHandler QuoteUpdateEvent;
-        IMoney GetMoney(decimal Amount, string CurrencyCode);
-        bool SetAutomaticTrading(bool Value);
-        ExchangeStatus SystemExchangeStatus { get; }
-        //List<TradingRecommendation> GetTradingRecommendation(string Symbol);
 
+        /// <summary>
+        /// Returns the handler object for the order queue
+        /// </summary>
+        IOrderQueue OrderQueue { get; }
+        /// <summary>
+        /// Get the system data properties
+        /// </summary>
+        /// <returns></returns>
+        ImperaturData GetSystemData();
+        /// <summary>
+        /// Get the reference to the account handler object
+        /// </summary>
+        /// <returns>An object of type IAccountHandlerInterface</returns>
+        IAccountHandlerInterface GetAccountHandler();
+        /// <summary>
+        /// Get the reference to the Trand handler object
+        /// </summary>
+        /// <returns>An object of type ITradeHandlerInterface</returns>
+        ITradeHandlerInterface GetTradeHandler();
+        /// <summary>
+        /// Set the automatic trading value
+        /// </summary>
+        /// <param name="Value">The value of the Automatic trading (true equals that the automatic trading will run)</param>
+        /// <returns>Returns true if everything ok</returns>
+        bool SetAutomaticTrading(bool Value);
+        /// <summary>
+        /// Retrive the current status of the currenct Exhange (open, closed or undefined if no info is available, which means that the system will interperate this as closed)
+        /// </summary>
+        ExchangeStatus SystemExchangeStatus { get; }
+        void LoadImperaturMarket(ImperaturData SystemData);
+        void LoadImperaturMarket(string SystemLocation);
+        event ImperaturMarket.SystemNotificationHandler SystemNotificationEvent;
+        event ImperaturMarket.QuoteUpdateHandler QuoteUpdateEvent;
 
     }
 
 
     public class ImperaturMarket : IImperaturMarket
     {
+        #region Imperatur handler objects
         private IAccountHandlerInterface m_oAccountHandler;
         private ITradeHandlerInterface m_oTradeHandler;
         private ICurrency m_oDisplayCurrency;
         private IOrderQueue m_oOrderQueue;
-        private string m_oLastErrorMessage;
+        private ITradeAutomation m_oTradeAutomation;
+        private bool AutomationThreadRunning;
+
+        #endregion
+
+        #region Imperatur system data
         private ImperaturData m_oImperaturData;
         private readonly string SystemDataFile = "imperatursettings.json";
-     
+        #endregion
+
+        #region misc
+        private string m_oLastErrorMessage;
         private System.Timers.Timer m_oQuoteTimer;
-        private TradeAutomation m_oTradeAutomation;
+
+        #endregion
+
+        #region events and delegates
+        public delegate void QuoteUpdateHandler(object sender, EventArgs e);
+        public delegate void SystemNotificationHandler(object sender, IMPSystemNotificationEventArg e);
+
+        public event SystemNotificationHandler SystemNotificationEvent;
+        public event QuoteUpdateHandler QuoteUpdateEvent;
+
+        #endregion
+
+        #region proctectedMethods
+        protected virtual void OnQuoteUpdate(EventArgs e)
+        {
+            if (QuoteUpdateEvent != null)
+                QuoteUpdateEvent(this, e);
+        }
+
+        protected virtual void OnSystemNotification(IMPSystemNotificationEventArg e)
+        {
+            if (SystemNotificationEvent != null)
+                SystemNotificationEvent(this, e);
+        }
+
+        #endregion
+        
+        #region General
+        public string GetLastErrorMessage()
+        {
+            return m_oLastErrorMessage ?? "";
+        }
+        #endregion
+
+        #region constructor
 
 
-        //private List<Tuple<Instrument, List<TradingRecommendation>, VolumeIndicator, int>> m_oTradingOverview;
+        public ImperaturMarket()
+        {
+            AutomationThreadRunning = false;
+        }
 
+        public void LoadImperaturMarket(ImperaturData SystemData)
+        {
+            //create the system based on the data
+            if (!Directory.Exists(SystemData.SystemDirectory))
+            {
+                CreateImperaturDataFromSystemData(SystemData);
+            }
+            CreateImperaturMarket(SystemData);
+        }
+
+        public void LoadImperaturMarket(string SystemLocation)
+        {
+            CreateImperaturMarket(ReadImperaturDataFromSystemLocation(SystemLocation));
+        }
+        #endregion
+        
+        #region public methods
         public IOrderQueue OrderQueue
         {
             get
@@ -120,47 +216,6 @@ namespace Imperatur_v2
             }
         }
 
-        public delegate void QuoteUpdateHandler(object sender, EventArgs e);
-        public event QuoteUpdateHandler QuoteUpdateEvent;
-
-        #region proctectedMethods
-        protected virtual void OnQuoteUpdate(EventArgs e)
-        {
-            if (QuoteUpdateEvent != null)
-                QuoteUpdateEvent(this, e);
-        }
-        #endregion
-
-
-        #region General
-        public string GetLastErrorMessage()
-        {
-            return m_oLastErrorMessage ?? "";
-        }
-        #endregion
-
-
-        #region constructor
-        public ImperaturMarket(ImperaturData SystemData)
-        {
-            //create the system based on the data
-            if (!Directory.Exists(SystemData.SystemDirectory))
-            {
-                CreateImperaturDataFromSystemData(SystemData);
-            }
-            CreateImperaturMarket(SystemData);
-
-        }
-
-
-        public ImperaturMarket(string SystemLocation)
-        {
-            CreateImperaturMarket(ReadImperaturDataFromSystemLocation(SystemLocation));
-        }
-        #endregion
-
-
-        #region public methods
         public ImperaturData GetSystemData()
         {
             return m_oImperaturData;
@@ -201,7 +256,6 @@ namespace Imperatur_v2
                 return;
             }
             m_oTradeHandler.ForceUpdate();
-            TradingRobotMain();
         }
 
         private ImperaturData ReadImperaturDataFromSystemLocation(string SystemLocation)
@@ -219,6 +273,7 @@ namespace Imperatur_v2
          }
         private bool CreateImperaturDataFromSystemData(ImperaturData Systemdata)
         {
+            ImperaturGlobal.GetLog().Info("Creating the Imperatur Market System");
             if (
                 CreateDirectory(Systemdata.SystemDirectory)
                 &&
@@ -242,12 +297,14 @@ namespace Imperatur_v2
         }
         private bool CreateDirectory(String NewDirectoryToCreate)
         {
+           
             try
             {
                 Directory.CreateDirectory(NewDirectoryToCreate);
             }
             catch (Exception ex)
             {
+                ImperaturGlobal.GetLog().Error(string.Format("Could not create directory {0}", NewDirectoryToCreate), ex);
                 m_oLastErrorMessage = ex.Message;
                 return false;
             }
@@ -255,6 +312,7 @@ namespace Imperatur_v2
         }
         private bool CreateSystemSettingsFile(ImperaturData SystemData)
         {
+
             if (SerializeJSONdata.SerializeObject(SystemData, string.Format(@"{0}\{1}", SystemData.SystemDirectory, SystemDataFile)))
                 return true;
             else
@@ -274,18 +332,32 @@ namespace Imperatur_v2
             }
             catch (Exception ex)
             {
+                ImperaturGlobal.GetLog().Error(string.Format("Could not Initiate Ninject Kernel"), ex);
                 throw new Exception(string.Format("Could not initiate Imperatur Market application: {0}", ex.Message));
             }
         }
         private void CreateImperaturMarket(ImperaturData SystemData)
         {
-
+            OnSystemNotification(new IMPSystemNotificationEventArg
+            {
+                Message = "Starting the initializing sequence"
+            });
+            ImperaturGlobal.GetLog().Info("Starting the initialize sequence");
             m_oImperaturData = SystemData;
 
+            OnSystemNotification(new IMPSystemNotificationEventArg
+            {
+                Message = "Creating cache objects"
+            });
             ImperaturGlobal.Initialize(m_oImperaturData, InitiateNinjectKernel(), null);
-            List<account.AccountCacheType> BusinessAccounts = new List<account.AccountCacheType>();
 
+
+            List<account.AccountCacheType> BusinessAccounts = new List<account.AccountCacheType>();
             List<IAccountInterface> oLAB = new List<IAccountInterface>();
+            OnSystemNotification(new IMPSystemNotificationEventArg
+            {
+                Message = "Loading accounts"
+            });
             if (GetAccountHandler().Accounts().Where(a => !a.GetAccountType().Equals(account.AccountType.Bank)).Count() == 0)
             {
                 //create internalbankaccount for balancetransactions
@@ -310,7 +382,9 @@ namespace Imperatur_v2
                     )
                     );
             }
-            GetAccountHandler().CreateAccount(oLAB);
+            if (oLAB.Count() > 0)
+                GetAccountHandler().CreateAccount(oLAB);
+            
             //add all business accounts to cache
             BusinessAccounts = GetAccountHandler().Accounts().Where(a => !a.GetAccountType().Equals(account.AccountType.Customer)).
                 Select(b =>
@@ -320,404 +394,95 @@ namespace Imperatur_v2
                     Identifier = b.Identifier
                 }).ToList();
 
+            OnSystemNotification(new IMPSystemNotificationEventArg
+            {
+                Message = "Initializing business accounts"
+            });
             ImperaturGlobal.InitializeBusinessAccount(BusinessAccounts);
+            OnSystemNotification(new IMPSystemNotificationEventArg
+            {
+                Message = "Loading instruments and qoutes"
+            });
             ImperaturGlobal.Quotes = GetTradeHandler().GetQuotes();
 
+
+
+            OnSystemNotification(new IMPSystemNotificationEventArg
+            {
+                Message = "Setting events"
+            });
             m_oQuoteTimer = new System.Timers.Timer();
             m_oQuoteTimer.Elapsed += M_oQuoteTimer_Elapsed;
-            m_oQuoteTimer.Interval = 1000 * 60 * 5; //Convert.ToInt32(m_oImperaturData.QuoteRefreshTime); //every 15 minutes
+            m_oQuoteTimer.Interval = 1000 * 60 * 2; //Convert.ToInt32(m_oImperaturData.QuoteRefreshTime); //every 15 minutes
             m_oQuoteTimer.Enabled = true;
 
             m_oDisplayCurrency = ImperaturGlobal.Kernel.Get<ICurrency>(new Ninject.Parameters.ConstructorArgument("CurrencyCode", m_oImperaturData.SystemCurrency));
             m_oTradeHandler.QuoteUpdateEvent += M_oTradeHandler_QuoteUpdateEvent;
 
             m_oOrderQueue = null;
-            m_oTradeAutomation = new TradeAutomation(GetAccountHandler());
+            m_oTradeAutomation = ImperaturGlobal.Kernel.Get<ITradeAutomation>(new Ninject.Parameters.ConstructorArgument("AccountHandler", GetAccountHandler()));
 
+            m_oTradeAutomation.SystemNotificationEvent += M_oTradeAutomation_SystemNotificationEvent;
 
-            if (m_oImperaturData.IsAutomaticMaintained)
+            ImperaturGlobal.GetLog().Info("End of the initialize sequence");
+
+        }
+
+        private void M_oTradeAutomation_SystemNotificationEvent(object sender, IMPSystemNotificationEventArg e)
+        {
+            OnSystemNotification(e);
+        }
+
+        private void EvaluateOrdersInQueue()
+        {
+
+            OnSystemNotification(new IMPSystemNotificationEventArg
             {
-                OrderQueue.EvaluateOrdersInQueue();
-                TradingRobotMain();
-              }
-
+                Message = "Processing orders in the order queue"
+            });
+            OrderQueue.EvaluateOrdersInQueue();
         }
 
         private void TradingRobotMain()
         {
-            if (ImperaturGlobal.ExchangeStatus != ExchangeStatus.Open)
+            if (!m_oImperaturData.IsAutomaticMaintained || ImperaturGlobal.ExchangeStatus != ExchangeStatus.Open)
             {
                 return;
             }
 
-            foreach (IOrder oI in m_oTradeAutomation.RunTradeAutomation())
+            OnSystemNotification(new IMPSystemNotificationEventArg
             {
-                OrderQueue.AddOrder(oI);
-            }
+                Message = "Trading automation process running - processing order queue first"
+            });
+            //start with an evaluation of the orders
             OrderQueue.EvaluateOrdersInQueue();
 
-            /*
-            m_oTradingOverview = new List<Tuple<Instrument, List<TradingRecommendation>, VolumeIndicator,int>>();
-            ISecurityAnalysis oS;
-            RSSReader oR = new RSSReader();
-            string[] SearchPlaces = new string[] {
-                "http://investors.avanza.se/sv/feed/reports"
-            };
-            foreach (Instrument oI in ImperaturGlobal.Instruments)
+            OnSystemNotification(new IMPSystemNotificationEventArg
             {
-                oS = ImperaturGlobal.Kernel.Get<ISecurityAnalysis>(new Ninject.Parameters.ConstructorArgument("Instrument", oI));
-
-                if (oS.HasValue)
-                {
-                    m_oTradingOverview.Add(new Tuple<Instrument, List<TradingRecommendation>, VolumeIndicator, int>(
-                        oI,
-                        oS.GetTradingRecommendations(),
-                        oS.GetRangeOfVolumeIndicator(DateTime.Now.AddDays(-50), DateTime.Now).Last().Item2,
-                        oR.GetOccurancesOfString(SearchPlaces, new string[] {oI.Name, oI.Symbol})
-                        ));
-                }
-            }
-            if (m_oTradingOverview.Count() == 0)
+                Message = "Trading automation process running - retrieving info to calculate trading recommendations"
+            });
+            List<IOrder> NewOrders = m_oTradeAutomation.RunTradeAutomation();
+            OnSystemNotification(new IMPSystemNotificationEventArg
             {
-                return;
-            }
-
-            //group the instruments by different values, like the search or the amount of buy or sell recommendations-
-            var BuyRecommendations = m_oTradingOverview.Where(x => x.Item2.Where(tr => tr.TradingForecastMethod != TradingForecastMethod.Undefined && tr.BuyPrice.Amount > 0 && tr.SellPrice.Amount == 0).Count() > 0).ToList();
-            var BuyCounts = BuyRecommendations.GroupBy(x => x.Item1.Symbol)
-                      .Select(g => new { g.Key, Count = g.Count() });
-            var SearchCounts = BuyRecommendations.GroupBy(x => x.Item1.Symbol)
-                        .Select(g => new { g.Key, Sum = g.Sum(x=>x.Item4)});
-            var VolumeIndicator = BuyRecommendations.Where(x=>!x.Item3.VolumeIndicatorType.Equals(VolumeIndicatorType.VolumeClimaxUp)).GroupBy(x => x.Item1.Symbol)
-                        .Select(g => new { g.Key, Count = g.Count() });
-
-            var CondensedBuyData = from bc in BuyCounts
-                                   join sc in SearchCounts on bc.Key equals sc.Key
-                                   join vi in VolumeIndicator on bc.Key equals vi.Key
-                                   select new
-                                   {
-                                       bc.Key,
-                                       BuyCounts = bc.Count,
-                                       SearchSum = sc.Sum,
-                                       VolumeCount = vi.Count
-                                   };
-
-
-            var BuyDenseRanked = CondensedBuyData
-            .GroupBy(rec => new { rec.Key, rec.SearchSum, rec.BuyCounts, rec.VolumeCount })
-            .Where(@group => @group.Any())
-
-
-            .OrderBy(@group => @group.Key.BuyCounts)
-            .ThenBy(@group => @group.Key.VolumeCount)
-            .ThenBy(@group => @group.Key.SearchSum)
-            .AsEnumerable()
-
-
-             .Select((@group, i) => new
-             {
-                 Items = @group,
-                 Rank = ++i
-             })
-            .SelectMany(v => v.Items, (s, i) => new
+                Message = string.Format("Adding orders to queue")
+            });
+            OrderQueue.AddOrders(NewOrders);
+            //do all the others that might have ended up in the list.
+            OnSystemNotification(new IMPSystemNotificationEventArg
             {
-                Item = i,
-                DenseRank = s.Rank
-            }).ToList();
-
-
-            var SellRecommendations = m_oTradingOverview.Where(x => x.Item2.Where(tr => tr.TradingForecastMethod != TradingForecastMethod.Undefined && tr.BuyPrice.Amount == 0 && tr.SellPrice.Amount > 0).Count() > 0).ToList();
-            var SellCounts = SellRecommendations.GroupBy(x => x.Item1.Symbol)
-                      .Select(g => new { g.Key, Count = g.Count() });
-            var SellSearchCounts = SellRecommendations.GroupBy(x => x.Item1.Symbol)
-                        .Select(g => new { g.Key, Sum = g.Sum(x => x.Item4) });
-            var SellVolumeIndicator = SellRecommendations.Where(x => !x.Item3.VolumeIndicatorType.Equals(VolumeIndicatorType.VolumeClimaxDown)).GroupBy(x => x.Item1.Symbol)
-                        .Select(g => new { g.Key, Count = g.Count() });
-
-
-            var CondensedSellData = from bc in SellCounts
-                                    join sc in SellSearchCounts on bc.Key equals sc.Key
-                                   join vi in SellVolumeIndicator on bc.Key equals vi.Key
-                                   select new
-                                   {
-                                       bc.Key,
-                                       SellCounts = bc.Count,
-                                       SearchSum = sc.Sum,
-                                       VolumeCount = vi.Count
-                                   };
-
-
-            var SellDenseRanked = CondensedSellData
-            .GroupBy(rec => new { rec.Key, rec.SearchSum, rec.SellCounts, rec.VolumeCount })
-            .Where(@group => @group.Any())
-
-
-            .OrderBy(@group => @group.Key.SellCounts)
-            .ThenBy(@group => @group.Key.VolumeCount)
-            .ThenBy(@group => @group.Key.SearchSum)
-            .AsEnumerable()
-
-
-             .Select((@group, i) => new
-             {
-                 Items = @group,
-                 Rank = ++i
-             })
-            .SelectMany(v => v.Items, (s, i) => new
-            {
-                Item = i,
-                DenseRank = s.Rank
-            }).ToList();
-
-
-            var ActualBuyPositions = from b in BuyDenseRanked
-                                     join i in ImperaturGlobal.Instruments on b.Item.Key equals i.Symbol
-                                     select new
-                                     {
-                                         SecAnalysis = ImperaturGlobal.Kernel.Get<ISecurityAnalysis>(new Ninject.Parameters.ConstructorArgument("Instrument", i)),
-                                     };
-            var ActualBuyOrders = from ac in m_oAccountHandler.Accounts().Where(a => a.GetAccountType().Equals(AccountType.Customer))
-                               from bp in ActualBuyPositions
-                               where bp.SecAnalysis.HasValue && ac.GetAvailableFunds(
-                                   new List<ICurrency> {
-                                    ImperaturGlobal.GetMoney(0m, bp.SecAnalysis.Instrument.CurrencyCode).CurrencyCode
-                                   }
-                                   ).FirstOrDefault().GreaterOrEqualThan(bp.SecAnalysis.QuoteFromInstrument.LastTradePrice)
-                               select new
-                               {
-
-                                   Order = ImperaturGlobal.Kernel.Get<IOrder>(
-                                        new Ninject.Parameters.ConstructorArgument("Symbol", bp.SecAnalysis.Instrument.Symbol),
-                                        new Ninject.Parameters.ConstructorArgument("Trigger", new List<ITrigger> {
-                                           ImperaturGlobal.Kernel.Get<ITrigger>(
-                                                                new Ninject.Parameters.ConstructorArgument("m_oOperator", TriggerOperator.EqualOrless),
-                                                                new Ninject.Parameters.ConstructorArgument("m_oValueType", TriggerValueType.TradePrice),
-                                                                new Ninject.Parameters.ConstructorArgument("m_oTradePriceValue", bp.SecAnalysis.QuoteFromInstrument.LastTradePrice.Amount),
-                                                                new Ninject.Parameters.ConstructorArgument("m_oPercentageValue", 0m)
-                                                                )
-                                        }),
-                                        new Ninject.Parameters.ConstructorArgument("AccountIdentifier", ac.Identifier),
-                                        new Ninject.Parameters.ConstructorArgument("Quantity", (int)
-                                        ac.GetAvailableFunds(
-                                               new List<ICurrency> {
-                                                ImperaturGlobal.GetMoney(0m, bp.SecAnalysis.Instrument.CurrencyCode).CurrencyCode
-                                               }
-                                               ).FirstOrDefault().Divide(bp.SecAnalysis.QuoteFromInstrument.LastTradePrice).Amount
-                                        ),
-                                        new Ninject.Parameters.ConstructorArgument("OrderType", OrderType.StopLoss),
-                                        new Ninject.Parameters.ConstructorArgument("ValidToDate", DateTime.Now.AddDays(2)),
-                                        new Ninject.Parameters.ConstructorArgument("StopLossValidDays", 30),
-                                        new Ninject.Parameters.ConstructorArgument("StopLossAmount", 0m),
-                                        new Ninject.Parameters.ConstructorArgument("StopLossPercentage", 0.8m)
-                                    )
-                               };
-
-
-            var ActualSellPositions = from b in SellDenseRanked
-                                     join i in ImperaturGlobal.Instruments on b.Item.Key equals i.Symbol
-                                     select new
-                                     {
-                                         SecAnalysis = ImperaturGlobal.Kernel.Get<ISecurityAnalysis>(new Ninject.Parameters.ConstructorArgument("Instrument", i)),
-                                     };
-            try
-            {
-                var ActualSellOrders = from ac in m_oAccountHandler.Accounts().Where(a => a.GetAccountType().Equals(AccountType.Customer))
-                                       from bp in ActualSellPositions
-                                       where
-                                         bp.SecAnalysis.HasValue
-                                         &&
-                                         ac.GetHoldings().Count() > 0
-                                         &&
-                                         ac.GetHoldings().Where(h => h.Symbol != null
-                                         &&
-                                         h.Symbol.Equals(bp.SecAnalysis.Instrument.Symbol)).Count() > 0
-                                         &&
-                                         ac.GetAverageAcquisitionCostFromHolding(bp.SecAnalysis.Instrument.Symbol).Multiply(1.02m).GreaterOrEqualThan(bp.SecAnalysis.QuoteFromInstrument.LastTradePrice)
-                                       select new
-                                       {
-
-                                           Order = ImperaturGlobal.Kernel.Get<IOrder>(
-                                                new Ninject.Parameters.ConstructorArgument("Symbol", bp.SecAnalysis.Instrument.Symbol),
-                                                new Ninject.Parameters.ConstructorArgument("Trigger", new List<ITrigger> {
-                                                ImperaturGlobal.Kernel.Get<ITrigger>(
-                                                        new Ninject.Parameters.ConstructorArgument("m_oOperator", TriggerOperator.EqualOrGreater),
-                                                        new Ninject.Parameters.ConstructorArgument("m_oValueType", TriggerValueType.TradePrice),
-                                                        new Ninject.Parameters.ConstructorArgument("m_oTradePriceValue", bp.SecAnalysis.QuoteFromInstrument.LastTradePrice),
-                                                        new Ninject.Parameters.ConstructorArgument("m_oPercentageValue", 0m)
-                                                                    )
-                                                }),
-                                                new Ninject.Parameters.ConstructorArgument("AccountIdentifier", ac.Identifier),
-                                                new Ninject.Parameters.ConstructorArgument("Quantity",
-                                                Convert.ToInt32(ac.GetHoldings().Where(h => h.Symbol.Equals(bp.SecAnalysis.Instrument.Symbol)).Sum(ho => ho.Quantity))
-                                                ),
-                                                new Ninject.Parameters.ConstructorArgument("OrderType", OrderType.Sell),
-                                                new Ninject.Parameters.ConstructorArgument("ValidToDate", DateTime.Now.AddDays(2)),
-                                                new Ninject.Parameters.ConstructorArgument("StopLossValidDays", 0),
-                                                new Ninject.Parameters.ConstructorArgument("StopLossAmount", 0m),
-                                                new Ninject.Parameters.ConstructorArgument("StopLossPercentage", 0m)
-                                      )
-                                       };
-
-                if (ActualSellOrders != null && ActualSellOrders.Count() > 0)
-                {
-                    foreach (var o in ActualSellOrders)
-                    {
-                        OrderQueue.AddOrder(o.Order);
-                    }
-                }
-                if (ActualBuyOrders != null && ActualBuyOrders.Count() > 0)
-                {
-                    foreach (var o in ActualBuyOrders)
-                    {
-                        OrderQueue.AddOrder(o.Order);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                int gg = 0;
-            }
-            /*
-            foreach (IAccountInterface oA in m_oAccountHandler.Accounts().Where(a => a.GetAccountType().Equals(AccountType.Customer)))
-            {
-                //sell recommendations
-                foreach (Tuple<Instrument, List<TradingRecommendation>, VolumeIndicator, int> oTR in m_oTradingOverview.Where(x => x.Item2.Where(tr => tr.TradingForecastMethod != TradingForecastMethod.Undefined && tr.SellPrice.Amount > 0 && tr.BuyPrice.Amount == 0).Count() > 0).ToList())
-                {
-                    //allow a loss of 2% from the original price!! Just to get the trading started!! Fix this later!
-                    if (oA.GetHoldings().Count() > 0 && oA.GetHoldings().Where(h => h.Symbol != null && h.Symbol.Equals(oTR.Item1.Symbol)).Count() > 0 && oA.GetAverageAcquisitionCostFromHolding(oTR.Item1.Symbol).Multiply(1.02m).Amount >= oTR.Item2.Select(tr => tr.SellPrice.Amount).First())
-                    {
-                        if (oTR.Item3.VolumeIndicatorType == VolumeIndicatorType.LowVolume || oTR.Item3.VolumeIndicatorType == VolumeIndicatorType.Unknown
-                            || oTR.Item3.VolumeIndicatorType == VolumeIndicatorType.VolumeClimaxUp)
-                        {
-                            oS = ImperaturGlobal.Kernel.Get<ISecurityAnalysis>(new Ninject.Parameters.ConstructorArgument("Instrument", oTR.Item1));
-                            ITrigger NewTrigger = ImperaturGlobal.Kernel.Get<ITrigger>(
-                                        new Ninject.Parameters.ConstructorArgument("m_oOperator", TriggerOperator.EqualOrGreater),
-                                        new Ninject.Parameters.ConstructorArgument("m_oValueType", TriggerValueType.TradePrice),
-                                        new Ninject.Parameters.ConstructorArgument("m_oTradePriceValue", oS.QuoteFromInstrument.LastTradePrice.Amount),
-                                        new Ninject.Parameters.ConstructorArgument("m_oPercentageValue", 0m)
-                                        );
-
-                            IOrder NewOrder = ImperaturGlobal.Kernel.Get<IOrder>(
-                                    new Ninject.Parameters.ConstructorArgument("Symbol", oS.Instrument.Symbol),
-                                    new Ninject.Parameters.ConstructorArgument("Trigger", new List<ITrigger> { NewTrigger }),
-                                    new Ninject.Parameters.ConstructorArgument("AccountIdentifier", oA.Identifier),
-                                    new Ninject.Parameters.ConstructorArgument("Quantity", Convert.ToInt32(oA.GetHoldings().Where(h => h.Symbol.Equals(oTR.Item1.Symbol)).Sum(ho => ho.Quantity))),
-                                    new Ninject.Parameters.ConstructorArgument("OrderType", OrderType.Sell),
-                                    new Ninject.Parameters.ConstructorArgument("ValidToDate", DateTime.Now.AddDays(2)),
-                                    new Ninject.Parameters.ConstructorArgument("StopLossValidDays", 0),
-                                    new Ninject.Parameters.ConstructorArgument("StopLossAmount", 0m),
-                                    new Ninject.Parameters.ConstructorArgument("StopLossPercentage", 0m)
-                             );
-                            OrderQueue.AddOrder(NewOrder);
-                        }
-                    }
-                }
-
-
-
-
-                //buy recommendations
-                foreach (Tuple<Instrument, List<TradingRecommendation>, VolumeIndicator, int> oTR in m_oTradingOverview.Where(x => x.Item2.Where(tr => tr.TradingForecastMethod != TradingForecastMethod.Undefined && tr.BuyPrice.Amount > 0 && tr.SellPrice.Amount == 0).Count() > 0).ToList())
-                {
-                    oS = ImperaturGlobal.Kernel.Get<ISecurityAnalysis>(new Ninject.Parameters.ConstructorArgument("Instrument", oTR.Item1));
-                    IMoney oAvailableFunds = oA.GetAvailableFunds(new List<ICurrency>() { ImperaturGlobal.GetMoney(0, oTR.Item1.CurrencyCode).CurrencyCode }).First();
-                    if (oTR.Item2.Where(tr => tr.BuyPrice.Amount > 0 && tr.SellPrice.Amount == 0).Count() > 0 && (oTR.Item3.VolumeIndicatorType != VolumeIndicatorType.HighVolumeChurn || oTR.Item3.VolumeIndicatorType != VolumeIndicatorType.VolumeClimaxUp))
-                    {
-                        if (oAvailableFunds.Amount >= oS.QuoteFromInstrument.LastTradePrice.Amount)
-                        {
-                            int HighestQuantity = (int)(oAvailableFunds.Amount / oS.QuoteFromInstrument.LastTradePrice.Amount);
-                            //add order
-                            if (oTR.Item3.VolumeIndicatorType != VolumeIndicatorType.VolumeClimaxDown)
-                            {
-                                //add stoploss also
-
-                                ITrigger NewTrigger = ImperaturGlobal.Kernel.Get<ITrigger>(
-                                    new Ninject.Parameters.ConstructorArgument("m_oOperator", TriggerOperator.EqualOrless),
-                                    new Ninject.Parameters.ConstructorArgument("m_oValueType", TriggerValueType.TradePrice),
-                                    new Ninject.Parameters.ConstructorArgument("m_oTradePriceValue", oS.QuoteFromInstrument.LastTradePrice.Amount),
-                                    new Ninject.Parameters.ConstructorArgument("m_oPercentageValue", 0m)
-                                    );
-
-                                IOrder NewOrder = ImperaturGlobal.Kernel.Get<IOrder>(
-                                        new Ninject.Parameters.ConstructorArgument("Symbol", oS.Instrument.Symbol),
-                                        new Ninject.Parameters.ConstructorArgument("Trigger", new List<ITrigger> { NewTrigger }),
-                                        new Ninject.Parameters.ConstructorArgument("AccountIdentifier", oA.Identifier),
-                                        new Ninject.Parameters.ConstructorArgument("Quantity", HighestQuantity),
-                                        new Ninject.Parameters.ConstructorArgument("OrderType", OrderType.StopLoss),
-                                        new Ninject.Parameters.ConstructorArgument("ValidToDate", DateTime.Now.AddDays(2)),
-                                        new Ninject.Parameters.ConstructorArgument("StopLossValidDays", 30),
-                                        new Ninject.Parameters.ConstructorArgument("StopLossAmount", 0m),
-                                        new Ninject.Parameters.ConstructorArgument("StopLossPercentage", 0.8m)
-                                 );
-                                OrderQueue.AddOrder(NewOrder);
-                            }
-                            else
-                            {
-                                ITrigger NewTrigger = ImperaturGlobal.Kernel.Get<ITrigger>(
-                                 new Ninject.Parameters.ConstructorArgument("m_oOperator", TriggerOperator.EqualOrless),
-                                 new Ninject.Parameters.ConstructorArgument("m_oValueType", TriggerValueType.TradePrice),
-                                 new Ninject.Parameters.ConstructorArgument("m_oTradePriceValue", oS.QuoteFromInstrument.LastTradePrice.Amount),
-                                 new Ninject.Parameters.ConstructorArgument("m_oPercentageValue", 0m)
-                                 );
-
-                                IOrder NewOrder = ImperaturGlobal.Kernel.Get<IOrder>(
-                                        new Ninject.Parameters.ConstructorArgument("Symbol", oS.Instrument.Symbol),
-                                        new Ninject.Parameters.ConstructorArgument("Trigger", new List<ITrigger> { NewTrigger }),
-                                        new Ninject.Parameters.ConstructorArgument("AccountIdentifier", oA.Identifier),
-                                        new Ninject.Parameters.ConstructorArgument("Quantity", HighestQuantity),
-                                        new Ninject.Parameters.ConstructorArgument("OrderType", OrderType.Buy),
-                                        new Ninject.Parameters.ConstructorArgument("ValidToDate", DateTime.Now.AddDays(2)),
-                                        new Ninject.Parameters.ConstructorArgument("StopLossValidDays", 0),
-                                        new Ninject.Parameters.ConstructorArgument("StopLossAmount", 0m),
-                                        new Ninject.Parameters.ConstructorArgument("StopLossPercentage", 0m)
-                                 );
-                                OrderQueue.AddOrder(NewOrder);
-                            }
-                        }
-                    }
-                }
-            }
-            if (m_oTradingOverview.Count() > 0)
-            {
-                ImperaturGlobal.TradingRecommendations = m_oTradingOverview.Select(tr => tr.Item2).SelectMany(x => x).Distinct().ToList();
-            }
-
-
-
-            //now, do an evalution of every holding and sell if profit above 1.5% and no recommendation exists
-            foreach (IAccountInterface oA in m_oAccountHandler.Accounts().Where(a => a.GetAccountType().Equals(AccountType.Customer)))
-            {
-                var holdings = from h in oA.GetHoldings()
-                               from tr in m_oTradingOverview.Where(x => x.Item2.Where(tr => tr.TradingForecastMethod != TradingForecastMethod.Undefined).Count() > 0).ToList().Where(t => t.Item1.Symbol.Equals(h.Symbol)).DefaultIfEmpty()
-                               where h.ChangePercent > 1.5m
-                               select h;
-                foreach (var holding in holdings)
-                {
-
-                    oS = ImperaturGlobal.Kernel.Get<ISecurityAnalysis>(new Ninject.Parameters.ConstructorArgument("Instrument", ImperaturGlobal.Instruments.Where(i => i.Symbol.Equals(holding.Symbol)).First()));
-                    ITrigger NewTrigger = ImperaturGlobal.Kernel.Get<ITrigger>(
-                                new Ninject.Parameters.ConstructorArgument("m_oOperator", TriggerOperator.EqualOrGreater),
-                                new Ninject.Parameters.ConstructorArgument("m_oValueType", TriggerValueType.TradePrice),
-                                new Ninject.Parameters.ConstructorArgument("m_oTradePriceValue", oS.QuoteFromInstrument.LastTradePrice.Amount),
-                                new Ninject.Parameters.ConstructorArgument("m_oPercentageValue", 0m)
-                                );
-
-                    IOrder NewOrder = ImperaturGlobal.Kernel.Get<IOrder>(
-                            new Ninject.Parameters.ConstructorArgument("Symbol", oS.Instrument.Symbol),
-                            new Ninject.Parameters.ConstructorArgument("Trigger", new List<ITrigger> { NewTrigger }),
-                            new Ninject.Parameters.ConstructorArgument("AccountIdentifier", oA.Identifier),
-                            new Ninject.Parameters.ConstructorArgument("Quantity", Convert.ToInt32(holding.Quantity)),
-                            new Ninject.Parameters.ConstructorArgument("OrderType", OrderType.Sell),
-                            new Ninject.Parameters.ConstructorArgument("ValidToDate", DateTime.Now.AddDays(2)),
-                            new Ninject.Parameters.ConstructorArgument("StopLossValidDays", 0),
-                            new Ninject.Parameters.ConstructorArgument("StopLossAmount", 0m),
-                            new Ninject.Parameters.ConstructorArgument("StopLossPercentage", 0m)
-                     );
-                    OrderQueue.AddOrder(NewOrder);
-                }
-
-            }*/
+                Message = "processing order queue after recommendations"
+            });
             OrderQueue.EvaluateOrdersInQueue();
+
+            OnSystemNotification(new IMPSystemNotificationEventArg
+            {
+                Message = "Trading automation process finished"
+            });
+
+        }
+        private void AutomationThreadFinished()
+        {
+            AutomationThreadRunning = false;
         }
 
         private void M_oTradeHandler_QuoteUpdateEvent(object sender, EventArgs e)
@@ -725,11 +490,19 @@ namespace Imperatur_v2
             m_oTradeHandler.CacheQuotes();
             OnQuoteUpdate(e);
             ImperaturGlobal.Quotes = m_oTradeHandler.GetQuotes();
-            //this is also the trading robot start. 
-            if (m_oImperaturData.IsAutomaticMaintained)
+            if (!AutomationThreadRunning)
             {
-                OrderQueue.EvaluateOrdersInQueue();
-                TradingRobotMain();
+                ThreadStart TradingRobotMain_starter = TradingRobotMain;
+                TradingRobotMain_starter += () =>
+                {
+                    AutomationThreadFinished();
+                };
+                Thread m_oAutomationThread = new Thread(TradingRobotMain_starter) { IsBackground = true };
+                if (!m_oAutomationThread.ThreadState.Equals(ThreadState.Background))
+                {
+                    AutomationThreadRunning = true;
+                    m_oAutomationThread.Start();
+                }
             }
         }
 
@@ -741,19 +514,6 @@ namespace Imperatur_v2
             return m_oTradeHandler;
         }
 
-        public IMoney GetMoney(decimal Amount, string CurrencyCode)
-        {
-            return ImperaturGlobal.GetMoney(Amount, CurrencyCode);
-        }
-/*
-        public List<TradingRecommendation> GetTradingRecommendation(string Symbol)
-        {
-            if(m_oTradingOverview != null && m_oTradingOverview.Count() > 0 && m_oTradingOverview.Where(tr=>tr.Item1.Symbol.Equals(Symbol)).Count() > 0)
-            {
-                return m_oTradingOverview.Where(tr => tr.Item1.Symbol.Equals(Symbol)).Select(t=>t.Item2).First();
-            }
-            return null;
-        }*/
         #endregion
 
 

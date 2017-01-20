@@ -15,6 +15,9 @@ using Ninject;
 using Imperatur_v2.events;
 using Imperatur_v2.json;
 using Imperatur_v2.trade.recommendation;
+using log4net;
+using log4net.Config;
+
 
 namespace Imperatur_v2.shared
 {
@@ -25,14 +28,9 @@ namespace Imperatur_v2.shared
         Undefined
     }
 
+    //TODO: Create an interface for this class
     public sealed class ImperaturGlobal
     {
-        //private static void OnTimedEvent(object source, ElapsedEventArgs e)
-        //{
-        //    //Do the stuff you want to be done every hour;
-        //}
-
-
         #region cache
         public static string CurrencyCodeCache = "CURRENCYCODECACHE";
         public static string CountryCache = "COUNTRYCACHE";
@@ -46,12 +44,31 @@ namespace Imperatur_v2.shared
         private static List<CurrencyInfo> m_oCurrencyRates;
         private static ExchangeStatus m_oExchangeStatus;
         private static Tuple<DateTime, DateTime> m_oOpeningHours;
+        private readonly static string LogName = "Log4net";
 
         private static StandardKernel m_oKernel;
 
         public static List<Tuple<int, int>> BankDays;
         public static List<Tuple<int, int>> HalfDay;
 
+        #endregion
+
+
+        #region public methods
+        public static ILog GetLog()
+        {
+            return GetLog(null);
+        }
+
+        private static ILog GetLog(string logName)
+        {
+            if (logName == null)
+            {
+                logName = LogName;
+            }
+            ILog log = LogManager.GetLogger(logName);
+            return log;
+        }
         #endregion
 
         #region Init

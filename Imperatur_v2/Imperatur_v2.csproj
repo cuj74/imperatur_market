@@ -30,6 +30,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="log4net, Version=2.0.7.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
+      <HintPath>..\packages\log4net.2.0.7\lib\net45-full\log4net.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="MathNet.Numerics, Version=3.16.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\MathNet.Numerics.3.16.0\lib\net40\MathNet.Numerics.dll</HintPath>
       <Private>True</Private>
@@ -124,6 +128,9 @@
     <EmbeddedResource Include="cache\instruments.json" />
     <EmbeddedResource Include="cache\exchanges.json" />
     <None Include="app.config" />
+    <None Include="log\Log4Net.config">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="packages.config" />
     <None Include="Service References\SweaWebService\Imperatur_v2.SweaWebService.CalendarDay.datasource">
       <DependentUpon>Reference.svcmap</DependentUpon>

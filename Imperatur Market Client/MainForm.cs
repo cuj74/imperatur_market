@@ -30,7 +30,7 @@ namespace Imperatur_Market_Client
         public delegate void ToggleSearchDialogHandler(object sender, ToggleSearchEvents e);
         public delegate void SelectedSymbolEventHandler(object sender, SelectedSymbolEventArg e);
         private Timer UpdateLatestTransactions;
-
+        private dialog.WaitDialog oWaitLoadingSystem;
 
         private AccountTab m_oAccountTab;
         delegate void RefreshQuotes();
@@ -138,26 +138,6 @@ namespace Imperatur_Market_Client
             TransactionsDT.Columns.Add("Quantity");
 
             DataRow row = null;
-            /*
-            List<TransactionType> BuySell = new List<TransactionType>();
-            BuySell.Add(TransactionType.Buy);
-            BuySell.Add(TransactionType.Sell);
-
-            var SumTrans = from a in m_Ic.GetAccountHandler().Accounts()
-                           select new
-                                     {
-                                         account = a.AccountName,
-                                         transactions = a.Transactions
-                                     };
-
-
-            //get all trade
-            var LatestTransactions =
-            from t in SumTrans
-            join bs in BuySell on t.transactions. equals bs
-            select t;
-            */
-
 
             foreach (ITransactionInterface oT in m_Ic.GetAccountHandler().Accounts().SelectMany(t => t.Transactions).Where(t=>!t.TransactionType.Equals(TransactionType.Transfer)).OrderByDescending(t => t.TransactionDate).Take(20))
             {
@@ -188,7 +168,6 @@ namespace Imperatur_Market_Client
             LatestTransactionsPane.Controls.Add(TransactionControl);
         }
 
-        //public object resources { get; private set; }
 
         private bool ShowSystemLoad()
         {
@@ -215,21 +194,33 @@ namespace Imperatur_Market_Client
         {
             ImperaturData oNewSystem = null;
             bool CreateNewSystem = ShowSystemLoad();
-
-            dialog.WaitDialog oW = new dialog.WaitDialog();
-            oW.Show();
+            ImperaturContainer.SystemNotificationEvent += ImperaturContainer_SystemNotificationEvent;
+            oWaitLoadingSystem = new dialog.WaitDialog();
+            oWaitLoadingSystem.Show();
+            oWaitLoadingSystem.Refresh();
             if (CreateNewSystem)
             {
+                oWaitLoadingSystem.SetSystemNotificationText("Creating the new system...");
+                oWaitLoadingSystem.Refresh();
                 oNewSystem = CreateNewImperaturMarket(oNewSystem);
             }
 
             if (oNewSystem != null)
             {
+                oWaitLoadingSystem.SetSystemNotificationText("Loading the Imperatur Market system...");
+                oWaitLoadingSystem.Refresh();
                 m_Ic = (ImperaturMarket)ImperaturContainer.BuildImperaturContainer(oNewSystem);
             }
             else
+            {
+                oWaitLoadingSystem.SetSystemNotificationText("Loading the Imperatur Market system...");
+                oWaitLoadingSystem.Refresh();
                 m_Ic = (ImperaturMarket)ImperaturContainer.BuildImperaturContainer(SystemLocation);
-            oW.Close();
+            }
+            oWaitLoadingSystem.SetSystemNotificationText("Loading is done, opening the system for you");
+            oWaitLoadingSystem.Refresh();
+            m_Ic.SystemNotificationEvent += M_Ic_SystemNotificationEvent;
+            oWaitLoadingSystem.Close();
             //this far we save the systemlocation to the clients application folder for easy access
             //SystemLocationCacheFile
             SaveSystemLocationToCache(oNewSystem);
@@ -237,13 +228,6 @@ namespace Imperatur_Market_Client
             this.toolStripStatusLabel_system.Text =
                 string.Format("{0} | {1} | {2}", m_Ic.GetSystemData().SystemDirectory, m_Ic.GetSystemData().SystemCurrency, m_Ic.SystemExchangeStatus.ToString());
                 
-
-            //StandardKernel kernel = new StandardKernel();
-            //kernel.Load(Assembly.GetExecutingAssembly());
-
-
-            //CreateTestData();
-
             //add the controls to the different areas
             m_oAccountTab = new AccountTab(m_Ic.GetAccountHandler(), m_Ic.GetTradeHandler());
             m_oAccountTab.Dock = DockStyle.Fill;
@@ -252,6 +236,25 @@ namespace Imperatur_Market_Client
             this.checkBox_automaticTrading.Checked = m_Ic.GetSystemData().IsAutomaticMaintained;
 
     }
+
+        private void ImperaturContainer_SystemNotificationEvent(object sender, IMPSystemNotificationEventArg e)
+        {
+            if (oWaitLoadingSystem.Visible)
+            {
+                oWaitLoadingSystem.SetSystemNotificationText(e.Message);
+                oWaitLoadingSystem.Refresh();
+            }
+        }
+
+        private void M_Ic_SystemNotificationEvent(object sender, IMPSystemNotificationEventArg e)
+        {
+            if (oWaitLoadingSystem.Visible)
+            {
+                oWaitLoadingSystem.SetSystemNotificationText(e.Message);
+                oWaitLoadingSystem.Refresh();
+            }
+            toolStripStatusLabel_Notification.Text = e.Message;
+        }
 
         private void M_Ic_QuoteUpdateEvent(object sender, EventArgs e)
         {
@@ -467,7 +470,7 @@ namespace Imperatur_Market_Client
             foreach (IAccountInterface oAdeposit in m_Ic.GetAccountHandler().Accounts().Where(a=>a.GetAccountType().Equals(AccountType.Customer)))
             {
                 m_Ic.GetAccountHandler().DepositAmount(oAdeposit.Identifier,
-                   m_Ic.GetMoney(200000, "SEK"));
+                    ImperaturGlobal.GetMoney(200000, "SEK"));
              }
 
         }

@@ -13,9 +13,7 @@ using Imperatur_v2.securites;
 using Imperatur_v2.trade.analysis;
 using Imperatur_v2.trade.recommendation;
 using Imperatur_v2.order;
-
-
-
+using Imperatur_v2.trade.automation;
 
 namespace Imperatur_v2
 {
@@ -35,24 +33,9 @@ namespace Imperatur_v2
             Bind<IOrder>().To<Order>();
             Bind<IOrderQueue>().To<OrderQueue>();
             Bind<ITrigger>().To<Trigger>();
+            Bind<ITradeAutomation>().To<TradeAutomation>();
 
-            /*
-            Bind<IBFSDataHandler>().To<BFSDataHandler>();
-            Bind<IFundAdministration>().To<FundAdministration>();
-            Bind<IUserHandler>().To<UserHandler>();
-            Bind<IFundCompanyHandler>().To<FundCompanyHandler>();
-            Bind<IFundEntityHandler>().To<FundEntityHandler>();
-            Bind<IPowerOfAttorney>().To<PowerOfAttorneyHandler>();
-            Bind<IInstrument>().To<Instrument>();
-            Bind<IFundEntity>().To<FundEntity>();
-            Bind<IFundCompany>().To<FundCompany>();
-            Bind<IFundInstrument>().To<FundInstrument>();
-            Bind<shared.ICurrencyExhangeHandler>().To<shared.CurrencyExhangeHandler>();
-            Bind<ICurrency>().To<Currency>();
-            Bind<ISQL>().To<SQLHandler>();
-            Bind<IDbConnection>().To<SqlConnection>();
-            Bind<IDbCommand>().To<SqlCommand>();
-            */
+            
 
         }
     }

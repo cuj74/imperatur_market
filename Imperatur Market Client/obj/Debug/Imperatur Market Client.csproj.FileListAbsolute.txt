@@ -82,3 +82,6 @@ F:\visualstudioprojects\Imperatur\imperatur_market\Imperatur Market Client\bin\D
 F:\visualstudioprojects\Imperatur\imperatur_market\Imperatur Market Client\bin\Debug\zh-tw\ZedGraph.resources.dll
 C:\temp\dev\imperatur_market\Imperatur Market Client\obj\Debug\PresentationControls.PopupComboBox.resources
 F:\visualstudioprojects\Imperatur\imperatur_market\Imperatur Market Client\obj\Debug\PresentationControls.PopupComboBox.resources
+C:\temp\dev\imperatur_market\Imperatur Market Client\bin\Debug\log\Log4Net.config
+C:\temp\dev\imperatur_market\Imperatur Market Client\bin\Debug\log4net.dll
+C:\temp\dev\imperatur_market\Imperatur Market Client\bin\Debug\log4net.xml

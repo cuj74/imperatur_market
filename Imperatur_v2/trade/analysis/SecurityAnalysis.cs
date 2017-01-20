@@ -153,36 +153,11 @@ namespace Imperatur_v2.trade.analysis
         public List<TradingRecommendation> GetTradingRecommendations()
         {
             List<TradingRecommendation> Recommendations = new List<TradingRecommendation>(); ;
-            //Recommendations.Add(get)
-            //start with Elliot
-            bool bReccomend;
-            int[] Intervals = { 20, 50, 100, 180 };
-
-            TradingRecommendation Recommendation = new TradingRecommendation();
-            try
-            {
-                decimal tp = QuoteFromInstrument.LastTradePrice.Amount;
-
-            }
-            catch(Exception ex)
-            {
-                int gg = 0;
-                return Recommendations;
-            }
             
-            foreach (int Interval in Intervals)
-            {
-                bReccomend = RangeConvergeWithElliotForBuy(Interval, out Recommendation);
-                if (bReccomend)
-                {
-                    Recommendations.Add(Recommendation);
-                    break;
-                }
-            }
+            Recommendations.AddRange(GetTradingRecommendationsForElliot());
             Recommendations.Add(GetTradingRecommendationForBollinger());
-            TradingRecommendation RecommendationCO = GetTradingRecommendationForCrossOver();
-            Recommendations.Add(RecommendationCO);
-            //Recommendations.Add(GetTradingRecommendationForCrossOver());
+            Recommendations.Add(GetTradingRecommendationForCrossOver());
+
             return Recommendations.Where(r => !r.TradingForecastMethod.Equals(TradingForecastMethod.Undefined)).ToList();
         }
 
@@ -204,7 +179,31 @@ namespace Imperatur_v2.trade.analysis
             return p.Column(0).ToArray();
         }
 
+        private List<TradingRecommendation> GetTradingRecommendationsForElliot()
+        {
+            List<TradingRecommendation> Recommendations = new List<TradingRecommendation>(); ;
+            bool bReccomend;
+            int[] Intervals = { 20, 50, 100, 180 };
+            TradingRecommendation Recommendation = new TradingRecommendation();
+            try
+            {
+                foreach (int Interval in Intervals)
+                {
+                    bReccomend = RangeConvergeWithElliotForBuy(Interval, out Recommendation);
+                    if (bReccomend)
+                    {
+                        Recommendations.Add(Recommendation);
+                        break;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                ImperaturGlobal.GetLog().Error(string.Format("Error calculating the Elliot waves for instrument {0}, {1}", Instrument.Symbol, Instrument.Name), ex);
+            }
 
+            return Recommendations;
+        }
         private TradingRecommendation GetTradingRecommendationForCrossOver()
         {
             int[] Intervals = { 50, 200 };
@@ -332,48 +331,57 @@ namespace Imperatur_v2.trade.analysis
             TradingRecommendation Recommendation = new TradingRecommendation();
             foreach (int Interval in Intervals)
             {
-                List<List<double>> oB = BollingerForRange(DateTime.Now.AddDays(-Interval), DateTime.Now, 20, Multiplies);
-                //Now create the pricerange list as well
-                var PriceInfo = GetDataForRange(DateTime.Now.AddDays(-Interval), DateTime.Now);
-                if (PriceInfo.Count() < 2)
+                try
                 {
+
+                    List<List<double>> oB = BollingerForRange(DateTime.Now.AddDays(-Interval), DateTime.Now, 20, Multiplies);
+                    //Now create the pricerange list as well
+                    var PriceInfo = GetDataForRange(DateTime.Now.AddDays(-Interval), DateTime.Now);
+                    if (PriceInfo.Count() < 2)
+                    {
+                        continue;
+                    }
+                    var BDiffVariable =  oB.Where(bc=>bc.Count() > 1).Select(b => b[0] - b[2]).ToArray();
+                    if (BDiffVariable == null)
+                    {
+                        continue;
+                    }
+
+                    double SlopeTrend = Fit.Line(
+                        PriceInfo.Select((s, i2) => new { i2, s }).Select(t => Convert.ToDouble(t.i2)).ToArray(),
+                         PriceInfo.Select(y => Convert.ToDouble(y.Close)).ToArray()
+                        ).Item2;
+
+                    double StandarDevForPercentB = BDiffVariable.StandardDeviation();
+                    if (BDiffVariable[BDiffVariable.Length-1] < StandarDevForPercentB && SlopeTrend > 0 && Convert.ToDouble(QuoteFromInstrument.LastTradePrice.Amount) <= oB[2][oB.Count()-1])
+                    {
+                        return new TradingRecommendation(
+                            Instrument,
+                            QuoteFromInstrument.LastTradePrice,
+                            ImperaturGlobal.GetMoney(0, Instrument.CurrencyCode),
+                            DateTime.Now,
+                            DateTime.Now,
+                            TradingForecastMethod.Bollinger
+                        );
+                    }
+                    if (BDiffVariable[BDiffVariable.Length - 1] > StandarDevForPercentB && SlopeTrend < 0 && Convert.ToDouble(QuoteFromInstrument.LastTradePrice.Amount) > oB[2][oB.Count() - 1])
+                    {
+                        return new TradingRecommendation(
+                            Instrument,
+                            ImperaturGlobal.GetMoney(0, Instrument.CurrencyCode),
+                            QuoteFromInstrument.LastTradePrice,
+                            DateTime.Now,
+                            DateTime.Now,
+                            TradingForecastMethod.Bollinger
+                        );
+                    }
+
+                }
+                catch(Exception ex)
+                {
+                    ImperaturGlobal.GetLog().Error(string.Format("Couldn't calculate recommendations from Bollinger bands on {0}, {1}", Instrument.Symbol, Instrument.Name), ex);
                     continue;
                 }
-                var BDiffVariable =  oB.Where(bc=>bc.Count() > 1).Select(b => b[0] - b[2]).ToArray();
-                if (BDiffVariable == null)
-                {
-                    continue;
-                }
-
-                double SlopeTrend = Fit.Line(
-                    PriceInfo.Select((s, i2) => new { i2, s }).Select(t => Convert.ToDouble(t.i2)).ToArray(),
-                     PriceInfo.Select(y => Convert.ToDouble(y.Close)).ToArray()
-                    ).Item2;
-
-                double StandarDevForPercentB = BDiffVariable.StandardDeviation();
-                if (BDiffVariable[BDiffVariable.Length-1] < StandarDevForPercentB && SlopeTrend > 0 && Convert.ToDouble(QuoteFromInstrument.LastTradePrice.Amount) <= oB[2][oB.Count()-1])
-                {
-                    return new TradingRecommendation(
-                        Instrument,
-                        QuoteFromInstrument.LastTradePrice,
-                        ImperaturGlobal.GetMoney(0, Instrument.CurrencyCode),
-                        DateTime.Now,
-                        DateTime.Now,
-                        TradingForecastMethod.Bollinger
-                    );
-                }
-                if (BDiffVariable[BDiffVariable.Length - 1] > StandarDevForPercentB && SlopeTrend < 0 && Convert.ToDouble(QuoteFromInstrument.LastTradePrice.Amount) > oB[2][oB.Count() - 1])
-                {
-                    return new TradingRecommendation(
-                        Instrument,
-                        ImperaturGlobal.GetMoney(0, Instrument.CurrencyCode),
-                        QuoteFromInstrument.LastTradePrice,
-                        DateTime.Now,
-                        DateTime.Now,
-                        TradingForecastMethod.Bollinger
-                    );
-                }
-
             }
             return new TradingRecommendation();
         }
@@ -383,7 +391,11 @@ namespace Imperatur_v2.trade.analysis
         {
             get
             {
-                return ImperaturGlobal.Quotes.Where(i => i.Symbol.Equals(Instrument.Symbol)).First();
+                if (ImperaturGlobal.Quotes.Where(i => i.Symbol.Equals(Instrument.Symbol)).Count() > 0)
+                {
+                    return ImperaturGlobal.Quotes.Where(i => i.Symbol.Equals(Instrument.Symbol)).First();
+                }
+                return null;
             }
         }
         /// <summary>
@@ -891,68 +903,74 @@ namespace Imperatur_v2.trade.analysis
         }
         public List<Tuple<DateTime, VolumeIndicator>> GetRangeOfVolumeIndicator(DateTime Start, DateTime End)
         {
+            
             List<Tuple<DateTime, VolumeIndicator>> oVolumeIndicatorData = new List<Tuple<DateTime, VolumeIndicator>>();
-            
-            DateTime StartWithOffset = Start;
-            if ((int)(End - Start).TotalDays < 20)
+            try
             {
-                StartWithOffset = Start.AddDays(-(20 - (int)(End - Start).TotalDays));
-            }
-            var HistData = GetDataForRange(StartWithOffset, End);
+                DateTime StartWithOffset = Start;
+                if ((int)(End - Start).TotalDays < 20)
+                {
+                    StartWithOffset = Start.AddDays(-(20 - (int)(End - Start).TotalDays));
+                }
+                var HistData = GetDataForRange(StartWithOffset, End);
 
-            double[] VolumeList = HistData.Select(x => Convert.ToDouble(x.Volume)).ToArray();
-            double StdForVolume = VolumeList.StandardDeviation();
-            double StdForPrice = HistData.Select(x => Convert.ToDouble(x.Close)).ToArray().StandardDeviation();
+                double[] VolumeList = HistData.Select(x => Convert.ToDouble(x.Volume)).ToArray();
+                double StdForVolume = VolumeList.StandardDeviation();
+                double StdForPrice = HistData.Select(x => Convert.ToDouble(x.Close)).ToArray().StandardDeviation();
 
-            CubicSpline oCSTotalData = CubicSpline.InterpolateNaturalSorted(
-            VolumeList.Select((s, i2) => new { i2, s })
-            .Select(t => Convert.ToDouble(t.i2)).ToArray(),
-             VolumeList);
+                CubicSpline oCSTotalData = CubicSpline.InterpolateNaturalSorted(
+                VolumeList.Select((s, i2) => new { i2, s })
+                .Select(t => Convert.ToDouble(t.i2)).ToArray(),
+                 VolumeList);
 
-            
-            var ListOfDiff = VolumeList.Select((s, i2) => new { i2, s })
-                .ToList().Select(f => oCSTotalData.Differentiate(Convert.ToDouble(f.i2))).ToArray();
 
-            int i = 0;
-            foreach (var hqd in HistData)
+                var ListOfDiff = VolumeList.Select((s, i2) => new { i2, s })
+                    .ToList().Select(f => oCSTotalData.Differentiate(Convert.ToDouble(f.i2))).ToArray();
+
+                int i = 0;
+                foreach (var hqd in HistData)
+                {
+
+                    VolumeIndicator oVi = new VolumeIndicator();
+                    bool bHighVolume = (ListOfDiff[i] > 0 && VolumeList[i] > StdForVolume);
+                    bool bLowVolume = (ListOfDiff[i] <= 0 && VolumeList[i] < StdForVolume);
+                    bool bHighRange = (Convert.ToDouble(hqd.Close - hqd.Open) > StdForPrice);
+                    bool bLowRange = (-Convert.ToDouble(hqd.Open - hqd.Close) > StdForPrice);
+                    bool bUpBars = (hqd.Close > hqd.Open);
+                    bool bNeutralBars = (hqd.Close.Equals(hqd.Open));
+
+                    if (bHighVolume && bHighRange && bUpBars && !bNeutralBars)
+                    {
+                        oVi.VolumeIndicatorType = VolumeIndicatorType.VolumeClimaxUp;
+                    }
+                    else if (bHighVolume && bHighRange && !bUpBars && !bNeutralBars)
+                    {
+                        oVi.VolumeIndicatorType = VolumeIndicatorType.VolumeClimaxDown;
+                    }
+                    else if (bHighVolume && bHighRange && bNeutralBars)
+                    {
+                        oVi.VolumeIndicatorType = VolumeIndicatorType.VolumeClimaxPlusHighVolumeChurn;
+                    }
+                    else if (bHighVolume && !bHighRange)
+                    {
+                        oVi.VolumeIndicatorType = VolumeIndicatorType.HighVolumeChurn;
+                    }
+                    else if (!bHighVolume && bLowVolume)
+                    {
+                        oVi.VolumeIndicatorType = VolumeIndicatorType.LowVolume;
+                    }
+                    else
+                    {
+                        oVi.VolumeIndicatorType = VolumeIndicatorType.Unknown;
+                    }
+                    oVi.Strength = 100;
+                    oVolumeIndicatorData.Add(new Tuple<DateTime, VolumeIndicator>(hqd.Date, oVi));
+
+                    i++;
+                }
+            }catch(Exception ex)
             {
-
-                VolumeIndicator oVi = new VolumeIndicator();
-                bool bHighVolume = (ListOfDiff[i] > 0 && VolumeList[i] > StdForVolume);
-                bool bLowVolume = (ListOfDiff[i] <= 0 && VolumeList[i] < StdForVolume);
-                bool bHighRange = (Convert.ToDouble(hqd.Close - hqd.Open) > StdForPrice);
-                bool bLowRange = (-Convert.ToDouble(hqd.Open - hqd.Close) > StdForPrice);
-                bool bUpBars = (hqd.Close > hqd.Open);
-                bool bNeutralBars = (hqd.Close.Equals(hqd.Open));
-
-                if (bHighVolume && bHighRange && bUpBars && !bNeutralBars)
-                {
-                    oVi.VolumeIndicatorType = VolumeIndicatorType.VolumeClimaxUp;
-                }
-                else if(bHighVolume && bHighRange && !bUpBars && !bNeutralBars)
-                {
-                    oVi.VolumeIndicatorType = VolumeIndicatorType.VolumeClimaxDown;
-                }
-                else if (bHighVolume && bHighRange && bNeutralBars)
-                {
-                    oVi.VolumeIndicatorType = VolumeIndicatorType.VolumeClimaxPlusHighVolumeChurn;
-                }
-                else if (bHighVolume && !bHighRange )
-                {
-                    oVi.VolumeIndicatorType = VolumeIndicatorType.HighVolumeChurn;
-                }
-                else if(!bHighVolume && bLowVolume)
-                {
-                    oVi.VolumeIndicatorType = VolumeIndicatorType.LowVolume;
-                }
-                else
-                {
-                    oVi.VolumeIndicatorType = VolumeIndicatorType.Unknown;
-                }
-                oVi.Strength = 100;
-                oVolumeIndicatorData.Add(new Tuple<DateTime, VolumeIndicator>(hqd.Date, oVi));
-
-                i++;
+                ImperaturGlobal.GetLog().Error(string.Format("Error in GetRangeOfVolumeIndicator"), ex);
             }
             return oVolumeIndicatorData;
         }

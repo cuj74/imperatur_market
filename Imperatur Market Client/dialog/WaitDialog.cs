@@ -16,5 +16,10 @@ namespace Imperatur_Market_Client.dialog
         {
             InitializeComponent();
         }
+
+        public void SetSystemNotificationText(string Message)
+        {
+            this.label_load_status.Text = Message;
+        }
     }
 }

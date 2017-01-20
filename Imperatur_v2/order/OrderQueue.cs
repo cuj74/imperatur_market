@@ -12,6 +12,7 @@ namespace Imperatur_v2.order
     public class OrderQueue : IOrderQueue
     {
         private ObservableRangeCollection<IOrder> m_oOrders;
+        private List<Guid> m_oNewOrders;
         private IAccountHandlerInterface m_oAccountHandler;
         private ITradeHandlerInterface m_oTradeHandler;
         private bool TryLoadFromStorage;
@@ -21,6 +22,7 @@ namespace Imperatur_v2.order
             TryLoadFromStorage = false;
             m_oLastErrorMessage = "";
             m_oOrders = new ObservableRangeCollection<IOrder>();
+            m_oNewOrders = new List<Guid>();
             m_oAccountHandler = AccountHandler;
             m_oTradeHandler = TradeHandler;
             InitOrders();
@@ -46,12 +48,6 @@ namespace Imperatur_v2.order
                     m_oOrders = LoadOrders();
                     m_oOrders.CollectionChanged -= M_oOrders_CollectionChanged;
                     m_oOrders.CollectionChanged += M_oOrders_CollectionChanged;
-                    /*
-                    foreach (IOrder item in m_oOrders)
-                    {
-                        item.SaveOrderEvent -= Item_SaveOrderEvent;
-                        item.SaveOrderEvent += Item_SaveOrderEvent;
-                    }*/
                 }
                 catch (Exception ex)
                 {
@@ -72,12 +68,27 @@ namespace Imperatur_v2.order
             }
             return true;
         }
+        
         public bool SaveOrders()
         {
-            foreach (IOrder oO in m_oOrders)
+            if (m_oNewOrders.Count > 0)
             {
-                SaveSingleOrder(oO);
+                var OrdersToSave = from no in m_oNewOrders
+                                   join eo in m_oOrders on no equals eo.Identifier
+                                   select eo;
+                foreach (IOrder oO in OrdersToSave)
+                {
+                    SaveSingleOrder(oO);
+                }
             }
+            else
+            {
+                foreach (IOrder oO in m_oOrders)
+                {
+                    SaveSingleOrder(oO);
+                }
+            }
+            m_oNewOrders.Clear();
             return true;
         }
 
@@ -103,22 +114,9 @@ namespace Imperatur_v2.order
 
         private void M_oOrders_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
-            /*
-            foreach (IOrder item in m_oOrders)
-            {
-                item.SaveOrderEvent -= Item_SaveOrderEvent;
-                item.SaveOrderEvent += Item_SaveOrderEvent;
-            }
-            */
             SaveOrders();
         }
 
-        /*
-        private void Item_SaveOrderEvent(object sender, events e)
-        {
-            SaveAccount(e.Identifier);
-        }
-        */
         private ObservableRangeCollection<IOrder> LoadOrders()
         {
             //TODO create new generic class for the load of different data!!
@@ -154,12 +152,12 @@ namespace Imperatur_v2.order
                 return false;
             }
             //remove those that are not valid any more
-            if (m_oOrders.Count() == 0)
+            if (m_oOrders == null || m_oOrders.Count() == 0)
             {
                 return true;
             }
 
-            List<IOrder> ToRemove = m_oOrders.Where(x => x.ValidToDate < DateTime.Now).ToList();
+            List<IOrder> ToRemove = m_oOrders.Where(x => x!= null && x.ValidToDate < DateTime.Now).ToList();
             m_oOrders.RemoveRange(ToRemove);
             RemoveFilesFromStorage(ToRemove);
 
@@ -172,7 +170,7 @@ namespace Imperatur_v2.order
             ToRemove.Clear();
             List<IOrder> ToAdd = new List<IOrder>();
             bool bReturn = false;
-            foreach (IOrder oI in m_oOrders)
+            foreach (IOrder oI in m_oOrders.Where(x => x != null).OrderBy(x => x.ValidToDate))
             {
                 IOrder StopLoss;
                 try
@@ -201,7 +199,27 @@ namespace Imperatur_v2.order
 
         public bool AddOrder(IOrder Order)
         {
+            //check that order doesn't exists, in that case remove and set new order
+            List<IOrder> DuplicateOrders = m_oOrders.Where(o =>
+                o.AccountIdentifier.Equals(Order.AccountIdentifier)
+                &&
+                o.Symbol.Equals(Order.Symbol)
+                &&
+                o.OrderType.Equals(Order.OrderType)
+                ).ToList();
+            m_oOrders.RemoveRange(DuplicateOrders);
+            RemoveFilesFromStorage(DuplicateOrders);
+            m_oNewOrders = new List<Guid>() { Order.Identifier };
             m_oOrders.Add(Order);
+            m_oOrders.CollectionChanged -= M_oOrders_CollectionChanged;
+            m_oOrders.CollectionChanged += M_oOrders_CollectionChanged;
+            return true;
+        }
+
+        public bool AddOrders(List<IOrder> Orders)
+        {
+            m_oNewOrders = Orders.Select(x => x.Identifier).ToList();
+            m_oOrders.AddRange(Orders);
             m_oOrders.CollectionChanged -= M_oOrders_CollectionChanged;
             m_oOrders.CollectionChanged += M_oOrders_CollectionChanged;
             return true;

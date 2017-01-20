@@ -31,8 +31,7 @@ namespace Imperatur.orm
                     }
                     catch (Exception ex)
                     {
-                        string tt = "ssdf" + ex.Message;
-                        int gf = 0;
+                        int gg = 0;
                     }
                     return oListA;// Newtonsoft.Json.JsonConvert.DeserializeObject<List<Account>>(file.ReadToEnd(), settings);
                 }

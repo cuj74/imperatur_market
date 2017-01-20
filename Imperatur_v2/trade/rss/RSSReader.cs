@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Imperatur_v2.shared;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -17,7 +18,6 @@ namespace Imperatur_v2.trade.rss
         }
         public int GetOccurancesOfString(string[] URLs, string[] SearchData)
         {
-
             //remove entries older than 10 minutes
             m_oSearcCache.RemoveAll(x => x.Item1 < DateTime.Now.AddMinutes(-10));
 
@@ -25,14 +25,23 @@ namespace Imperatur_v2.trade.rss
             var Search = SearchData.Select(s=>s.ToLower()).ToList();
             foreach (string URL in URLs)
             {
-                XDocument feedXML;
+                XDocument feedXML = new XDocument();
                 if (m_oSearcCache.Where(x=>x.Item2.Equals(URL)).Count() > 0)
                 {
                     feedXML = m_oSearcCache.Where(x => x.Item2.Equals(URL)).Last().Item3;
                 }
                 else
                 {
-                    feedXML = XDocument.Load(URL);
+
+                    try
+                    {
+                        feedXML = XDocument.Load(URL);
+                    }
+                    catch(Exception ex)
+                    {
+                        ImperaturGlobal.GetLog().Error(string.Format("Couldn't dowload RSS information from URL {0}", URL), ex);
+                        continue;
+                    }
                     m_oSearcCache.Add(new Tuple<DateTime, string, XDocument>(DateTime.Now, URL, feedXML));
                 }
                 var feeds = from feed in feedXML.Descendants("item")
@@ -47,18 +56,11 @@ namespace Imperatur_v2.trade.rss
                     {
                         count += feeds.Where(f => f.Title.Contains(se)).Count();
                         count += feeds.Where(f => f.Description.Contains(se)).Count();
-                        /*
-                        count += feeds.GroupBy(x => x.Title)
-                         .Select(g => new { Value = g.Key, Count = g.Count() })
-                         .Where(s => s.Value.Contains(se)).First().Count;
-
-                        count += feeds.GroupBy(x => x.Description)
-                         .Select(g => new { Value = g.Key, Count = g.Count() })
-                         .Where(s => s.Value.Contains(se)).First().Count;*/
                     }
                     catch(Exception ex)
                     {
-                        int gg = 0;
+                        ImperaturGlobal.GetLog().Error(string.Format("Error in the data from {0} when reading RSS", URL), ex);
+                        continue;
                     }
                 }
 

@@ -35,10 +35,11 @@
             this.statusStrip_imperatur = new System.Windows.Forms.StatusStrip();
             this.tabPage_systemtest = new System.Windows.Forms.TabPage();
             this.tabPage_system = new System.Windows.Forms.TabPage();
+            this.LatestTransactionsPane = new System.Windows.Forms.Panel();
             this.checkBox_automaticTrading = new System.Windows.Forms.CheckBox();
             this.tabControl_Imperatur_main = new System.Windows.Forms.TabControl();
             this.tabPage_account = new System.Windows.Forms.TabPage();
-            this.LatestTransactionsPane = new System.Windows.Forms.Panel();
+            this.toolStripStatusLabel_Notification = new System.Windows.Forms.ToolStripStatusLabel();
             this.menuStrip1.SuspendLayout();
             this.statusStrip_imperatur.SuspendLayout();
             this.tabPage_system.SuspendLayout();
@@ -73,7 +74,8 @@
             // 
             this.statusStrip_imperatur.ImageScalingSize = new System.Drawing.Size(20, 20);
             this.statusStrip_imperatur.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.toolStripStatusLabel_system});
+            this.toolStripStatusLabel_system,
+            this.toolStripStatusLabel_Notification});
             this.statusStrip_imperatur.Location = new System.Drawing.Point(0, 753);
             this.statusStrip_imperatur.Name = "statusStrip_imperatur";
             this.statusStrip_imperatur.Padding = new System.Windows.Forms.Padding(1, 0, 19, 0);
@@ -102,6 +104,13 @@
             this.tabPage_system.TabIndex = 0;
             this.tabPage_system.Text = "System";
             this.tabPage_system.UseVisualStyleBackColor = true;
+            // 
+            // LatestTransactionsPane
+            // 
+            this.LatestTransactionsPane.Location = new System.Drawing.Point(25, 65);
+            this.LatestTransactionsPane.Name = "LatestTransactionsPane";
+            this.LatestTransactionsPane.Size = new System.Drawing.Size(899, 632);
+            this.LatestTransactionsPane.TabIndex = 1;
             // 
             // checkBox_automaticTrading
             // 
@@ -138,12 +147,10 @@
             this.tabPage_account.Text = "Account";
             this.tabPage_account.UseVisualStyleBackColor = true;
             // 
-            // LatestTransactionsPane
+            // toolStripStatusLabel_Notification
             // 
-            this.LatestTransactionsPane.Location = new System.Drawing.Point(25, 65);
-            this.LatestTransactionsPane.Name = "LatestTransactionsPane";
-            this.LatestTransactionsPane.Size = new System.Drawing.Size(899, 632);
-            this.LatestTransactionsPane.TabIndex = 1;
+            this.toolStripStatusLabel_Notification.Name = "toolStripStatusLabel_Notification";
+            this.toolStripStatusLabel_Notification.Size = new System.Drawing.Size(0, 20);
             // 
             // MainForm
             // 
@@ -183,6 +190,7 @@
         private System.Windows.Forms.TabPage tabPage_account;
         private System.Windows.Forms.CheckBox checkBox_automaticTrading;
         private System.Windows.Forms.Panel LatestTransactionsPane;
+        private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel_Notification;
     }
 }
 

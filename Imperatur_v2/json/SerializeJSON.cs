@@ -7,6 +7,7 @@ using Newtonsoft;
 using System.Reflection;
 using System.IO;
 using Newtonsoft.Json;
+using Imperatur_v2.shared;
 
 namespace Imperatur_v2.json
 {
@@ -14,10 +15,17 @@ namespace Imperatur_v2.json
     {
         public static bool SerializeObject(object ObjectToSerialize, string FileName)
         {
-            using (FileStream fs = File.Open(FileName, FileMode.Create))
-            using (StreamWriter sw = new StreamWriter(fs))
+            try
             {
-                sw.Write(SerializeAllFields.Dump(ObjectToSerialize, true));
+                using (FileStream fs = File.Open(FileName, FileMode.Create))
+                using (StreamWriter sw = new StreamWriter(fs))
+                {
+                    sw.Write(SerializeAllFields.Dump(ObjectToSerialize, true));
+                }
+            }
+            catch(Exception ex)
+            {
+                ImperaturGlobal.GetLog().Error(string.Format("Could not SerializeObject {0}", FileName), ex);
             }
             return true;
         }
@@ -41,22 +49,11 @@ namespace Imperatur_v2.json
     {
         protected override IList<Newtonsoft.Json.Serialization.JsonProperty> CreateProperties(Type type, Newtonsoft.Json.MemberSerialization memberSerialization)
         {
-
-            //var props = type
-            //    .GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
-            //    .Select(p => base.CreateProperty(p, memberSerialization))
-            //    .Union(type.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
-            //    .Select(f => base.CreateProperty(f, memberSerialization)))
-            //    .ToList();
-            //props.ForEach(p => { p.Writable = true; p.Readable = true; });
             var props = type
-    //.GetProperties(BindingFlags.NonPublic | BindingFlags.Instance)
-    //.Select(p => base.CreateProperty(p, memberSerialization))
-     .GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
-        .Where(f=>!f.Name.Equals("SaveAccountEvent"))
-     // .Where(f=>!Attribute.IsDefined(f, typeof(SerializableAttribute)))
-     .Select(f => base.CreateProperty(f, memberSerialization))
-    .ToList();
+            .GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
+            .Where(f=>!f.Name.Equals("SaveAccountEvent"))
+            .Select(f => base.CreateProperty(f, memberSerialization))
+            .ToList();
             props.ForEach(p => { p.Writable = true; p.Readable = true; });
 
             return props;

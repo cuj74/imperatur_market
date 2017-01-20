@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(System_Load));
             this.button_Load_System = new System.Windows.Forms.Button();
             this.button_cancel = new System.Windows.Forms.Button();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
@@ -36,13 +37,15 @@
             this.label2 = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
             this.button_browse_System = new System.Windows.Forms.Button();
+            this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.groupBox1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.SuspendLayout();
             // 
             // button_Load_System
             // 
             this.button_Load_System.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.button_Load_System.Location = new System.Drawing.Point(421, 209);
+            this.button_Load_System.Location = new System.Drawing.Point(460, 263);
             this.button_Load_System.Margin = new System.Windows.Forms.Padding(4);
             this.button_Load_System.Name = "button_Load_System";
             this.button_Load_System.Size = new System.Drawing.Size(100, 28);
@@ -54,7 +57,7 @@
             // button_cancel
             // 
             this.button_cancel.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.button_cancel.Location = new System.Drawing.Point(115, 209);
+            this.button_cancel.Location = new System.Drawing.Point(86, 263);
             this.button_cancel.Margin = new System.Windows.Forms.Padding(4);
             this.button_cancel.Name = "button_cancel";
             this.button_cancel.Size = new System.Drawing.Size(100, 28);
@@ -64,6 +67,7 @@
             // 
             // groupBox1
             // 
+            this.groupBox1.Controls.Add(this.pictureBox1);
             this.groupBox1.Controls.Add(this.comboBox_SystemDirectory);
             this.groupBox1.Controls.Add(this.button_createnewsystem);
             this.groupBox1.Controls.Add(this.label2);
@@ -76,7 +80,7 @@
             this.groupBox1.Margin = new System.Windows.Forms.Padding(4);
             this.groupBox1.Name = "groupBox1";
             this.groupBox1.Padding = new System.Windows.Forms.Padding(4);
-            this.groupBox1.Size = new System.Drawing.Size(656, 271);
+            this.groupBox1.Size = new System.Drawing.Size(661, 325);
             this.groupBox1.TabIndex = 2;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Imperatur Market";
@@ -84,14 +88,14 @@
             // comboBox_SystemDirectory
             // 
             this.comboBox_SystemDirectory.FormattingEnabled = true;
-            this.comboBox_SystemDirectory.Location = new System.Drawing.Point(34, 49);
+            this.comboBox_SystemDirectory.Location = new System.Drawing.Point(40, 170);
             this.comboBox_SystemDirectory.Name = "comboBox_SystemDirectory";
             this.comboBox_SystemDirectory.Size = new System.Drawing.Size(457, 24);
             this.comboBox_SystemDirectory.TabIndex = 5;
             // 
             // button_createnewsystem
             // 
-            this.button_createnewsystem.Location = new System.Drawing.Point(35, 143);
+            this.button_createnewsystem.Location = new System.Drawing.Point(40, 218);
             this.button_createnewsystem.Margin = new System.Windows.Forms.Padding(4);
             this.button_createnewsystem.Name = "button_createnewsystem";
             this.button_createnewsystem.Size = new System.Drawing.Size(185, 28);
@@ -103,7 +107,7 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(31, 110);
+            this.label2.Location = new System.Drawing.Point(37, 197);
             this.label2.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(36, 17);
@@ -113,7 +117,7 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(31, 20);
+            this.label1.Location = new System.Drawing.Point(37, 141);
             this.label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(192, 17);
@@ -122,7 +126,7 @@
             // 
             // button_browse_System
             // 
-            this.button_browse_System.Location = new System.Drawing.Point(516, 49);
+            this.button_browse_System.Location = new System.Drawing.Point(522, 170);
             this.button_browse_System.Margin = new System.Windows.Forms.Padding(4);
             this.button_browse_System.Name = "button_browse_System";
             this.button_browse_System.Size = new System.Drawing.Size(100, 28);
@@ -131,13 +135,22 @@
             this.button_browse_System.UseVisualStyleBackColor = true;
             this.button_browse_System.Click += new System.EventHandler(this.button_browse_System_Click);
             // 
+            // pictureBox1
+            // 
+            this.pictureBox1.Image = ((System.Drawing.Image)(resources.GetObject("pictureBox1.Image")));
+            this.pictureBox1.Location = new System.Drawing.Point(129, 22);
+            this.pictureBox1.Name = "pictureBox1";
+            this.pictureBox1.Size = new System.Drawing.Size(398, 116);
+            this.pictureBox1.TabIndex = 6;
+            this.pictureBox1.TabStop = false;
+            // 
             // System_Load
             // 
             this.AcceptButton = this.button_Load_System;
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.button_cancel;
-            this.ClientSize = new System.Drawing.Size(656, 271);
+            this.ClientSize = new System.Drawing.Size(661, 325);
             this.Controls.Add(this.groupBox1);
             this.Margin = new System.Windows.Forms.Padding(4);
             this.Name = "System_Load";
@@ -145,6 +158,7 @@
             this.Load += new System.EventHandler(this.System_Load_Load);
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -159,5 +173,6 @@
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Button button_browse_System;
         private System.Windows.Forms.ComboBox comboBox_SystemDirectory;
+        private System.Windows.Forms.PictureBox pictureBox1;
     }
 }

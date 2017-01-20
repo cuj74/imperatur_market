@@ -82,6 +82,14 @@ namespace Imperatur_v2.order
 
         }
 
+        public OrderType OrderType
+        {
+            get
+            {
+                return m_oOrderType;
+            }
+        }
+
         public Order(string Symbol, List<ITrigger> Trigger, Guid AccountIdentifier, int Quantity, OrderType OrderType, DateTime ValidToDate, int StopLossValidDays = 0, decimal StopLossAmount = 0, decimal StopLossPercentage = 0)
         {
             m_oIdentifier = Guid.NewGuid();

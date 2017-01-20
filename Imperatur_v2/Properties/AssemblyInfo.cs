@@ -8,9 +8,9 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("Imperatur_v2")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Qliro Group")]
+[assembly: AssemblyCompany("Hmm")]
 [assembly: AssemblyProduct("Imperatur_v2")]
-[assembly: AssemblyCopyright("Copyright © Qliro Group 2016")]
+[assembly: AssemblyCopyright("Copyright")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -34,3 +34,6 @@ using System.Runtime.InteropServices;
 // [assembly: AssemblyVersion("1.0.*")]
 [assembly: AssemblyVersion("1.0.0.0")]
 [assembly: AssemblyFileVersion("1.0.0.0")]
+
+[assembly: log4net.Config.XmlConfigurator(ConfigFile = "Log\\Log4Net.config", Watch = true)]
+

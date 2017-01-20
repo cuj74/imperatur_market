@@ -6,10 +6,6 @@ using System.Threading.Tasks;
 
 namespace Imperatur_v2.events
 {
-    //public class SelectedAccountEventArg : EventArgs
-    //{
-    //    public Guid Identifier;
-    //}
     
     public class SaveAccountEventArg : EventArgs
     {
@@ -18,6 +14,11 @@ namespace Imperatur_v2.events
     public class SaveOrderEventArg : EventArgs
     {
         public Guid Identifier;
+    }
+
+    public class IMPSystemNotificationEventArg : EventArgs
+    {
+        public string Message;
     }
 
 }

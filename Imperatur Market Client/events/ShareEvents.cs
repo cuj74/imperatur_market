@@ -20,4 +20,5 @@ namespace Imperatur_Market_Client.events
     {
         public string Symbol;
     }
+
 }
