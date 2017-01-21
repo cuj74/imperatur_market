@@ -28,13 +28,13 @@ namespace Imperatur_v2.account
         Customer GetCustomer();
         AccountType GetAccountType();
         List<Guid> GetBankAccountsFromCache();
-        bool AddHoldingToAccount(int Quantity, string Symbol, ITradeHandlerInterface TradeHandler);
+        bool AddHoldingToAccount(int Quantity, string Symbol, ITradeHandlerInterface TradeHandler, string ProcessCode ="Manual");
         string GetLastErrorMessage { get; }
         string AccountName { get; }
         List<ITransactionInterface> Transactions { get; }
         event AccountHandler.SaveAccountEventHandler SaveAccountEvent;
         IMoney CalculateHoldingSell(int Quantity, string Ticker);
-        bool SellHoldingFromAccount(int Quantity, string Ticker, ITradeHandlerInterface TradeHandler);
+        bool SellHoldingFromAccount(int Quantity, string Ticker, ITradeHandlerInterface TradeHandler, string ProcessCode = "Manual");
 
 
 

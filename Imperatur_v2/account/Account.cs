@@ -25,7 +25,7 @@ namespace Imperatur_v2.account
         private Guid Identifier;
         private ObservableRangeCollection<ITransactionInterface> m_oTransactions;
         private AccountType AccountType;
-        private Guid AccountOwner;
+        //private Guid AccountOwner;
         [DesignAttribute(true)]
         private string Name;
         [DesignAttribute(true, true)]
@@ -97,11 +97,11 @@ namespace Imperatur_v2.account
                 new Ninject.Parameters.ConstructorArgument("m_oCurrencyCode", ImperaturGlobal.GetSystemCurrency())
              );
             AddTransaction(
-                CreateTransaction(ZeroBalance, GetBankAccountsFromCache().First(), Identifier, TransactionType.Transfer, null)
+                CreateTransaction(ZeroBalance, GetBankAccountsFromCache().First(), Identifier, TransactionType.Transfer, null, "System")
                 );
         }
 
-        private ITransactionInterface CreateTransaction(IMoney NewTransaction, Guid DebitAccount, Guid CreditAccount, TransactionType TransactionType, ITradeInterface SecurtiesTrade)
+        private ITransactionInterface CreateTransaction(IMoney NewTransaction, Guid DebitAccount, Guid CreditAccount, TransactionType TransactionType, ITradeInterface SecurtiesTrade, string ProcessCode = "Manual")
         {
             return ImperaturGlobal.Kernel.Get<ITransactionInterface>(
               new Ninject.Parameters.ConstructorArgument("_DebitAmount", NewTransaction),
@@ -109,8 +109,9 @@ namespace Imperatur_v2.account
               new Ninject.Parameters.ConstructorArgument("_DebitAccount", DebitAccount),
               new Ninject.Parameters.ConstructorArgument("_CreditAccount", CreditAccount),
               new Ninject.Parameters.ConstructorArgument("_TransactionType", TransactionType),
-              new Ninject.Parameters.ConstructorArgument("_SecurtiesTrade", SecurtiesTrade ?? (object)null)
-              //(object)null) //trade before
+              new Ninject.Parameters.ConstructorArgument("_SecurtiesTrade", SecurtiesTrade ?? (object)null),
+              new Ninject.Parameters.ConstructorArgument("_ProcessCode", ProcessCode)
+
              );
         }
 
@@ -192,6 +193,7 @@ namespace Imperatur_v2.account
             }
             catch (Exception ex)
             {
+                ImperaturGlobal.GetLog().Error(string.Format("[Account.AddTransaction] Couldn't create transaction on account {0}", this.Identifier), ex);
                 LastErrorMessage = ex.Message;
             }
             return true;
@@ -340,7 +342,7 @@ namespace Imperatur_v2.account
         }
 
 
-        public bool AddHoldingToAccount(int Quantity, string Symbol, ITradeHandlerInterface TradeHandler)
+        public bool AddHoldingToAccount(int Quantity, string Symbol, ITradeHandlerInterface TradeHandler, string ProcessCode = "Manual")
         {
             ITradeInterface Trade = TradeHandler.GetTrade(Symbol, Quantity);
             try
@@ -351,12 +353,14 @@ namespace Imperatur_v2.account
                     this.Identifier,
                     GetHouseAccountFromCache().First(),
                     TransactionType.Buy,
-                    Trade
+                    Trade,
+                    ProcessCode
                     )
                     );
             }
             catch (Exception ex)
             {
+                ImperaturGlobal.GetLog().Error(string.Format("Couldn't add transaction to account {0}", this.Identifier), ex);
                 LastErrorMessage = ex.Message;
                 return false;
             }
@@ -421,7 +425,7 @@ namespace Imperatur_v2.account
             return GetRevenueFromHoldingSell(Quantity, Ticker);
 
         }
-        public bool SellHoldingFromAccount(int Quantity, string Ticker, ITradeHandlerInterface TradeHandler)
+        public bool SellHoldingFromAccount(int Quantity, string Ticker, ITradeHandlerInterface TradeHandler, string ProcessCode = "Manual")
         {
             //first check that the quantity does not exceed the quantity of the security on the account
             IMoney GAA = GetGAAFromHolding(Quantity, Ticker);
@@ -437,12 +441,14 @@ namespace Imperatur_v2.account
                     GetHouseAccountFromCache().First(), 
                     this.Identifier,
                     TransactionType.Sell,
-                    Trade
+                    Trade,
+                    ProcessCode
                     )
                     );
             }
             catch (Exception ex)
             {
+                ImperaturGlobal.GetLog().Error(string.Format("Couldn't create transaction for sell on account {0}", this.Identifier), ex);
                 LastErrorMessage = ex.Message;
                 return false;
             }

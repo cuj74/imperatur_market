@@ -2,13 +2,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Imperatur_v2.shared;
 using Imperatur_v2.account;
 using Imperatur_v2.handler;
 using Ninject;
-using Imperatur_v2.events;
 namespace Imperatur_v2.order
 {
     public enum OrderType
@@ -31,6 +28,16 @@ namespace Imperatur_v2.order
         private DateTime m_oValidToDate;
         private int m_oStopLossDaysValid;
         private Guid m_oIdentifier;
+        private string m_oProcessCode;
+
+        public string ProcessCode
+        {
+            get
+            {
+                return m_oProcessCode;
+            }
+
+        }
 
         public string Symbol
         {
@@ -87,6 +94,14 @@ namespace Imperatur_v2.order
             get
             {
                 return m_oOrderType;
+            }
+        }
+
+        public int Quantity
+        {
+            get
+            {
+                return m_oQuantity;
             }
         }
 

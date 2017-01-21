@@ -11,6 +11,7 @@ using Imperatur_v2.account;
 using Imperatur_v2.handler;
 using Imperatur_v2.monetary;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
+using Imperatur_v2.order;
 
 namespace Imperatur_Market_Client.control
 {
@@ -18,11 +19,14 @@ namespace Imperatur_Market_Client.control
     {
         private UserControl AccountMainInfo;
         private UserControl AccountMainAvailableFunds;
+        private UserControl OrderUnprocessed;
         private IAccountInterface m_oA;
+        private IOrderQueue m_oOrderQueueHandler;
 
-        public Account_MainInfo()
+        public Account_MainInfo(IOrderQueue OrderQueueHandler)
         {
             InitializeComponent();
+            m_oOrderQueueHandler = OrderQueueHandler;
         }
 
         public void AddControlToTLP(UserControl NewControl, int row)
@@ -110,7 +114,90 @@ namespace Imperatur_Market_Client.control
                 AccountMainInfo.Refresh();
             if (AccountMainAvailableFunds != null)
                 AccountMainAvailableFunds.Refresh();
-            
+
+
+            ShowOrders(m_oA.Identifier);
+        }
+
+        private void ShowOrders(Guid AccountIdentifier)
+        {
+
+            DataGridView OrdersGrid = new DataGridView();
+
+            OrdersGrid.AutoGenerateColumns = false;
+            OrdersGrid.AllowUserToAddRows = false;
+
+            OrdersGrid.Columns.Add(
+                new DataGridViewTextBoxColumn()
+                {
+                    CellTemplate = new DataGridViewTextBoxCell(),
+                    Name = "Instrument",
+                    HeaderText = "Instrument",
+                    DataPropertyName = "Instrument",
+                    ReadOnly = true
+                }
+            );
+            OrdersGrid.Columns.Add(
+                new DataGridViewTextBoxColumn()
+                {
+                    CellTemplate = new DataGridViewTextBoxCell(),
+                    Name = "Quantity",
+                    HeaderText = "Quantity",
+                    DataPropertyName = "Quantity",
+                    ReadOnly = true
+                }
+            );
+            OrdersGrid.Columns.Add(
+                new DataGridViewTextBoxColumn()
+                {
+                    CellTemplate = new DataGridViewTextBoxCell(),
+                    Name = "Type",
+                    HeaderText = "Type",
+                    DataPropertyName = "Type",
+                    ReadOnly = true
+                }
+            );
+
+            DataTable OrdersDT = new DataTable();
+            OrdersDT.Columns.Add("Instrument");
+            OrdersDT.Columns.Add("Quantity");
+            OrdersDT.Columns.Add("Type");
+
+            DataRow row = null;
+            foreach (IOrder oOrder in m_oOrderQueueHandler.GetOrdersForAccount(AccountIdentifier))
+            {
+                row = OrdersDT.NewRow();
+                row["Instrument"] = oOrder.Symbol;
+                row["Quantity"] = oOrder.Quantity;
+                row["Type"] = oOrder.OrderType.ToString();
+
+                OrdersDT.Rows.Add(row);
+
+            }
+            OrdersGrid.DataSource = OrdersDT;
+            OrdersGrid.Dock = DockStyle.Top;
+            OrderUnprocessed = new CreateDataGridControlFromObject(
+                new DataGridForControl
+                {
+                    DataGridViewToBuild = OrdersGrid,
+                    GroupBoxCaption = "Order unprocessed"
+                }
+                );
+
+            OrderUnprocessed.Name = "OrderUnprocessed";
+            if (!tableLayoutPanel_maininfo.Controls.ContainsKey(OrderUnprocessed.Name))
+            {
+                tableLayoutPanel_maininfo.Controls.Add(OrderUnprocessed, 0, 2);
+            }
+            else
+            {
+                tableLayoutPanel_maininfo.Controls.RemoveByKey(OrderUnprocessed.Name);
+                tableLayoutPanel_maininfo.Controls.Add(OrderUnprocessed, 0, 2);
+            }
+            if (AccountMainInfo != null)
+                AccountMainInfo.Refresh();
+            if (OrderUnprocessed != null)
+                OrderUnprocessed.Refresh();
         }
 
         private void button_Show_Transactions_Click(object sender, EventArgs e)

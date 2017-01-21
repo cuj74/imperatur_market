@@ -20,6 +20,8 @@ using Imperatur_v2.trade.analysis;
 using Imperatur_v2.securites;
 using ZedGraph;
 using Imperatur_v2.trade.recommendation;
+using Imperatur_v2.order;
+using Ninject;
 
 namespace Imperatur_Market_Client.control
 {
@@ -29,6 +31,7 @@ namespace Imperatur_Market_Client.control
         private IAccountHandlerInterface m_oAh;
         private IAccountInterface m_oAccountData;
         private ITradeHandlerInterface m_oTradeHandler;
+        private IOrderQueue m_oOrderQueueHandler;
         private ISecurityAnalysis m_oSecAnalysis;
         private int m_oGraphSettingDays;
         private Instrument m_oI;
@@ -54,12 +57,13 @@ namespace Imperatur_Market_Client.control
             High_Low
         }
 
-        public Account_Trade(IAccountHandlerInterface AccountHandler, ITradeHandlerInterface TradeHandler)
+        public Account_Trade(IAccountHandlerInterface AccountHandler, ITradeHandlerInterface TradeHandler, IOrderQueue OrderHandler)
         {
             InitializeComponent();
             this.Dock = DockStyle.Fill;
             m_oAh = AccountHandler;
             m_oTradeHandler = TradeHandler;
+            m_oOrderQueueHandler = OrderHandler;
             //comboBox_Symbols
             AutoCompleteStringCollection list = new AutoCompleteStringCollection();
             list.AddRange(ImperaturGlobal.Instruments.Select(i => i.Symbol).ToArray());
@@ -739,6 +743,40 @@ namespace Imperatur_Market_Client.control
             bool isNumeric = int.TryParse(textBox_Quantity.Text.Trim(), out QuantityToBuy);
             if (m_oAccountData != null && isNumeric && comboBox_Symbols.SelectedItem != null && comboBox_Symbols.SelectedItem.ToString().Length > 0)
             {
+                if (ImperaturGlobal.ExchangeStatus != ExchangeStatus.Open)
+                {
+                    DialogResult oDr = MessageBox.Show("Exchange is closed, would you like to create an order for the next businessday?", "Exchange closed", MessageBoxButtons.YesNo);
+                    if (oDr.Equals(DialogResult.No))
+                    {
+                        return;
+                    }
+                    else
+                    {
+                        Instrument oI = ImperaturGlobal.Instruments.Where(i => i.Symbol.Equals(comboBox_Symbols.SelectedItem.ToString())).First();
+                        IMoney TradePrice = ImperaturGlobal.Quotes.Where(q => q.Symbol.Equals(comboBox_Symbols.SelectedItem.ToString())).First().LastTradePrice;
+                        m_oOrderQueueHandler.AddOrder(
+                            ImperaturGlobal.Kernel.Get<IOrder>(
+                                               new Ninject.Parameters.ConstructorArgument("Symbol", oI.Symbol),
+                                               new Ninject.Parameters.ConstructorArgument("Trigger", new List<ITrigger> {
+                                           ImperaturGlobal.Kernel.Get<ITrigger>(
+                                                                new Ninject.Parameters.ConstructorArgument("m_oOperator", TriggerOperator.EqualOrless),
+                                                                new Ninject.Parameters.ConstructorArgument("m_oValueType", TriggerValueType.TradePrice),
+                                                                new Ninject.Parameters.ConstructorArgument("m_oTradePriceValue", TradePrice.Amount),
+                                                                new Ninject.Parameters.ConstructorArgument("m_oPercentageValue", 0m)
+                                                                )
+                                               }),
+                                               new Ninject.Parameters.ConstructorArgument("AccountIdentifier", m_oAccountData.Identifier),
+                                               new Ninject.Parameters.ConstructorArgument("Quantity", QuantityToBuy),
+                                               new Ninject.Parameters.ConstructorArgument("OrderType", OrderType.StopLoss),
+                                               new Ninject.Parameters.ConstructorArgument("ValidToDate", DateTime.Now.AddDays(3)),
+                                               new Ninject.Parameters.ConstructorArgument("StopLossValidDays", 30),
+                                               new Ninject.Parameters.ConstructorArgument("StopLossAmount", 0m),
+                                               new Ninject.Parameters.ConstructorArgument("StopLossPercentage", 0.8m)
+                    ));
+                        return;
+                    }
+                }
+
                 string sMessage = string.Format("Are you sure you want to buy {0} of {1} for {2}?",
                     QuantityToBuy,
                     comboBox_Symbols.SelectedItem.ToString(),

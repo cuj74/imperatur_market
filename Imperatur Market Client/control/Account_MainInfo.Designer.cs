@@ -37,22 +37,25 @@
             // 
             this.tableLayoutPanel_maininfo.ColumnCount = 1;
             this.tableLayoutPanel_maininfo.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel_maininfo.Controls.Add(this.button_Show_Transactions, 0, 2);
+            this.tableLayoutPanel_maininfo.Controls.Add(this.button_Show_Transactions, 0, 3);
             this.tableLayoutPanel_maininfo.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tableLayoutPanel_maininfo.Location = new System.Drawing.Point(0, 0);
+            this.tableLayoutPanel_maininfo.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.tableLayoutPanel_maininfo.Name = "tableLayoutPanel_maininfo";
-            this.tableLayoutPanel_maininfo.RowCount = 3;
-            this.tableLayoutPanel_maininfo.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 150F));
-            this.tableLayoutPanel_maininfo.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-            this.tableLayoutPanel_maininfo.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 40F));
-            this.tableLayoutPanel_maininfo.Size = new System.Drawing.Size(288, 258);
+            this.tableLayoutPanel_maininfo.RowCount = 4;
+            this.tableLayoutPanel_maininfo.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 122F));
+            this.tableLayoutPanel_maininfo.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
+            this.tableLayoutPanel_maininfo.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 50F));
+            this.tableLayoutPanel_maininfo.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 32F));
+            this.tableLayoutPanel_maininfo.Size = new System.Drawing.Size(216, 210);
             this.tableLayoutPanel_maininfo.TabIndex = 0;
             // 
             // button_Show_Transactions
             // 
-            this.button_Show_Transactions.Location = new System.Drawing.Point(3, 221);
+            this.button_Show_Transactions.Location = new System.Drawing.Point(2, 180);
+            this.button_Show_Transactions.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.button_Show_Transactions.Name = "button_Show_Transactions";
-            this.button_Show_Transactions.Size = new System.Drawing.Size(105, 23);
+            this.button_Show_Transactions.Size = new System.Drawing.Size(79, 19);
             this.button_Show_Transactions.TabIndex = 0;
             this.button_Show_Transactions.Text = "Transactions";
             this.button_Show_Transactions.UseVisualStyleBackColor = true;
@@ -60,11 +63,12 @@
             // 
             // Account_MainInfo
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.Controls.Add(this.tableLayoutPanel_maininfo);
+            this.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.Name = "Account_MainInfo";
-            this.Size = new System.Drawing.Size(288, 258);
+            this.Size = new System.Drawing.Size(216, 210);
             this.tableLayoutPanel_maininfo.ResumeLayout(false);
             this.ResumeLayout(false);
 

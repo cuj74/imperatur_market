@@ -38,14 +38,12 @@ namespace Imperatur_Market_Client
         public MainForm()
         {
             InitializeComponent();
-            //typeof(TableLayoutPanel).GetProperty("DoubleBuffered", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).SetValue(tlp_Account, true, null);
             m_oKernel = new StandardKernel();
             m_oKernel.Load(Assembly.GetExecutingAssembly());
             UpdateLatestTransactions = new Timer();
             UpdateLatestTransactions.Interval = 1000 * 60; //every minute
             UpdateLatestTransactions.Tick += UpdateLatestTransactions_Tick;
             UpdateLatestTransactions.Enabled = true;
-
         }
 
         private void UpdateLatestTransactions_Tick(object sender, EventArgs e)
@@ -172,7 +170,7 @@ namespace Imperatur_Market_Client
         private bool ShowSystemLoad()
         {
             bool CreateNewSystem = false;
-            //bool bShowAgain = false;
+
             using (var form = new dialog.System_Load(ReadSystemLocationFromCache()))
             {
                 form.Icon = this.Icon;
@@ -184,6 +182,10 @@ namespace Imperatur_Market_Client
                 }
                 if (result == DialogResult.None)
                     return ShowSystemLoad();
+                if (result == DialogResult.Cancel)
+                {
+                    Application.Exit();
+                }
             }
 
             return CreateNewSystem;
@@ -229,7 +231,7 @@ namespace Imperatur_Market_Client
                 string.Format("{0} | {1} | {2}", m_Ic.GetSystemData().SystemDirectory, m_Ic.GetSystemData().SystemCurrency, m_Ic.SystemExchangeStatus.ToString());
                 
             //add the controls to the different areas
-            m_oAccountTab = new AccountTab(m_Ic.GetAccountHandler(), m_Ic.GetTradeHandler());
+            m_oAccountTab = new AccountTab(m_Ic.GetAccountHandler(), m_Ic.GetTradeHandler(), m_Ic.OrderQueue);
             m_oAccountTab.Dock = DockStyle.Fill;
             tabPage_account.Controls.Add(m_oAccountTab);
             m_Ic.QuoteUpdateEvent += M_Ic_QuoteUpdateEvent;
@@ -253,14 +255,25 @@ namespace Imperatur_Market_Client
                 oWaitLoadingSystem.SetSystemNotificationText(e.Message);
                 oWaitLoadingSystem.Refresh();
             }
-            toolStripStatusLabel_Notification.Text = e.Message;
+
+            this.Invoke(new MethodInvoker(delegate
+            {
+                toolStripStatusLabel_Notification.Text = e.Message;
+            }));
         }
 
         private void M_Ic_QuoteUpdateEvent(object sender, EventArgs e)
         {
-            
+            this.Invoke(new MethodInvoker(delegate
+            {
+                string.Format("{0} | {1} | {2} | last update {3}", m_Ic.GetSystemData().SystemDirectory, m_Ic.GetSystemData().SystemCurrency, m_Ic.SystemExchangeStatus.ToString(), DateTime.Now.ToString());
+            }));
+
+
+            /*
             this.toolStripStatusLabel_system.Text =
                string.Format("{0} | {1} | {2} | last update {3}", m_Ic.GetSystemData().SystemDirectory, m_Ic.GetSystemData().SystemCurrency,m_Ic.SystemExchangeStatus.ToString(), DateTime.Now.ToString());
+            */
             //TODO: needs invoke
             /*
             if (m_oAccountTab.InvokeRequired)

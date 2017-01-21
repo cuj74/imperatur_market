@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Imperatur_v2.handler;
 
 namespace Imperatur_v2.order
@@ -17,7 +13,8 @@ namespace Imperatur_v2.order
         Guid Identifier { get; }
         DateTime ValidToDate { get; }
         OrderType OrderType { get; }
-        //event OrderQueue.SaveOrderHandler SaveOrderEvent;
+        int Quantity { get; }
+        string ProcessCode { get; }
 
     }
 }

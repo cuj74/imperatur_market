@@ -11,5 +11,6 @@ namespace Imperatur_v2.order
         bool EvaluateOrdersInQueue();
         bool AddOrder(IOrder Order);
         bool AddOrders(List<IOrder> Orders);
+        List<IOrder> GetOrdersForAccount(Guid AccountIdentifier);
     }
 }

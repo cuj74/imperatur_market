@@ -338,29 +338,21 @@ namespace Imperatur_v2
         }
         private void CreateImperaturMarket(ImperaturData SystemData)
         {
-            OnSystemNotification(new IMPSystemNotificationEventArg
-            {
-                Message = "Starting the initializing sequence"
-            });
-            ImperaturGlobal.GetLog().Info("Starting the initialize sequence");
             m_oImperaturData = SystemData;
 
-            OnSystemNotification(new IMPSystemNotificationEventArg
-            {
-                Message = "Creating cache objects"
-            });
+            CreateSystemNotification("Starting the initializing sequence");
+            ImperaturGlobal.GetLogWithDirectory(m_oImperaturData.SystemDirectory).Info("Starting the initialize sequence");
+            CreateSystemNotification("Creating cache objects");
             ImperaturGlobal.Initialize(m_oImperaturData, InitiateNinjectKernel(), null);
-
+            
 
             List<account.AccountCacheType> BusinessAccounts = new List<account.AccountCacheType>();
             List<IAccountInterface> oLAB = new List<IAccountInterface>();
-            OnSystemNotification(new IMPSystemNotificationEventArg
-            {
-                Message = "Loading accounts"
-            });
+
+            CreateSystemNotification("Loading accounts");
             if (GetAccountHandler().Accounts().Where(a => !a.GetAccountType().Equals(account.AccountType.Bank)).Count() == 0)
             {
-                //create internalbankaccount for balancetransactions
+                //create internalbankaccount for balance transactions
                 //start by create the bankaccount
                 oLAB.Add(
                     ImperaturGlobal.Kernel.Get<IAccountInterface>(
@@ -372,7 +364,7 @@ namespace Imperatur_v2
             }
             if (GetAccountHandler().Accounts().Where(a => !a.GetAccountType().Equals(account.AccountType.House)).Count() == 0)
             {
-                //create internalbankaccount for balancetransactions
+                //create internalbankaccount for balance transactions
                 //start by create the bankaccount
                 oLAB.Add(
                     ImperaturGlobal.Kernel.Get<IAccountInterface>(
@@ -384,7 +376,7 @@ namespace Imperatur_v2
             }
             if (oLAB.Count() > 0)
                 GetAccountHandler().CreateAccount(oLAB);
-            
+
             //add all business accounts to cache
             BusinessAccounts = GetAccountHandler().Accounts().Where(a => !a.GetAccountType().Equals(account.AccountType.Customer)).
                 Select(b =>
@@ -394,23 +386,13 @@ namespace Imperatur_v2
                     Identifier = b.Identifier
                 }).ToList();
 
-            OnSystemNotification(new IMPSystemNotificationEventArg
-            {
-                Message = "Initializing business accounts"
-            });
+            CreateSystemNotification("Initializing business accounts");
             ImperaturGlobal.InitializeBusinessAccount(BusinessAccounts);
-            OnSystemNotification(new IMPSystemNotificationEventArg
-            {
-                Message = "Loading instruments and qoutes"
-            });
+
+            CreateSystemNotification("Loading instruments and qoutes");
             ImperaturGlobal.Quotes = GetTradeHandler().GetQuotes();
 
-
-
-            OnSystemNotification(new IMPSystemNotificationEventArg
-            {
-                Message = "Setting events"
-            });
+            CreateSystemNotification("Setting events");
             m_oQuoteTimer = new System.Timers.Timer();
             m_oQuoteTimer.Elapsed += M_oQuoteTimer_Elapsed;
             m_oQuoteTimer.Interval = 1000 * 60 * 2; //Convert.ToInt32(m_oImperaturData.QuoteRefreshTime); //every 15 minutes
@@ -426,6 +408,14 @@ namespace Imperatur_v2
 
             ImperaturGlobal.GetLog().Info("End of the initialize sequence");
 
+        }
+
+        private void CreateSystemNotification(string Message)
+        {
+            OnSystemNotification(new IMPSystemNotificationEventArg
+            {
+                Message = Message
+            });
         }
 
         private void M_oTradeAutomation_SystemNotificationEvent(object sender, IMPSystemNotificationEventArg e)

@@ -18,6 +18,7 @@ namespace Imperatur_v2.monetary
         private TransactionType _TransactionType;
         public ITradeInterface _SecuritiesTrade;
         private DateTime _TransactionDate;
+        private string _ProcessCode;
 
         public Guid DebitAccount
         {
@@ -80,8 +81,18 @@ namespace Imperatur_v2.monetary
                 return _TransactionDate;
             }
         }
+
+        public string ProcessCode
+        {
+            get
+            {
+                return _ProcessCode;
+            }
+
+        }
+
         [JsonConstructor]
-        public Transaction(IMoney _DebitAmount, IMoney _CreditAmount, Guid _DebitAccount, Guid _CreditAccount, TransactionType _TransactionType, ITradeInterface _SecurtiesTrade,  DateTime _TransactionDate)
+        public Transaction(IMoney _DebitAmount, IMoney _CreditAmount, Guid _DebitAccount, Guid _CreditAccount, TransactionType _TransactionType, ITradeInterface _SecurtiesTrade,  DateTime _TransactionDate, string _ProcessCode = "Manual")
         {
             this._DebitAmount = _DebitAmount;
             this._CreditAmount = _CreditAmount;
@@ -90,13 +101,14 @@ namespace Imperatur_v2.monetary
             this._TransactionType = _TransactionType;
             this._SecuritiesTrade = _SecurtiesTrade;
             this._TransactionDate = _TransactionDate;
+            this._ProcessCode = _ProcessCode;
             if (!_DebitAmount.Amount.Equals(_CreditAmount.Amount))
             {
                 throw new Exception("Amount is not equal");
             }
         }
 
-        public Transaction(IMoney _DebitAmount, IMoney _CreditAmount, Guid _DebitAccount, Guid _CreditAccount, TransactionType _TransactionType, ITradeInterface _SecurtiesTrade)
+        public Transaction(IMoney _DebitAmount, IMoney _CreditAmount, Guid _DebitAccount, Guid _CreditAccount, TransactionType _TransactionType, ITradeInterface _SecurtiesTrade, string _ProcessCode = "Manual")
         {
             this._DebitAmount = _DebitAmount;
             this._CreditAmount = _CreditAmount;
@@ -105,6 +117,7 @@ namespace Imperatur_v2.monetary
             this._TransactionType = _TransactionType;
             this._SecuritiesTrade = _SecurtiesTrade;
             this._TransactionDate = DateTime.Now;
+            this._ProcessCode = _ProcessCode;
             if (!_DebitAmount.Amount.Equals(_CreditAmount.Amount))
             {
                 throw new Exception("Amount is not equal");

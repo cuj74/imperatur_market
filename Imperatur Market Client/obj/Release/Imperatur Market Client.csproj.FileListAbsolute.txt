@@ -40,3 +40,48 @@ C:\temp\dev\imperatur_market\Imperatur Market Client\bin\Release\tr\ZedGraph.res
 C:\temp\dev\imperatur_market\Imperatur Market Client\bin\Release\zh-cn\ZedGraph.resources.dll
 C:\temp\dev\imperatur_market\Imperatur Market Client\bin\Release\zh-tw\ZedGraph.resources.dll
 C:\temp\dev\imperatur_market\Imperatur Market Client\obj\Release\PresentationControls.PopupComboBox.resources
+F:\visualstudioprojects\Imperatur\imperatur_market\Imperatur Market Client\bin\Release\Imperatur Market Client.exe.config
+F:\visualstudioprojects\Imperatur\imperatur_market\Imperatur Market Client\obj\Release\Imperatur Market Client.exe
+F:\visualstudioprojects\Imperatur\imperatur_market\Imperatur Market Client\obj\Release\Imperatur Market Client.pdb
+F:\visualstudioprojects\Imperatur\imperatur_market\Imperatur Market Client\bin\Release\log\Log4Net.config
+F:\visualstudioprojects\Imperatur\imperatur_market\Imperatur Market Client\bin\Release\Imperatur Market Client.exe
+F:\visualstudioprojects\Imperatur\imperatur_market\Imperatur Market Client\bin\Release\Imperatur Market Client.pdb
+F:\visualstudioprojects\Imperatur\imperatur_market\Imperatur Market Client\bin\Release\Imperatur_v2.dll
+F:\visualstudioprojects\Imperatur\imperatur_market\Imperatur Market Client\bin\Release\Ninject.dll
+F:\visualstudioprojects\Imperatur\imperatur_market\Imperatur Market Client\bin\Release\ZedGraph.dll
+F:\visualstudioprojects\Imperatur\imperatur_market\Imperatur Market Client\bin\Release\log4net.dll
+F:\visualstudioprojects\Imperatur\imperatur_market\Imperatur Market Client\bin\Release\Newtonsoft.Json.dll
+F:\visualstudioprojects\Imperatur\imperatur_market\Imperatur Market Client\bin\Release\MathNet.Numerics.dll
+F:\visualstudioprojects\Imperatur\imperatur_market\Imperatur Market Client\bin\Release\Imperatur_v2.pdb
+F:\visualstudioprojects\Imperatur\imperatur_market\Imperatur Market Client\bin\Release\Ninject.xml
+F:\visualstudioprojects\Imperatur\imperatur_market\Imperatur Market Client\bin\Release\ZedGraph.xml
+F:\visualstudioprojects\Imperatur\imperatur_market\Imperatur Market Client\bin\Release\log4net.xml
+F:\visualstudioprojects\Imperatur\imperatur_market\Imperatur Market Client\bin\Release\Newtonsoft.Json.xml
+F:\visualstudioprojects\Imperatur\imperatur_market\Imperatur Market Client\bin\Release\MathNet.Numerics.xml
+F:\visualstudioprojects\Imperatur\imperatur_market\Imperatur Market Client\bin\Release\de\ZedGraph.resources.dll
+F:\visualstudioprojects\Imperatur\imperatur_market\Imperatur Market Client\bin\Release\es\ZedGraph.resources.dll
+F:\visualstudioprojects\Imperatur\imperatur_market\Imperatur Market Client\bin\Release\fr\ZedGraph.resources.dll
+F:\visualstudioprojects\Imperatur\imperatur_market\Imperatur Market Client\bin\Release\hu\ZedGraph.resources.dll
+F:\visualstudioprojects\Imperatur\imperatur_market\Imperatur Market Client\bin\Release\it\ZedGraph.resources.dll
+F:\visualstudioprojects\Imperatur\imperatur_market\Imperatur Market Client\bin\Release\ja\ZedGraph.resources.dll
+F:\visualstudioprojects\Imperatur\imperatur_market\Imperatur Market Client\bin\Release\pt\ZedGraph.resources.dll
+F:\visualstudioprojects\Imperatur\imperatur_market\Imperatur Market Client\bin\Release\ru\ZedGraph.resources.dll
+F:\visualstudioprojects\Imperatur\imperatur_market\Imperatur Market Client\bin\Release\sk\ZedGraph.resources.dll
+F:\visualstudioprojects\Imperatur\imperatur_market\Imperatur Market Client\bin\Release\sv\ZedGraph.resources.dll
+F:\visualstudioprojects\Imperatur\imperatur_market\Imperatur Market Client\bin\Release\tr\ZedGraph.resources.dll
+F:\visualstudioprojects\Imperatur\imperatur_market\Imperatur Market Client\bin\Release\zh-cn\ZedGraph.resources.dll
+F:\visualstudioprojects\Imperatur\imperatur_market\Imperatur Market Client\bin\Release\zh-tw\ZedGraph.resources.dll
+F:\visualstudioprojects\Imperatur\imperatur_market\Imperatur Market Client\obj\Release\Imperatur Market Client.csprojResolveAssemblyReference.cache
+F:\visualstudioprojects\Imperatur\imperatur_market\Imperatur Market Client\obj\Release\Imperatur_Market_Client.control.AccountTab.resources
+F:\visualstudioprojects\Imperatur\imperatur_market\Imperatur Market Client\obj\Release\Imperatur_Market_Client.control.Account_Holdings.resources
+F:\visualstudioprojects\Imperatur\imperatur_market\Imperatur Market Client\obj\Release\Imperatur_Market_Client.control.Account_MainInfo.resources
+F:\visualstudioprojects\Imperatur\imperatur_market\Imperatur Market Client\obj\Release\Imperatur_Market_Client.control.Account_Search.resources
+F:\visualstudioprojects\Imperatur\imperatur_market\Imperatur Market Client\obj\Release\Imperatur_Market_Client.control.Account_Trade.resources
+F:\visualstudioprojects\Imperatur\imperatur_market\Imperatur Market Client\obj\Release\PresentationControls.PopupComboBox.resources
+F:\visualstudioprojects\Imperatur\imperatur_market\Imperatur Market Client\obj\Release\Imperatur_Market_Client.control.SellDialog.resources
+F:\visualstudioprojects\Imperatur\imperatur_market\Imperatur Market Client\obj\Release\Imperatur_Market_Client.dialog.NewSystem.resources
+F:\visualstudioprojects\Imperatur\imperatur_market\Imperatur Market Client\obj\Release\Imperatur_Market_Client.dialog.System_Load.resources
+F:\visualstudioprojects\Imperatur\imperatur_market\Imperatur Market Client\obj\Release\Imperatur_Market_Client.dialog.WaitDialog.resources
+F:\visualstudioprojects\Imperatur\imperatur_market\Imperatur Market Client\obj\Release\Imperatur_Market_Client.MainForm.resources
+F:\visualstudioprojects\Imperatur\imperatur_market\Imperatur Market Client\obj\Release\Imperatur_Market_Client.Properties.Resources.resources
+F:\visualstudioprojects\Imperatur\imperatur_market\Imperatur Market Client\obj\Release\Imperatur Market Client.csproj.GenerateResource.Cache

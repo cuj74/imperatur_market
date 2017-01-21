@@ -27,9 +27,7 @@ namespace Imperatur_v2.order
             m_oTradeHandler = TradeHandler;
             InitOrders();
         }
-
-
-
+        
         public delegate void SaveOrderHandler (object sender, events.SaveOrderEventArg e);
         public List<IOrder> Orders
         {
@@ -51,8 +49,8 @@ namespace Imperatur_v2.order
                 }
                 catch (Exception ex)
                 {
+                    ImperaturGlobal.GetLog().Error("Loading orders went wrong", ex);
                     m_oOrders = new ObservableRangeCollection<IOrder>();
-
                 }
             }
             TryLoadFromStorage = true;
@@ -102,7 +100,7 @@ namespace Imperatur_v2.order
             }
             catch(Exception ex)
             {
-                int gg = 0;
+                ImperaturGlobal.GetLog().Error("Couldn't save order", ex);
             }
             return true;
         }
@@ -223,6 +221,11 @@ namespace Imperatur_v2.order
             m_oOrders.CollectionChanged -= M_oOrders_CollectionChanged;
             m_oOrders.CollectionChanged += M_oOrders_CollectionChanged;
             return true;
+        }
+
+        public List<IOrder> GetOrdersForAccount(Guid AccountIdentifier)
+        {
+            return m_oOrders.Where(o => o.AccountIdentifier.Equals(AccountIdentifier)).ToList();
         }
     }
 }

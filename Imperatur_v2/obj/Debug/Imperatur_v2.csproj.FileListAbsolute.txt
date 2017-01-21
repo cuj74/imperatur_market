@@ -25,3 +25,6 @@ F:\visualstudioprojects\Imperatur\imperatur_market\Imperatur_v2\bin\Debug\Impera
 C:\temp\dev\imperatur_market\Imperatur_v2\bin\Debug\log4net.dll
 C:\temp\dev\imperatur_market\Imperatur_v2\bin\Debug\log4net.xml
 C:\temp\dev\imperatur_market\Imperatur_v2\bin\Debug\log\Log4Net.config
+F:\visualstudioprojects\Imperatur\imperatur_market\Imperatur_v2\bin\Debug\log\Log4Net.config
+F:\visualstudioprojects\Imperatur\imperatur_market\Imperatur_v2\bin\Debug\log4net.dll
+F:\visualstudioprojects\Imperatur\imperatur_market\Imperatur_v2\bin\Debug\log4net.xml

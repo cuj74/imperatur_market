@@ -11,6 +11,7 @@ using Imperatur_v2.events;
 using Imperatur_v2;
 using Imperatur_v2.handler;
 using Imperatur_Market_Client.events;
+using Imperatur_v2.order;
 
 namespace Imperatur_Market_Client.control
 {
@@ -18,6 +19,7 @@ namespace Imperatur_Market_Client.control
     {
         private IAccountHandlerInterface m_AccountHandler;
         private ITradeHandlerInterface m_oTradeHandler;
+        private IOrderQueue m_oOrderQueueHandler;
 
         private Account_MainInfo oControl_Account_MainInfo;
         private Account_Search oControl_Account_Search;
@@ -31,11 +33,12 @@ namespace Imperatur_Market_Client.control
         private Guid m_oCurrentSelectedAccountIdentifier;
 
 
-        public AccountTab(IAccountHandlerInterface AccountHandler, ITradeHandlerInterface TradeHandler)
+        public AccountTab(IAccountHandlerInterface AccountHandler, ITradeHandlerInterface TradeHandler, IOrderQueue OrderQueueHandler)
         {
             InitializeComponent();
             m_AccountHandler = AccountHandler;
             m_oTradeHandler = TradeHandler;
+            m_oOrderQueueHandler = OrderQueueHandler;
             //this.KeyDown += AccountTab_KeyDown;
             typeof(TableLayoutPanel).GetProperty("DoubleBuffered", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance).SetValue(tlp_Account, true, null);
         }
@@ -54,7 +57,7 @@ namespace Imperatur_Market_Client.control
 
         private void AccountTab_Load(object sender, EventArgs e)
         {
-            oControl_Account_MainInfo = new Account_MainInfo();
+            oControl_Account_MainInfo = new Account_MainInfo(m_oOrderQueueHandler);
             oControl_Account_MainInfo.Dock = DockStyle.Fill;
             ExpandButtonSize = new System.Drawing.Size(15, 23);
 
@@ -67,7 +70,7 @@ namespace Imperatur_Market_Client.control
 
 
             oControl_Account_Holdings = new Account_Holdings(m_AccountHandler, m_oTradeHandler);
-            oControl_Account_Trade = new Account_Trade(m_AccountHandler, m_oTradeHandler);
+            oControl_Account_Trade = new Account_Trade(m_AccountHandler, m_oTradeHandler, m_oOrderQueueHandler);
 
             oControl_Account_Trade.SelectedAccount += OControl_Account_Trade_SelectedAccount;
             oControl_Account_Holdings.SelectedAccount += OControl_Account_Trade_SelectedAccount;

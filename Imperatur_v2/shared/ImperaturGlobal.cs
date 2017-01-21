@@ -44,7 +44,7 @@ namespace Imperatur_v2.shared
         private static List<CurrencyInfo> m_oCurrencyRates;
         private static ExchangeStatus m_oExchangeStatus;
         private static Tuple<DateTime, DateTime> m_oOpeningHours;
-        private readonly static string LogName = "Log4net";
+        private readonly static string LogName = "log4net";
 
         private static StandardKernel m_oKernel;
 
@@ -57,15 +57,23 @@ namespace Imperatur_v2.shared
         #region public methods
         public static ILog GetLog()
         {
-            return GetLog(null);
+            return GetLog(null, ImperaturGlobal.SystemData.SystemDirectory);
         }
 
-        private static ILog GetLog(string logName)
+        public static ILog GetLogWithDirectory(string LogDirectory)
+        {
+            return GetLog(null, LogDirectory);
+        }
+
+        private static ILog GetLog(string logName, string LogDirectory)
         {
             if (logName == null)
             {
                 logName = LogName;
             }
+            //log4net.GlobalContext.Properties["LogFileName"] = string.Format("{0}\\{1}{2}", ImperaturGlobal.SystemData.SystemDirectory, "log\\imp", DateTime.Now.ToString("yyyy-mm-dd")); //log file path
+            log4net.GlobalContext.Properties["LogFileName"] = string.Format("{0}\\{1}{2}", LogDirectory, "log\\imp", DateTime.Now.ToString("yyyy-MM-dd")); //log file path
+            log4net.Config.XmlConfigurator.Configure();
             ILog log = LogManager.GetLogger(logName);
             return log;
         }
@@ -172,13 +180,14 @@ namespace Imperatur_v2.shared
                 m_oKernel = NinjectKernel;
 
             BuildCurrencyCodeCache();
+
             try
             {
                 BuildHistoricalPriceCache();
             }
             catch (Exception ex)
             {
-                int gg = 0;
+                GetLog().Error("Error ", ex);
             }
 
             InitializeBusinessAccount(BusinessAccounts);
@@ -186,9 +195,7 @@ namespace Imperatur_v2.shared
             if (!GlobalCachingProvider.Instance.FindItem(ImperaturGlobal.CountryCache))
                 GlobalCachingProvider.Instance.AddItem(ImperaturGlobal.CountryCache, new CountryCache());
 
-
             m_oCurrencyRates = new CurrencyDataFromExternalSource().GetCurrentCurrencyExchangeRate();
-
 
             //month, day
             BankDays = new List<Tuple<int, int>>();

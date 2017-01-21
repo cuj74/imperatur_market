@@ -2,25 +2,15 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Imperatur_v2.shared;
 using MathNet.Numerics;
 using MathNet.Numerics.Interpolation;
 using MathNet.Numerics.Statistics;
-using MathNet.Numerics.LinearAlgebra;
-using MathNet.Numerics.LinearRegression;
-using Imperatur_v2.monetary;
-using MathNet.Numerics.LinearAlgebra.Complex;
 using Imperatur_v2.trade.recommendation;
-using MathNet.Numerics.LinearAlgebra.Double;
 using MathNet.Numerics.LinearAlgebra.Factorization;
 
 namespace Imperatur_v2.trade.analysis
 {
-
-
-
     public class SecurityAnalysis : ISecurityAnalysis
     {
         private HistoricalQuote m_oH;
@@ -993,7 +983,5 @@ namespace Imperatur_v2.trade.analysis
         public int SourceIndex;
         public Momentum Momentum;
     }
-    
-    //}
    
 }
