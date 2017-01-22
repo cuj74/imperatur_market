@@ -79,6 +79,14 @@ namespace Imperatur_v2.trade.automation
         private List<IOrder> GetBuyOrdersFromTradingRecommencation(List<InstrumentRecommendation> TradingRecommendations)
         {
             var BuyRecommendations = TradingRecommendations.Where(x => x.TradingRecommendations.Where(tr => tr.TradingForecastMethod != TradingForecastMethod.Undefined && tr.BuyPrice.Amount > 0 && tr.SellPrice.Amount == 0).Count() > 0).ToList();
+            var BuyForecastMethods= TradingRecommendations.Where(x => x.TradingRecommendations.Where(tr => tr.TradingForecastMethod != TradingForecastMethod.Undefined && tr.BuyPrice.Amount > 0 && tr.SellPrice.Amount == 0).Count() > 0)
+                .Select( x=> new
+                {
+                    ForeCastMethod = x.TradingRecommendations.First().TradingForecastMethod,
+                    Symbol = x.InstrumentInfo.Symbol
+                }
+                );
+
             var BuyCounts = BuyRecommendations.GroupBy(x => x.InstrumentInfo.Symbol)
                       .Select(g => new { g.Key, Count = g.Count() });
             var SearchCounts = BuyRecommendations.GroupBy(x => x.InstrumentInfo.Symbol)
@@ -156,6 +164,7 @@ namespace Imperatur_v2.trade.automation
                                            ),
                                            new Ninject.Parameters.ConstructorArgument("OrderType", OrderType.StopLoss),
                                            new Ninject.Parameters.ConstructorArgument("ValidToDate", DateTime.Now.AddDays(2)),
+                                           new Ninject.Parameters.ConstructorArgument("ProcessCode", BuyForecastMethods.Where(br=>br.Symbol.Equals(bp.SecAnalysis.Instrument.Symbol)).First().ForeCastMethod.ToString()),
                                            new Ninject.Parameters.ConstructorArgument("StopLossValidDays", 30),
                                            new Ninject.Parameters.ConstructorArgument("StopLossAmount", 0m),
                                            new Ninject.Parameters.ConstructorArgument("StopLossPercentage", 0.8m)
@@ -167,6 +176,15 @@ namespace Imperatur_v2.trade.automation
         private List<IOrder> GetSellOrdersFromTradingRecommencation(List<InstrumentRecommendation> TradingRecommendations)
         {
             var SellRecommendations = TradingRecommendations.Where(x => x.TradingRecommendations.Where(tr => tr.TradingForecastMethod != TradingForecastMethod.Undefined && tr.BuyPrice.Amount == 0 && tr.SellPrice.Amount > 0).Count() > 0).ToList();
+            var SellForecastMethods = TradingRecommendations.Where(x => x.TradingRecommendations.Where(tr => tr.TradingForecastMethod != TradingForecastMethod.Undefined && tr.BuyPrice.Amount == 0 && tr.SellPrice.Amount > 0).Count() > 0)
+            .Select(x => new
+            {
+                ForeCastMethod = x.TradingRecommendations.First().TradingForecastMethod,
+                Symbol = x.InstrumentInfo.Symbol
+            }
+            );
+
+
             var SellCounts = SellRecommendations.GroupBy(x => x.InstrumentInfo.Symbol)
                       .Select(g => new { g.Key, Count = g.Count() });
             var SellSearchCounts = SellRecommendations.GroupBy(x => x.InstrumentInfo.Symbol)
@@ -246,6 +264,7 @@ namespace Imperatur_v2.trade.automation
                                                 ),
                                                 new Ninject.Parameters.ConstructorArgument("OrderType", OrderType.Sell),
                                                 new Ninject.Parameters.ConstructorArgument("ValidToDate", DateTime.Now.AddDays(2)),
+                                                new Ninject.Parameters.ConstructorArgument("ProcessCode", SellForecastMethods.Where(br => br.Symbol.Equals(bp.SecAnalysis.Instrument.Symbol)).First().ForeCastMethod.ToString()),
                                                 new Ninject.Parameters.ConstructorArgument("StopLossValidDays", 0),
                                                 new Ninject.Parameters.ConstructorArgument("StopLossAmount", 0m),
                                                 new Ninject.Parameters.ConstructorArgument("StopLossPercentage", 0m)
@@ -287,6 +306,7 @@ namespace Imperatur_v2.trade.automation
                             new Ninject.Parameters.ConstructorArgument("Quantity", Convert.ToInt32(holding.Quantity)),
                             new Ninject.Parameters.ConstructorArgument("OrderType", OrderType.Sell),
                             new Ninject.Parameters.ConstructorArgument("ValidToDate", DateTime.Now.AddDays(2)),
+                            new Ninject.Parameters.ConstructorArgument("ProcessCode", "SellProfit"),
                             new Ninject.Parameters.ConstructorArgument("StopLossValidDays", 0),
                             new Ninject.Parameters.ConstructorArgument("StopLossAmount", 0m),
                             new Ninject.Parameters.ConstructorArgument("StopLossPercentage", 0m)

@@ -105,7 +105,7 @@ namespace Imperatur_v2.order
             }
         }
 
-        public Order(string Symbol, List<ITrigger> Trigger, Guid AccountIdentifier, int Quantity, OrderType OrderType, DateTime ValidToDate, int StopLossValidDays = 0, decimal StopLossAmount = 0, decimal StopLossPercentage = 0)
+        public Order(string Symbol, List<ITrigger> Trigger, Guid AccountIdentifier, int Quantity, OrderType OrderType, DateTime ValidToDate, string ProcessCode,  int StopLossValidDays = 0, decimal StopLossAmount = 0, decimal StopLossPercentage = 0)
         {
             m_oIdentifier = Guid.NewGuid();
             m_oSymbol = Symbol;
@@ -115,6 +115,7 @@ namespace Imperatur_v2.order
             m_oQuantity = Quantity;
             m_oOrderType = OrderType;
             m_oValidToDate = ValidToDate;
+            m_oProcessCode = ProcessCode;
             if (m_oOrderType.Equals(OrderType.StopLoss))
             {
                 if (StopLossAmount == StopLossPercentage && StopLossPercentage == 0 || StopLossValidDays == 0 || StopLossValidDays < 0)
@@ -158,7 +159,7 @@ namespace Imperatur_v2.order
                     )
                 );
             }
-            return new Order(m_oSymbol, StopLossTriggers, m_oAccountIdentifier, m_oQuantity, OrderType.Sell, DateTime.Now.AddDays(m_oStopLossDaysValid).Date);
+            return new Order(m_oSymbol, StopLossTriggers, m_oAccountIdentifier, m_oQuantity, OrderType.Sell, DateTime.Now.AddDays(m_oStopLossDaysValid).Date, "TradingAutomation");
         }
 
         public bool EvaluateTriggerOnOrder()

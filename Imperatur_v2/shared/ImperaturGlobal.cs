@@ -406,25 +406,44 @@ namespace Imperatur_v2.shared
 
             return businessDays;
         }
-
+        
+        private static bool IsDateBusinessDay(DateTime DateToCheck)
+        {
+            if(DateToCheck.DayOfWeek.Equals(DayOfWeek.Saturday) || DateToCheck.DayOfWeek.Equals(DayOfWeek.Sunday))
+            {
+                return false;
+            }
+            DateTime[] bankHolidays = BankDays.Select(x => new DateTime(DateTime.Now.Year, x.Item1, x.Item2)).ToArray();
+            if (bankHolidays.Select(b=>b.Date.Equals(DateToCheck.Date)).Count() > 0)
+            {
+                return false;
+            }
+            return true;
+        }
 
         public static ExchangeStatus CurrentExchangeStatus(Exchange exchange)
         {
             try
             {
-                if (m_oOpeningHours == null)
+                if (IsDateBusinessDay(DateTime.Now))
                 {
-                    GoogleHistoricalDataInterpreter oGHDI = new GoogleHistoricalDataInterpreter();
-                    m_oOpeningHours = oGHDI.GetStartEndOfExchange(Instruments[0], exchange);
-                }
-                if ((DateTime.Now >= m_oOpeningHours.Item1 && DateTime.Now <= m_oOpeningHours.Item2))
-                {
-                    m_oExchangeStatus = ExchangeStatus.Open;
+
+                    if (m_oOpeningHours == null)
+                    {
+                        GoogleHistoricalDataInterpreter oGHDI = new GoogleHistoricalDataInterpreter();
+                        m_oOpeningHours = oGHDI.GetStartEndOfExchange(Instruments[0], exchange);
+                    }
+                    if ((DateTime.Now >= m_oOpeningHours.Item1 && DateTime.Now <= m_oOpeningHours.Item2))
+                    {
+                        m_oExchangeStatus = ExchangeStatus.Open;
+                    }
+                    else
+                    {
+                        m_oExchangeStatus = ExchangeStatus.Closed;
+                    }
                 }
                 else
-                {
                     m_oExchangeStatus = ExchangeStatus.Closed;
-                }
             }
             catch
             {
