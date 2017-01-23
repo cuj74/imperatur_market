@@ -63,6 +63,8 @@
     <Compile Include="account\Account.cs" />
     <Compile Include="account\AccountInterface.cs" />
     <Compile Include="cache\cache.cs" />
+    <Compile Include="cache\HistoricalPriceCacheBuilder.cs" />
+    <Compile Include="cache\HistoricalPriceCacheBuilderInterface.cs" />
     <Compile Include="customer\Customer.cs" />
     <Compile Include="DIBinding.cs" />
     <Compile Include="event\Sharedevents.cs" />

@@ -30,6 +30,8 @@ namespace Imperatur_Market_Client
         public delegate void ToggleSearchDialogHandler(object sender, ToggleSearchEvents e);
         public delegate void SelectedSymbolEventHandler(object sender, SelectedSymbolEventArg e);
         private Timer UpdateLatestTransactions;
+        private Timer NotificationPop;
+        private Timer NotificationRemove;
         private dialog.WaitDialog oWaitLoadingSystem;
 
         private AccountTab m_oAccountTab;
@@ -44,6 +46,52 @@ namespace Imperatur_Market_Client
             UpdateLatestTransactions.Interval = 1000 * 60; //every minute
             UpdateLatestTransactions.Tick += UpdateLatestTransactions_Tick;
             UpdateLatestTransactions.Enabled = true;
+
+            NotificationPop = new Timer();
+            NotificationPop.Interval = 1000;
+            NotificationPop.Tick += NotificationPop_Tick;
+
+            NotificationRemove = new Timer();
+            NotificationRemove.Interval = 5000;
+            NotificationRemove.Tick += NotificationRemove_Tick;
+
+
+            this.toolStripStatusLabel_Notification.TextChanged += ToolStripStatusLabel_Notification_TextChanged;
+        }
+
+        private void NotificationRemove_Tick(object sender, EventArgs e)
+        {
+            if (toolStripStatusLabel_Notification.Text != "")
+            {
+                toolStripStatusLabel_Notification.Text = "";
+            }
+            NotificationRemove.Enabled = false;
+            
+        }
+
+        private void NotificationPop_Tick(object sender, EventArgs e)
+        {
+            if (toolStripStatusLabel_Notification.Text != "")
+            {
+                toolStripStatusLabel_Notification.BackColor = this.BackColor;
+                NotificationRemove.Enabled = true;
+                NotificationRemove.Start();
+            }
+        }
+
+        private void ToolStripStatusLabel_Notification_TextChanged(object sender, EventArgs e)
+        {
+            if (toolStripStatusLabel_Notification.Text != "")
+            {
+                toolStripStatusLabel_Notification.BackColor = Color.LightGreen;
+                NotificationPop.Enabled = true;
+                NotificationPop.Start();
+            }
+            else
+            {
+                NotificationPop.Enabled = false;
+                NotificationPop.Stop();
+            }
         }
 
         private void UpdateLatestTransactions_Tick(object sender, EventArgs e)
@@ -229,7 +277,12 @@ namespace Imperatur_Market_Client
 
             this.toolStripStatusLabel_system.Text =
                 string.Format("{0} | {1} | {2}", m_Ic.GetSystemData().SystemDirectory, m_Ic.GetSystemData().SystemCurrency, m_Ic.SystemExchangeStatus.ToString());
-                
+
+            if (m_Ic.SystemExchangeStatus.ToString() == "Closed")
+                toolStripStatusLabel_system.BackColor = Color.IndianRed;
+            else
+                toolStripStatusLabel_system.BackColor = this.BackColor;
+
             //add the controls to the different areas
             m_oAccountTab = new AccountTab(m_Ic.GetAccountHandler(), m_Ic.GetTradeHandler(), m_Ic.OrderQueue);
             m_oAccountTab.Dock = DockStyle.Fill;
@@ -264,9 +317,21 @@ namespace Imperatur_Market_Client
 
         private void M_Ic_QuoteUpdateEvent(object sender, EventArgs e)
         {
+            /*
+             * toolStripStatusLabel_system.BackColor = Color.IndianRed;
+             * */
+
             this.Invoke(new MethodInvoker(delegate
             {
-                string.Format("{0} | {1} | {2} | last update {3}", m_Ic.GetSystemData().SystemDirectory, m_Ic.GetSystemData().SystemCurrency, m_Ic.SystemExchangeStatus.ToString(), DateTime.Now.ToString());
+                toolStripStatusLabel_system.Text = string.Format("{0} | {1} | {2} | last update {3}", m_Ic.GetSystemData().SystemDirectory, m_Ic.GetSystemData().SystemCurrency, m_Ic.SystemExchangeStatus.ToString(), DateTime.Now.ToString());
+                if (m_Ic.SystemExchangeStatus.ToString() == "Closed")
+                {
+                    toolStripStatusLabel_system.BackColor = Color.IndianRed;
+                }
+                else
+                {
+                    toolStripStatusLabel_system.BackColor = Form.DefaultBackColor;
+                }
             }));
 
 
@@ -486,6 +551,7 @@ namespace Imperatur_Market_Client
                     ImperaturGlobal.GetMoney(200000, "SEK"));
              }
 
+
         }
         
         private string[] ReadSystemLocationFromCache()
@@ -586,7 +652,8 @@ namespace Imperatur_Market_Client
                 DailyQuoteDirectory = SystemData.FirstOrDefault(t => t.Key == "DailyQuoteDirectory").Value,
                 Exchange = SystemData.FirstOrDefault(t => t.Key == "Exchange").Value,
                 HistoricalQuoteDirectory = SystemData.FirstOrDefault(t => t.Key == "HistoricalQuoteDirectory").Value,
-                HistoricalQuoteFile = SystemData.FirstOrDefault(t => t.Key == "HistoricalQuoteFile").Value
+                HistoricalQuoteFile = SystemData.FirstOrDefault(t => t.Key == "HistoricalQuoteFile").Value,
+                OrderDirectory= SystemData.FirstOrDefault(t => t.Key == "OrderDirectory").Value
 
             };
             //all fields must be filled in!

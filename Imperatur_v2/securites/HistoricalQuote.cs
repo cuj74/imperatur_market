@@ -191,7 +191,7 @@ namespace Imperatur_v2.securites
             }
             catch(Exception ex)
             {
-                int gg = 0;
+                ImperaturGlobal.GetLog().Error(string.Format("Error when downloading from {0}", URL), ex);
             }
 
             if (ResponseData != "")

@@ -137,13 +137,6 @@ namespace Imperatur_v2.shared
         public static IMoney GetMoney(decimal Amount, ICurrency Currency)
         {
             return GetMoney(Amount, Currency.CurrencyCode);
-            /*
-            string t = Currency.ToString();
-            int g = 0;
-            return ImperaturGlobal.Kernel.Get<IMoney>(
-                                  new Ninject.Parameters.ConstructorArgument("Amount", Amount),
-                                  new Ninject.Parameters.ConstructorArgument("Currency", Currency)
-                                    );*/
         }
 
         internal static ICurrencyExhangeHandler CurrencyExchangeHandler
@@ -287,10 +280,24 @@ namespace Imperatur_v2.shared
                 */
         }
 
+        private static IHistoricalPriceCacheBuilder GetHistoricalPriceCacheBuilder()
+        {
+            return m_oKernel.Get<IHistoricalPriceCacheBuilder>(
+              new Ninject.Parameters.ConstructorArgument("Instruments", Instruments.ToArray()),
+              new Ninject.Parameters.ConstructorArgument("PathToSerializeDirectory",
+              string.Format(@"{0}\{1}\{2}", ImperaturGlobal.SystemData.SystemDirectory, ImperaturGlobal.SystemData.QuoteDirectory, ImperaturGlobal.SystemData.HistoricalQuoteDirectory)
+              ),
+              new Ninject.Parameters.ConstructorArgument("FileNamePattern", ImperaturGlobal.SystemData.HistoricalQuoteFile),
+              new Ninject.Parameters.ConstructorArgument("Exchange", SystemData.Exchange)
+            );
+        }
+
         //add to another class
         private static void BuildHistoricalPriceCache()
         {
+            GetHistoricalPriceCacheBuilder().BuildHistoricalPriceCache();
 
+            /*
             //return;
             foreach (Instrument i in Instruments)
             {
@@ -349,7 +356,7 @@ namespace Imperatur_v2.shared
                     }
                 }
             }
-            int gg = 0;
+            int gg = 0;*/
         }
 
 
@@ -414,7 +421,7 @@ namespace Imperatur_v2.shared
                 return false;
             }
             DateTime[] bankHolidays = BankDays.Select(x => new DateTime(DateTime.Now.Year, x.Item1, x.Item2)).ToArray();
-            if (bankHolidays.Select(b=>b.Date.Equals(DateToCheck.Date)).Count() > 0)
+            if (bankHolidays.Where(b=>b.Date.Equals(DateToCheck.Date)).Count() > 0)
             {
                 return false;
             }
@@ -431,7 +438,7 @@ namespace Imperatur_v2.shared
                     if (m_oOpeningHours == null)
                     {
                         GoogleHistoricalDataInterpreter oGHDI = new GoogleHistoricalDataInterpreter();
-                        m_oOpeningHours = oGHDI.GetStartEndOfExchange(Instruments[0], exchange);
+                        m_oOpeningHours = oGHDI.GetStartEndOfExchange(Instruments[0], exchange); //ugly, what happens when the first instruments doesn't exists at the exchange...?
                     }
                     if ((DateTime.Now >= m_oOpeningHours.Item1 && DateTime.Now <= m_oOpeningHours.Item2))
                     {
@@ -451,26 +458,10 @@ namespace Imperatur_v2.shared
             }
             return m_oExchangeStatus;
         }
-
-        public static HistoricalQuote GetHistoricalQuoteOnline(Instrument instrument, Exchange exchange)
-        {
-            GoogleHistoricalDataInterpreter oGHDI = new GoogleHistoricalDataInterpreter();
-            return oGHDI.GetHistoricalData(instrument, exchange);
-        }
-        public static HistoricalQuote GetHistoricalQuoteOnline(Instrument instrument, Exchange exchange, DateTime FromDate)
-        {
-            GoogleHistoricalDataInterpreter oGHDI = new GoogleHistoricalDataInterpreter();
-            return oGHDI.GetHistoricalData(instrument, exchange, FromDate);
-        }
-
-        private static string GetFullPathOfHistoricalDataForInstrument(Instrument Instrument)
-        {
-            string FileName = ImperaturGlobal.SystemData.HistoricalQuoteFile.Replace("{exchange}", SystemData.Exchange).Replace("{symbol}", Instrument.Symbol);
-            return string.Format(@"{0}\{1}\{2}\{3}", ImperaturGlobal.SystemData.SystemDirectory, ImperaturGlobal.SystemData.QuoteDirectory, ImperaturGlobal.SystemData.HistoricalQuoteDirectory, FileName);
-        }
+       
         public static HistoricalQuote HistoricalQuote(Instrument Instrument)
         {
-            return (HistoricalQuote)DeserializeJSON.DeserializeObjectFromFile(GetFullPathOfHistoricalDataForInstrument(Instrument));
+            return (HistoricalQuote)DeserializeJSON.DeserializeObjectFromFile(GetHistoricalPriceCacheBuilder().GetFullPathOfHistoricalDataForInstrument(Instrument));
         }
         #endregion
     }

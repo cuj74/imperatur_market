@@ -49,31 +49,46 @@ namespace Imperatur_v2.trade.automation
 
         }
 
-        private List<InstrumentRecommendation> GetRecommendationFromInstruments(List<Instrument> Instruments)
+        private List<InstrumentRecommendation> GetRecommendationFromInstrument(Instrument InstrumentToProcess)
         {
             List<InstrumentRecommendation> InstrumentRecommendations = new List<InstrumentRecommendation>();
-            foreach (Instrument oI in Instruments)
+
+            OnSystemNotification(new IMPSystemNotificationEventArg
             {
-                OnSystemNotification(new IMPSystemNotificationEventArg
-                {
-                    Message = string.Format("{0} - combining trading info about {1}", PROCESSNAME, oI.Name)
-                });
+                Message = string.Format("{0} - combining trading info about {1}", PROCESSNAME, InstrumentToProcess.Name)
+            });
 
-                m_oSA = ImperaturGlobal.Kernel.Get<ISecurityAnalysis>(new Ninject.Parameters.ConstructorArgument("Instrument", oI));
+            m_oSA = ImperaturGlobal.Kernel.Get<ISecurityAnalysis>(new Ninject.Parameters.ConstructorArgument("Instrument", InstrumentToProcess));
 
-                if (m_oSA.HasValue && m_oSA.Instrument != null && m_oSA.QuoteFromInstrument != null)
-                {
-                    InstrumentRecommendations.Add(
-                        new InstrumentRecommendation
-                        {
-                            InstrumentInfo = oI,
-                            ExternalSearchHits = m_oRSS.GetOccurancesOfString(SearchPlaces, new string[] { oI.Name, oI.Symbol }),
-                            VolumeIndication = m_oSA.GetRangeOfVolumeIndicator(DateTime.Now.AddDays(-50), DateTime.Now).Last().Item2,
-                            TradingRecommendations = m_oSA.GetTradingRecommendations()
-                        });
-                }
+            if (m_oSA.HasValue) //&& m_oSA.Instrument != null && m_oSA.QuoteFromInstrument != null)
+            {
+                InstrumentRecommendations.Add(
+                    new InstrumentRecommendation
+                    {
+                        InstrumentInfo = InstrumentToProcess,
+                        ExternalSearchHits = m_oRSS.GetOccurancesOfString(SearchPlaces, new string[] { InstrumentToProcess.Name, InstrumentToProcess.Symbol }),
+                        VolumeIndication = m_oSA.GetRangeOfVolumeIndicator(DateTime.Now.AddDays(-50), DateTime.Now).Last().Item2,
+                        TradingRecommendations = m_oSA.GetTradingRecommendations()
+                    });
             }
+      
             return InstrumentRecommendations;
+        }
+
+        private List<InstrumentRecommendation> GetRecommendationFromInstrumentsParallell(Instrument[] Instruments)
+        {
+            List<InstrumentRecommendation> InstrumentRecommendations = new List<InstrumentRecommendation>();
+            Parallel.For(0, Instruments.Length - 1, new ParallelOptions { MaxDegreeOfParallelism = 100 },
+            i =>
+            {
+                InstrumentRecommendations.AddRange(GetRecommendationFromInstrument(Instruments[i]));
+            });
+            return InstrumentRecommendations;
+        }
+
+        private List<InstrumentRecommendation> GetRecommendationFromInstruments(List<Instrument> Instruments)
+        {
+            return GetRecommendationFromInstrumentsParallell(Instruments.ToArray());
         }
 
         private List<IOrder> GetBuyOrdersFromTradingRecommencation(List<InstrumentRecommendation> TradingRecommendations)
@@ -134,44 +149,83 @@ namespace Imperatur_v2.trade.automation
                                      {
                                          SecAnalysis = ImperaturGlobal.Kernel.Get<ISecurityAnalysis>(new Ninject.Parameters.ConstructorArgument("Instrument", i)),
                                      };
-            var ActualBuyOrders = from ac in m_oAccountHandler.Accounts().Where(a => a.GetAccountType().Equals(AccountType.Customer))
-                                  from bp in ActualBuyPositions
-                                  where bp.SecAnalysis.HasValue && ac.GetAvailableFunds(
+
+
+            //här kommer parallellen in igen på accounts
+            return GetBuyOrdersFromRecommentdationPerAccount(m_oAccountHandler.Accounts().Where(a => a.GetAccountType().Equals(AccountType.Customer)).ToArray(),
+                ActualBuyPositions.Select(ab => ab.SecAnalysis).ToList(),
+                BuyForecastMethods.Select(b => new Tuple<string, string>(b.Symbol, b.ForeCastMethod.ToString())).ToList()
+                );
+          
+        }
+
+        private List<IOrder> GetBuyOrdersFromRecommentdationPerAccount(IAccountInterface[] Accounts, List<ISecurityAnalysis> TradingAnalysis, List<Tuple<string, string>> TradingForeCastPerSymbol)
+        {
+            List<IOrder> NewOrders = new List<IOrder>();
+              Parallel.For(0, Accounts.Length - 1, new ParallelOptions { MaxDegreeOfParallelism = 100 },
+            i =>
+            {
+                NewOrders.AddRange(GetBuyOrderForSingleAccount(Accounts[i], TradingAnalysis, TradingForeCastPerSymbol));
+            });
+            return NewOrders;
+        }
+
+        private List<IOrder> GetBuyOrderForSingleAccount(IAccountInterface CustomerAccount, List<ISecurityAnalysis> TradingAnalysis, List<Tuple<string, string>> TradingForeCastPerSymbol)
+        {
+            //ugly way of making the trading a little bit random...
+            List<ISecurityAnalysis> ModifiedList = new List<ISecurityAnalysis>();
+            Random rnd = new Random();
+            string[] Sector = ImperaturGlobal.Instruments.GroupBy(i => i.Sector).Select(grp => grp.First()).Select(x=>x.Sector).ToArray();
+            int r = rnd.Next(Sector.Count());
+            string PreferredSector = Sector[r];
+            if (TradingAnalysis.Where(tr=>tr.Instrument.Sector.Equals(PreferredSector)).Count()> 0)
+            {
+                ModifiedList = TradingAnalysis.Where(tr => tr.Instrument.Sector.Equals(PreferredSector)).ToList();
+            }
+            else
+            {
+                ModifiedList = TradingAnalysis;
+            }
+
+            var BuyOrdersForAccountBySector = from bp in ModifiedList
+                                              where bp.HasValue && CustomerAccount.GetAvailableFunds(
                                       new List<ICurrency> {
-                                    ImperaturGlobal.GetMoney(0m, bp.SecAnalysis.Instrument.CurrencyCode).CurrencyCode
+                                    ImperaturGlobal.GetMoney(0m, bp.Instrument.CurrencyCode).CurrencyCode
                                       }
-                                      ).FirstOrDefault().GreaterOrEqualThan(bp.SecAnalysis.QuoteFromInstrument.LastTradePrice)
+                                      ).FirstOrDefault().GreaterOrEqualThan(bp.QuoteFromInstrument.LastTradePrice)
                                   select new
                                   {
 
                                       Order = ImperaturGlobal.Kernel.Get<IOrder>(
-                                           new Ninject.Parameters.ConstructorArgument("Symbol", bp.SecAnalysis.Instrument.Symbol),
+                                           new Ninject.Parameters.ConstructorArgument("Symbol", bp.Instrument.Symbol),
                                            new Ninject.Parameters.ConstructorArgument("Trigger", new List<ITrigger> {
                                            ImperaturGlobal.Kernel.Get<ITrigger>(
                                                                 new Ninject.Parameters.ConstructorArgument("m_oOperator", TriggerOperator.EqualOrless),
                                                                 new Ninject.Parameters.ConstructorArgument("m_oValueType", TriggerValueType.TradePrice),
-                                                                new Ninject.Parameters.ConstructorArgument("m_oTradePriceValue", bp.SecAnalysis.QuoteFromInstrument.LastTradePrice.Amount),
+                                                                new Ninject.Parameters.ConstructorArgument("m_oTradePriceValue", bp.QuoteFromInstrument.LastTradePrice.Amount),
                                                                 new Ninject.Parameters.ConstructorArgument("m_oPercentageValue", 0m)
                                                                 )
                                            }),
-                                           new Ninject.Parameters.ConstructorArgument("AccountIdentifier", ac.Identifier),
+                                           new Ninject.Parameters.ConstructorArgument("AccountIdentifier", CustomerAccount.Identifier),
                                            new Ninject.Parameters.ConstructorArgument("Quantity", (int)
-                                           ac.GetAvailableFunds(
+                                           CustomerAccount.GetAvailableFunds(
                                                   new List<ICurrency> {
-                                                ImperaturGlobal.GetMoney(0m, bp.SecAnalysis.Instrument.CurrencyCode).CurrencyCode
+                                                ImperaturGlobal.GetMoney(0m, bp.Instrument.CurrencyCode).CurrencyCode
                                                   }
-                                                  ).FirstOrDefault().Divide(bp.SecAnalysis.QuoteFromInstrument.LastTradePrice).Amount
+                                                  ).FirstOrDefault().Divide(bp.QuoteFromInstrument.LastTradePrice).Amount
                                            ),
                                            new Ninject.Parameters.ConstructorArgument("OrderType", OrderType.StopLoss),
                                            new Ninject.Parameters.ConstructorArgument("ValidToDate", DateTime.Now.AddDays(2)),
-                                           new Ninject.Parameters.ConstructorArgument("ProcessCode", BuyForecastMethods.Where(br=>br.Symbol.Equals(bp.SecAnalysis.Instrument.Symbol)).First().ForeCastMethod.ToString()),
+                                           new Ninject.Parameters.ConstructorArgument("ProcessCode", TradingForeCastPerSymbol.Where(br => br.Item1.Equals(bp.Instrument.Symbol)).First().Item2.ToString()),
                                            new Ninject.Parameters.ConstructorArgument("StopLossValidDays", 30),
                                            new Ninject.Parameters.ConstructorArgument("StopLossAmount", 0m),
                                            new Ninject.Parameters.ConstructorArgument("StopLossPercentage", 0.8m)
                                        )
                                   };
-            return ActualBuyOrders.Select(i => i.Order).ToList();
+            return BuyOrdersForAccountBySector.Select(i => i.Order).ToList();
         }
+        
+
 
         private List<IOrder> GetSellOrdersFromTradingRecommencation(List<InstrumentRecommendation> TradingRecommendations)
         {
@@ -233,7 +287,13 @@ namespace Imperatur_v2.trade.automation
                                       {
                                           SecAnalysis = ImperaturGlobal.Kernel.Get<ISecurityAnalysis>(new Ninject.Parameters.ConstructorArgument("Instrument", i)),
                                       };
-   
+
+            return GetSellOrdersFromRecommentdationPerAccount(m_oAccountHandler.Accounts().Where(a => a.GetAccountType().Equals(AccountType.Customer)).ToArray(),
+                    ActualSellPositions.Select(ab => ab.SecAnalysis).ToList(),
+                    SellForecastMethods.Select(b => new Tuple<string, string>(b.Symbol, b.ForeCastMethod.ToString())).ToList()
+                    );
+
+            /*
             var ActualSellOrders = from ac in m_oAccountHandler.Accounts().Where(a => a.GetAccountType().Equals(AccountType.Customer))
                                        from bp in ActualSellPositions
                                        where
@@ -270,6 +330,59 @@ namespace Imperatur_v2.trade.automation
                                                 new Ninject.Parameters.ConstructorArgument("StopLossPercentage", 0m)
                                       )
                                        };
+            return ActualSellOrders.Select(i => i.Order).ToList();*/
+        }
+
+
+        private List<IOrder> GetSellOrdersFromRecommentdationPerAccount(IAccountInterface[] Accounts, List<ISecurityAnalysis> TradingAnalysis, List<Tuple<string, string>> TradingForeCastPerSymbol)
+        {
+            List<IOrder> NewOrders = new List<IOrder>();
+            Parallel.For(0, Accounts.Length - 1, new ParallelOptions { MaxDegreeOfParallelism = 100 },
+          i =>
+          {
+              NewOrders.AddRange(GetSellOrderForSingleAccount(Accounts[i], TradingAnalysis, TradingForeCastPerSymbol));
+          });
+            return NewOrders;
+        }
+
+
+        private List<IOrder> GetSellOrderForSingleAccount(IAccountInterface CustomerAccount, List<ISecurityAnalysis> TradingAnalysis, List<Tuple<string, string>> TradingForeCastPerSymbol)
+        {
+            var ActualSellOrders = from bp in TradingAnalysis
+                                     where
+                                     bp.HasValue
+                                     &&
+                                     CustomerAccount.GetHoldings().Count() > 0
+                                     &&
+                                     CustomerAccount.GetHoldings().Where(h => h.Symbol != null
+                                     &&
+                                     h.Symbol.Equals(bp.Instrument.Symbol)).Count() > 0
+                                     &&
+                                     CustomerAccount.GetAverageAcquisitionCostFromHolding(bp.Instrument.Symbol).Multiply(1.02m).GreaterOrEqualThan(bp.QuoteFromInstrument.LastTradePrice)
+                                   select new
+                                   {
+                                       Order = ImperaturGlobal.Kernel.Get<IOrder>(
+                                            new Ninject.Parameters.ConstructorArgument("Symbol", bp.Instrument.Symbol),
+                                            new Ninject.Parameters.ConstructorArgument("Trigger", new List<ITrigger> {
+                                                ImperaturGlobal.Kernel.Get<ITrigger>(
+                                                        new Ninject.Parameters.ConstructorArgument("m_oOperator", TriggerOperator.EqualOrGreater),
+                                                        new Ninject.Parameters.ConstructorArgument("m_oValueType", TriggerValueType.TradePrice),
+                                                        new Ninject.Parameters.ConstructorArgument("m_oTradePriceValue", bp.QuoteFromInstrument.LastTradePrice.Amount),
+                                                        new Ninject.Parameters.ConstructorArgument("m_oPercentageValue", 0m)
+                                                        )
+                                            }),
+                                            new Ninject.Parameters.ConstructorArgument("AccountIdentifier", CustomerAccount.Identifier),
+                                            new Ninject.Parameters.ConstructorArgument("Quantity",
+                                            Convert.ToInt32(CustomerAccount.GetHoldings().Where(h => h.Symbol.Equals(bp.Instrument.Symbol)).Sum(ho => ho.Quantity))
+                                            ),
+                                            new Ninject.Parameters.ConstructorArgument("OrderType", OrderType.Sell),
+                                            new Ninject.Parameters.ConstructorArgument("ValidToDate", DateTime.Now.AddDays(2)),
+                                            new Ninject.Parameters.ConstructorArgument("ProcessCode", TradingForeCastPerSymbol.Where(br => br.Item1.Equals(bp.Instrument.Symbol)).First().Item2.ToString()),
+                                            new Ninject.Parameters.ConstructorArgument("StopLossValidDays", 0),
+                                            new Ninject.Parameters.ConstructorArgument("StopLossAmount", 0m),
+                                            new Ninject.Parameters.ConstructorArgument("StopLossPercentage", 0m)
+                                  )
+                                   };
             return ActualSellOrders.Select(i => i.Order).ToList();
         }
 
@@ -317,6 +430,9 @@ namespace Imperatur_v2.trade.automation
             }
             return NewOrders;
         }
+
+
+
         public List<IOrder> RunTradeAutomation()
         {
             if (ImperaturGlobal.ExchangeStatus != ExchangeStatus.Open)
@@ -326,12 +442,8 @@ namespace Imperatur_v2.trade.automation
             List<IOrder> NewOrders = new List<IOrder>();
             try
             {
-                m_oTradingOverview = GetRecommendationFromInstruments(ImperaturGlobal.Instruments);
+                m_oTradingOverview = GetRecommendationFromInstruments(ImperaturGlobal.Instruments).Where(x=>x!=null).ToList();
 
-                if (m_oTradingOverview.Where(x => x.TradingRecommendations.Where(tr => !tr.TradingForecastMethod.Equals(TradingForecastMethod.Undefined)).Count() == 0).Count() > 0)
-                {
-                    return NewOrders;
-                }
                 CreateSystemNoficationEvent("creating new buy orders");
                 NewOrders.AddRange(GetBuyOrdersFromTradingRecommencation(m_oTradingOverview));
                 CreateSystemNoficationEvent("creating new sell orders");

@@ -108,6 +108,7 @@ namespace Imperatur_v2
         ExchangeStatus SystemExchangeStatus { get; }
         void LoadImperaturMarket(ImperaturData SystemData);
         void LoadImperaturMarket(string SystemLocation);
+        void StartTradeAutomationProcess();
         event ImperaturMarket.SystemNotificationHandler SystemNotificationEvent;
         event ImperaturMarket.QuoteUpdateHandler QuoteUpdateEvent;
 
@@ -181,7 +182,10 @@ namespace Imperatur_v2
             //create the system based on the data
             if (!Directory.Exists(SystemData.SystemDirectory))
             {
-                CreateImperaturDataFromSystemData(SystemData);
+               if (!CreateImperaturDataFromSystemData(SystemData))
+                {
+                    int gg = 0;
+                }
             }
             CreateImperaturMarket(SystemData);
         }
@@ -233,7 +237,8 @@ namespace Imperatur_v2
             {
                 CreateSystemSettingsFile(m_oImperaturData);
             }
-            
+            //start the tradeautomation process
+            //TradingRobotMain();
             return true;
         }
 
@@ -273,7 +278,7 @@ namespace Imperatur_v2
          }
         private bool CreateImperaturDataFromSystemData(ImperaturData Systemdata)
         {
-            ImperaturGlobal.GetLog().Info("Creating the Imperatur Market System");
+            ImperaturGlobal.GetLogWithDirectory(Systemdata.SystemDirectory).Info("Creating the Imperatur Market System");
             if (
                 CreateDirectory(Systemdata.SystemDirectory)
                 &&
@@ -350,7 +355,7 @@ namespace Imperatur_v2
             List<IAccountInterface> oLAB = new List<IAccountInterface>();
 
             CreateSystemNotification("Loading accounts");
-            if (GetAccountHandler().Accounts().Where(a => !a.GetAccountType().Equals(account.AccountType.Bank)).Count() == 0)
+            if (GetAccountHandler().Accounts().Where(a => a.GetAccountType().Equals(account.AccountType.Bank)).Count() == 0)
             {
                 //create internalbankaccount for balance transactions
                 //start by create the bankaccount
@@ -362,7 +367,7 @@ namespace Imperatur_v2
                     )
                     );
             }
-            if (GetAccountHandler().Accounts().Where(a => !a.GetAccountType().Equals(account.AccountType.House)).Count() == 0)
+            if (GetAccountHandler().Accounts().Where(a => a.GetAccountType().Equals(account.AccountType.House)).Count() == 0)
             {
                 //create internalbankaccount for balance transactions
                 //start by create the bankaccount
@@ -395,7 +400,7 @@ namespace Imperatur_v2
             CreateSystemNotification("Setting events");
             m_oQuoteTimer = new System.Timers.Timer();
             m_oQuoteTimer.Elapsed += M_oQuoteTimer_Elapsed;
-            m_oQuoteTimer.Interval = 1000 * 60 * 2; //Convert.ToInt32(m_oImperaturData.QuoteRefreshTime); //every 15 minutes
+            m_oQuoteTimer.Interval = 1000 * 60 * 1; //Convert.ToInt32(m_oImperaturData.QuoteRefreshTime); //every 15 minutes
             m_oQuoteTimer.Enabled = true;
 
             m_oDisplayCurrency = ImperaturGlobal.Kernel.Get<ICurrency>(new Ninject.Parameters.ConstructorArgument("CurrencyCode", m_oImperaturData.SystemCurrency));
@@ -456,7 +461,7 @@ namespace Imperatur_v2
             {
                 Message = string.Format("Adding orders to queue")
             });
-            OrderQueue.AddOrders(NewOrders);
+            OrderQueue.AddOrders(NewOrders.Where(x=>x!=null).ToList());
             //do all the others that might have ended up in the list.
             OnSystemNotification(new IMPSystemNotificationEventArg
             {
@@ -502,6 +507,11 @@ namespace Imperatur_v2
                 m_oTradeHandler = ImperaturGlobal.Kernel.Get<ITradeHandlerInterface>();
 
             return m_oTradeHandler;
+        }
+
+        public void StartTradeAutomationProcess()
+        {
+            OnQuoteUpdate(new EventArgs());
         }
 
         #endregion

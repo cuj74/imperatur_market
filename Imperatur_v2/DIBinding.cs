@@ -14,6 +14,7 @@ using Imperatur_v2.trade.analysis;
 using Imperatur_v2.trade.recommendation;
 using Imperatur_v2.order;
 using Imperatur_v2.trade.automation;
+using Imperatur_v2.cache;
 
 namespace Imperatur_v2
 {
@@ -34,9 +35,7 @@ namespace Imperatur_v2
             Bind<IOrderQueue>().To<OrderQueue>();
             Bind<ITrigger>().To<Trigger>();
             Bind<ITradeAutomation>().To<TradeAutomation>();
-
-            
-
+            Bind<IHistoricalPriceCacheBuilder>().To<HistoricalPriceCacheBuilder>();
         }
     }
 }

@@ -169,23 +169,32 @@ namespace Imperatur_v2.handler
             throw new NotImplementedException();
         }
 
+        private void SaveAccountsParallell(IAccountInterface[] AccountsToSave)
+        {
+            Parallel.For(0, AccountsToSave.Length - 1, new ParallelOptions { MaxDegreeOfParallelism = 100 },
+              i =>
+              {
+                  SaveSingleAccount(AccountsToSave[i]);
+              });
+        }
+
         public bool SaveAccounts()
         {
-            foreach (IAccountInterface oA in m_oAccounts )
-            {
-                SaveSingleAccount(oA);
-            }
-            /*
-            json.SerializeJSONdata.SerializeObject(Accounts(),
-                string.Format(@"{0}\{1}\{2}", ImperaturGlobal.SystemData.SystemDirectory, ImperaturGlobal.SystemData.AcccountDirectory, ImperaturGlobal.SystemData.AccountFile));
-            */        
+            SaveAccountsParallell(m_oAccounts.ToArray());
             return true;
         }
 
         private bool SaveSingleAccount(IAccountInterface oA)
         {
-            json.SerializeJSONdata.SerializeObject((Account)oA,
-              string.Format(@"{0}\{1}\{2}.json", ImperaturGlobal.SystemData.SystemDirectory, ImperaturGlobal.SystemData.AcccountDirectory, oA.Identifier));
+            try
+            {
+                json.SerializeJSONdata.SerializeObject((Account)oA,
+                  string.Format(@"{0}\{1}\{2}.json", ImperaturGlobal.SystemData.SystemDirectory, ImperaturGlobal.SystemData.AcccountDirectory, oA.Identifier));
+            }
+            catch(Exception ex)
+            {
+                ImperaturGlobal.GetLog().Error(string.Format("Couldn't save account {0} to file", oA.Identifier), ex);
+            }
             return true;
         }
 
@@ -219,10 +228,9 @@ namespace Imperatur_v2.handler
                         item.SaveAccountEvent += Item_SaveAccountEvent;
                     }
                 }
-                catch(Exception ex)
+                catch
                 {
                     m_oAccounts = new ObservableRangeCollection<IAccountInterface>();
-
                 }
             }
             TryLoadFromStorage = true;
@@ -255,7 +263,7 @@ namespace Imperatur_v2.handler
 
         public bool CreateAccount(Customer customer, AccountType accountType, string AccountName)
         {
-            try
+       /*     try
             {
                 int g = GetBankAccountsFromCache().Count();
             }
@@ -263,7 +271,7 @@ namespace Imperatur_v2.handler
             (Exception ex)
             {
                 int gg = 0;
-            }
+            }*/
             List<IAccountInterface> oNewList = new List<IAccountInterface>();
             oNewList.Add(
             ImperaturGlobal.Kernel.Get<IAccountInterface>(

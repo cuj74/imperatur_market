@@ -71,7 +71,7 @@ namespace Imperatur_v2.handler
                     }
                     else
                     {
-                        m_oQuotes = GetQuotesFromExternalSource(ImperaturGlobal.SystemData.ULR_Quotes);
+                        m_oQuotes = GetQuotesFromExternalSource(ImperaturGlobal.SystemData.ULR_Quotes).Where(x=>x != null).ToList();
                         if (m_oQuotes.Count() > 0)
                         {
                             SerializeJSONdata.SerializeObject(m_oQuotes, string.Format(@"{0}\{1}\{2}\{3}{4}{5}", ImperaturGlobal.SystemData.SystemDirectory, ImperaturGlobal.SystemData.QuoteDirectory, ImperaturGlobal.SystemData.DailyQuoteDirectory, ImperaturGlobal.SystemData.QuoteFile, DateTime.Now.ToShortDateString(), DateTime.Now.ToShortTimeString().Replace(":", ";")));
@@ -81,7 +81,7 @@ namespace Imperatur_v2.handler
                 catch (Exception ex)
                 {
                     //read from external source
-                    m_oQuotes = GetQuotesFromExternalSource(ImperaturGlobal.SystemData.ULR_Quotes);
+                    m_oQuotes = GetQuotesFromExternalSource(ImperaturGlobal.SystemData.ULR_Quotes).Where(x => x != null).ToList();
                     //save if results obtained
                 }
             }
@@ -95,32 +95,24 @@ namespace Imperatur_v2.handler
 
         private List<Quote> GetQuotesFromExternalSource(string URL)
         {
+            //gör om till parallella körning med en i varje, annars blir det fel eftersom vi inbland får tillbaka fel exchange...
             List<Quote> QuotesRet = new List<Quote>();
-            List<string> AllSymbolsToRetrieve = ImperaturGlobal.Instruments.Select(i => i.Symbol.Replace(" ", "-")).ToList();
-            URL = URL.Replace("{exchange}", "STO");
-            while (AllSymbolsToRetrieve.Count() > 0)
+            string[] AllSymbolsToRetrieve = ImperaturGlobal.Instruments.Select(i => i.Symbol.Replace(" ", "-")).ToArray();
+            URL = URL.Replace("{exchange}", ImperaturGlobal.SystemData.Exchange);
+            Parallel.For(0, AllSymbolsToRetrieve.Length - 1, new ParallelOptions { MaxDegreeOfParallelism = 100 },
+            i =>
             {
-                QuotesRet.AddRange(GetQuotesFromExternalSource(URL, AllSymbolsToRetrieve.Take(20).ToList()));
-                AllSymbolsToRetrieve.RemoveRange(0, AllSymbolsToRetrieve.Count() < 20 ? AllSymbolsToRetrieve.Count(): 20);
-            }
+                QuotesRet.AddRange(GetQuotesFromExternalSource(URL, AllSymbolsToRetrieve[i]));
+             });
             return QuotesRet;
         }
 
-        private List<Quote> GetQuotesFromExternalSource(string URL, List<string> SymbolsToRetrieve)
+
+
+        private List<Quote> GetQuoteInfoFromString(string QuoteInfoInJson)
         {
-            //TODO, move to another class, it has nothing do here, remember SOLID
             List<Quote> QuotesRet = new List<Quote>();
-            string json;
-            rest.Rest oG = new rest.Rest();
-
-            json = oG.GetResultFromURL(URL + string.Join(",", SymbolsToRetrieve.ToArray()));
-
-            //Google adds a comment before the json for some unknown reason, so we need to remove it
-            json = json.Replace("//", "");
-
-            var v = JArray.Parse(json);
-
-            
+            var v = JArray.Parse(QuoteInfoInJson);
 
             foreach (var i in v)
             {
@@ -128,7 +120,7 @@ namespace Imperatur_v2.handler
                 {
                     try
                     {
-                        if (i.SelectToken("t") != null 
+                        if (i.SelectToken("t") != null
                             &&
                             ImperaturGlobal.Instruments.Where(ins => ins.Symbol.Replace(" ", "-").Equals(i.SelectToken("t").ToString())).Count() > 0
                             &&
@@ -152,18 +144,32 @@ namespace Imperatur_v2.handler
                                 LastTradeSize = Convert.ToInt32(i.SelectToken("s").ToString()),
                                 PreviousClosePrice = ImperaturGlobal.GetMoney(
                                 Convert.ToDecimal(i.SelectToken("pcls_fix")), i.SelectToken("l_cur").ToString().Substring(0, 3)
-                               
+
                                )
                             });
                         }
                     }
                     catch (Exception ex)
                     {
-                        int gg = 0;
+                        ImperaturGlobal.GetLog().Error(string.Format("Error when retreiving quote data in GetQuotesFromExternalSource"), ex);
                     }
                 }
             }
             return QuotesRet;
+        }
+        //string.Join(",", SymbolsToRetrieve.ToArray()));
+
+        private List<Quote> GetQuotesFromExternalSource(string URL, string SymbolsToRetrieve)
+        {
+            rest.Rest oG = new rest.Rest();
+            string json = oG.GetResultFromURL(URL + SymbolsToRetrieve);
+            if (json == "")
+            {
+                return new List<Quote>();
+            }
+            json = json.Replace("//", "");
+            return GetQuoteInfoFromString(json);
+            
         }
 
         public bool ForceUpdate()

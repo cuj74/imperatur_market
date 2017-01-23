@@ -325,6 +325,12 @@ namespace Imperatur_v2.trade.analysis
                 {
 
                     List<List<double>> oB = BollingerForRange(DateTime.Now.AddDays(-Interval), DateTime.Now, 20, Multiplies);
+
+                    if (oB.Select(b=>b.Count()).Sum() == 0)
+                    {
+                        //no range found, try next interval
+                        continue;
+                    }
                     //Now create the pricerange list as well
                     var PriceInfo = GetDataForRange(DateTime.Now.AddDays(-Interval), DateTime.Now);
                     if (PriceInfo.Count() < 2)
@@ -726,7 +732,10 @@ namespace Imperatur_v2.trade.analysis
             {
                 //small intervalls add the desired amount of time and then skip at the end
                 PriceArray = GetCachedDataForRange(Start.AddSeconds(-(Interval * Period*2)), End, Interval).Select(q => Convert.ToDouble(q.Close)).ToArray();
-                //double[] PriceArray2 = GetCachedDataForRange(Start, End, Interval).Select(q => Convert.ToDouble(q.Close)).ToArray();
+                if (PriceArray.Length == 0)
+                {
+                    return BollingerBands;
+                }
                 skip = PriceArray.Count()- GetCachedDataForRange(Start, End, Interval).Select(q => Convert.ToDouble(q.Close)).Count();
             }
             else
@@ -893,7 +902,6 @@ namespace Imperatur_v2.trade.analysis
         }
         public List<Tuple<DateTime, VolumeIndicator>> GetRangeOfVolumeIndicator(DateTime Start, DateTime End)
         {
-            
             List<Tuple<DateTime, VolumeIndicator>> oVolumeIndicatorData = new List<Tuple<DateTime, VolumeIndicator>>();
             try
             {
@@ -903,6 +911,10 @@ namespace Imperatur_v2.trade.analysis
                     StartWithOffset = Start.AddDays(-(20 - (int)(End - Start).TotalDays));
                 }
                 var HistData = GetDataForRange(StartWithOffset, End);
+                if (HistData.Count() == 0)
+                {
+                    return oVolumeIndicatorData;
+                }
 
                 double[] VolumeList = HistData.Select(x => Convert.ToDouble(x.Volume)).ToArray();
                 double StdForVolume = VolumeList.StandardDeviation();

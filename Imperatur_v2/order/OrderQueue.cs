@@ -66,6 +66,16 @@ namespace Imperatur_v2.order
             }
             return true;
         }
+
+        private void SaveOrdersParallell(IOrder[] OrdersToSave)
+        {
+            Parallel.For(0, OrdersToSave.Length - 1, new ParallelOptions { MaxDegreeOfParallelism = 100 },
+              i =>
+              {
+                  SaveSingleOrder(OrdersToSave[i]);
+              });
+        }
+
         
         public bool SaveOrders()
         {
@@ -74,17 +84,11 @@ namespace Imperatur_v2.order
                 var OrdersToSave = from no in m_oNewOrders
                                    join eo in m_oOrders on no equals eo.Identifier
                                    select eo;
-                foreach (IOrder oO in OrdersToSave)
-                {
-                    SaveSingleOrder(oO);
-                }
+                SaveOrdersParallell(OrdersToSave.ToArray());
             }
             else
             {
-                foreach (IOrder oO in m_oOrders)
-                {
-                    SaveSingleOrder(oO);
-                }
+                SaveOrdersParallell(m_oOrders.ToArray());
             }
             m_oNewOrders.Clear();
             return true;
@@ -216,7 +220,7 @@ namespace Imperatur_v2.order
 
         public bool AddOrders(List<IOrder> Orders)
         {
-            m_oNewOrders = Orders.Select(x => x.Identifier).ToList();
+            m_oNewOrders = Orders.Where(x=>x != null).Select(x => x.Identifier).ToList();
             m_oOrders.AddRange(Orders);
             m_oOrders.CollectionChanged -= M_oOrders_CollectionChanged;
             m_oOrders.CollectionChanged += M_oOrders_CollectionChanged;
