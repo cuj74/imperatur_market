@@ -87,8 +87,12 @@
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>
-    <Content Include="static\accounts2.js" />
-    <Content Include="static\angular.min.js" />
+    <Content Include="static\accounts2.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="static\angular.min.js">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="static\css\base-context-min.css" />
     <Content Include="static\css\base-context.css" />
     <Content Include="static\css\base-min.css" />
@@ -129,9 +133,10 @@
     <Content Include="static\css\pure.css" />
     <Content Include="static\css\tables-min.css" />
     <Content Include="static\css\tables.css" />
-    <Content Include="views\accounts2.js" />
-    <Content Include="views\angular.min.js" />
-    <Content Include="views\index.html" />
+    <Content Include="static\marketfactory.js" />
+    <Content Include="views\index.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="views\MasterPage.html" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

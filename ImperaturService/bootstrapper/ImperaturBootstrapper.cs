@@ -52,14 +52,14 @@ namespace ImperaturService.bootstrapper
     {
         protected override void ConfigureConventions(NancyConventions nancyConventions)
         {
-            nancyConventions.StaticContentsConventions.Add(StaticContentConventionBuilder.AddDirectory("Static", @"Static"));
+            nancyConventions.StaticContentsConventions.Add(StaticContentConventionBuilder.AddDirectory("static", @"static"));
             base.ConfigureConventions(nancyConventions);
         }
 
         protected override void ApplicationStartup(TinyIoCContainer container, IPipelines pipelines)
         {
             base.ApplicationStartup(container, pipelines);
-            container.Register<IImperaturMarket>(ImperaturContainer.BuildImperaturContainer(@"c:\temp\impe6"));
+            container.Register<IImperaturMarket>(ImperaturContainer.BuildImperaturContainer(@"F:\dev\test4"));
         }
 
         protected override void RequestStartup(TinyIoCContainer container, IPipelines pipelines, NancyContext context)

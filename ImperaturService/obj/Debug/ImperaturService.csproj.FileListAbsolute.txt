@@ -46,3 +46,8 @@ C:\temp\dev\imperatur_market\ImperaturService\obj\Debug\ImperaturService.exe
 C:\temp\dev\imperatur_market\ImperaturService\obj\Debug\ImperaturService.pdb
 C:\temp\dev\imperatur_market\ImperaturService\bin\Debug\Ninject.Extensions.ChildKernel.dll
 C:\temp\dev\imperatur_market\ImperaturService\bin\Debug\Ninject.Extensions.ChildKernel.xml
+F:\visualstudioprojects\Imperatur\imperatur_market\ImperaturService\bin\Debug\Ninject.Extensions.ChildKernel.dll
+F:\visualstudioprojects\Imperatur\imperatur_market\ImperaturService\bin\Debug\Ninject.Extensions.ChildKernel.xml
+F:\visualstudioprojects\Imperatur\imperatur_market\ImperaturService\bin\Debug\views\index.html
+F:\visualstudioprojects\Imperatur\imperatur_market\ImperaturService\bin\Debug\static\angular.min.js
+F:\visualstudioprojects\Imperatur\imperatur_market\ImperaturService\bin\Debug\static\accounts2.js
