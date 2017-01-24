@@ -9,35 +9,26 @@ namespace ImperaturService
 {
     public class ImperaturWebService : NancyModule
     {
+        private IImperaturMarket _imperaturMarket;
 
-        public ImperaturWebService()
+        public ImperaturWebService(IImperaturMarket imperaturMarket)
         {
-            Get["/imperatur"] = parameters =>
-            {
-                var feeds = new string[] { "foo", "bar" };
-                return Response.AsJson(feeds);
-            };
+            _imperaturMarket = imperaturMarket;
 
-            Get["/transactions"] = parameters =>
+            Get["/"] = _ => View["index"];
+            Get["/Accounts"] = parameters =>
             {
-                core.ImperaturServiceCore oC = new core.ImperaturServiceCore(@"F:\dev\test3");
-                List<IAccountInterface> oIA = oC.ImperaturMarket.GetAccountHandler().Accounts();
+                List<IAccountInterface> oIA = _imperaturMarket.GetAccountHandler().Accounts();
                 var feeds = oIA.Where(x => x.GetAccountType().Equals(AccountType.Customer)).Select(f => f.AccountName).ToArray();
-
-                var t = feeds.Select(x => new
+                var feeds2 = oIA.Where(x => x.GetAccountType().Equals(AccountType.Customer)).Select
+                (f => new
                 {
-                    row = string.Format("<tr><td>{0}</td></tr>", x)
-                });
-                string res = "";
-                foreach (string gf in t.Select(z=>z.row))
-                {
-                    res += gf;
-                }
-                var r = "<table>" + res + "</table>";
-      
-
-
-                return Response.AsJson(feeds);
+                    accountname = f.AccountName,
+                    availablefunds = f.GetAvailableFunds().First().ToString(),
+                    identifier = f.Identifier,
+                    totalfunds = f.GetTotalFunds().First().ToString()
+                }).ToArray();
+                return Response.AsJson(feeds2);
             };
         }
     }

@@ -9,19 +9,20 @@ using Imperatur_v2;
 
 namespace ImperaturService
 {
+
+
     class Program
     {
 
         static void Main(string[] args)
         {
-
             HostFactory.Run(x =>
             {
-                x.Service<ImperaturServiceHost>(s =>
+                x.Service<ImperaturServiceHost>(isc =>
                 {
-                    s.ConstructUsing(name => new ImperaturServiceHost());
-                    s.WhenStarted(tc => tc.Start());
-                    s.WhenStopped(tc => tc.Stop());
+                    isc.ConstructUsing(name => new ImperaturServiceHost());
+                    isc.WhenStarted(tc => tc.Start());
+                    isc.WhenStopped(tc => tc.Stop());
                 });
 
                 x.RunAsLocalSystem();

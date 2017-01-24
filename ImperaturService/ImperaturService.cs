@@ -7,12 +7,15 @@ namespace ImperaturService
 {
     namespace ImperaturService
     {
+
+
         public class ImperaturServiceHost
         {
             private NancyHost m_nancyHost;
 
             public void Start()
             {
+                HostConfiguration oh = new HostConfiguration();
                 m_nancyHost = new NancyHost(new Uri("http://localhost:8090"));
                 m_nancyHost.Start();
             }
@@ -24,4 +27,6 @@ namespace ImperaturService
             }
         }
     }
+
+
 }

@@ -33,12 +33,20 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Nancy, Version=1.4.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Nancy.1.4.1\lib\net40\Nancy.dll</HintPath>
+    <Reference Include="Nancy, Version=1.4.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Nancy.1.4.3\lib\net40\Nancy.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Nancy.Hosting.Self, Version=1.4.1.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Nancy.Hosting.Self.1.4.1\lib\net40\Nancy.Hosting.Self.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Ninject, Version=3.2.0.0, Culture=neutral, PublicKeyToken=c7192dc5380945e7, processorArchitecture=MSIL">
+      <HintPath>..\packages\Ninject.3.2.2.0\lib\net45-full\Ninject.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Ninject.Extensions.ChildKernel, Version=3.2.0.0, Culture=neutral, PublicKeyToken=c7192dc5380945e7, processorArchitecture=MSIL">
+      <HintPath>..\packages\Ninject.Extensions.ChildKernel.3.2.0.0\lib\net45-full\Ninject.Extensions.ChildKernel.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
@@ -55,6 +63,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="bootstrapper\ImperaturBootstrapper.cs" />
     <Compile Include="core\ImperaturServiceCore.cs" />
     <Compile Include="ImperaturService.cs" />
     <Compile Include="ImperaturWebService.cs" />
@@ -64,12 +73,66 @@
   <ItemGroup>
     <None Include="App.config" />
     <None Include="packages.config" />
+    <None Include="static\css\bower.json" />
+    <None Include="static\css\HISTORY.md" />
+    <None Include="static\css\LICENSE.md" />
+    <None Include="static\css\README.md" />
+    <None Include="views\index.sshtml" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Imperatur_v2\Imperatur_v2.csproj">
       <Project>{5700c234-afda-4b4a-b59c-a36ec1db0424}</Project>
       <Name>Imperatur_v2</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <Content Include="static\accounts2.js" />
+    <Content Include="static\angular.min.js" />
+    <Content Include="static\css\base-context-min.css" />
+    <Content Include="static\css\base-context.css" />
+    <Content Include="static\css\base-min.css" />
+    <Content Include="static\css\base.css" />
+    <Content Include="static\css\buttons-core-min.css" />
+    <Content Include="static\css\buttons-core.css" />
+    <Content Include="static\css\buttons-min.css" />
+    <Content Include="static\css\buttons.css" />
+    <Content Include="static\css\forms-min.css" />
+    <Content Include="static\css\forms-nr-min.css" />
+    <Content Include="static\css\forms-nr.css" />
+    <Content Include="static\css\forms.css" />
+    <Content Include="static\css\grids-core-min.css" />
+    <Content Include="static\css\grids-core.css" />
+    <Content Include="static\css\grids-min.css" />
+    <Content Include="static\css\grids-responsive-min.css" />
+    <Content Include="static\css\grids-responsive-old-ie-min.css" />
+    <Content Include="static\css\grids-responsive-old-ie.css" />
+    <Content Include="static\css\grids-responsive.css" />
+    <Content Include="static\css\grids-units-min.css" />
+    <Content Include="static\css\grids-units.css" />
+    <Content Include="static\css\grids.css" />
+    <Content Include="static\css\menus-core-min.css" />
+    <Content Include="static\css\menus-core.css" />
+    <Content Include="static\css\menus-dropdown-min.css" />
+    <Content Include="static\css\menus-dropdown.css" />
+    <Content Include="static\css\menus-horizontal-min.css" />
+    <Content Include="static\css\menus-horizontal.css" />
+    <Content Include="static\css\menus-min.css" />
+    <Content Include="static\css\menus-scrollable-min.css" />
+    <Content Include="static\css\menus-scrollable.css" />
+    <Content Include="static\css\menus-skin-min.css" />
+    <Content Include="static\css\menus-skin.css" />
+    <Content Include="static\css\menus.css" />
+    <Content Include="static\css\pure-min.css" />
+    <Content Include="static\css\pure-nr-min.css" />
+    <Content Include="static\css\pure-nr.css" />
+    <Content Include="static\css\pure.css" />
+    <Content Include="static\css\tables-min.css" />
+    <Content Include="static\css\tables.css" />
+    <Content Include="views\accounts2.js" />
+    <Content Include="views\angular.min.js" />
+    <Content Include="views\index.html" />
+    <Content Include="views\MasterPage.html" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

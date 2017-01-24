@@ -430,11 +430,7 @@ namespace Imperatur_v2
 
         private void EvaluateOrdersInQueue()
         {
-
-            OnSystemNotification(new IMPSystemNotificationEventArg
-            {
-                Message = "Processing orders in the order queue"
-            });
+            CreateSystemNotification("Processing orders in the order queue");
             OrderQueue.EvaluateOrdersInQueue();
         }
 
@@ -445,34 +441,24 @@ namespace Imperatur_v2
                 return;
             }
 
-            OnSystemNotification(new IMPSystemNotificationEventArg
-            {
-                Message = "Trading automation process running - processing order queue first"
-            });
+            CreateSystemNotification("Trading automation process running - processing order queue first");
             //start with an evaluation of the orders
             OrderQueue.EvaluateOrdersInQueue();
 
-            OnSystemNotification(new IMPSystemNotificationEventArg
-            {
-                Message = "Trading automation process running - retrieving info to calculate trading recommendations"
-            });
+            CreateSystemNotification("Trading automation process running - retrieving info to calculate trading recommendations");
             List<IOrder> NewOrders = m_oTradeAutomation.RunTradeAutomation();
-            OnSystemNotification(new IMPSystemNotificationEventArg
-            {
-                Message = string.Format("Adding orders to queue")
-            });
+
+            CreateSystemNotification("Adding orders to queue");
             OrderQueue.AddOrders(NewOrders.Where(x=>x!=null).ToList());
+
             //do all the others that might have ended up in the list.
-            OnSystemNotification(new IMPSystemNotificationEventArg
-            {
-                Message = "processing order queue after recommendations"
-            });
+            CreateSystemNotification("processing order queue after recommendations");
             OrderQueue.EvaluateOrdersInQueue();
 
-            OnSystemNotification(new IMPSystemNotificationEventArg
-            {
-                Message = "Trading automation process finished"
-            });
+            CreateSystemNotification("processing order queue maintence");
+            OrderQueue.QueueMaintence(m_oAccountHandler);
+
+            CreateSystemNotification("Trading automation process finished");
 
         }
         private void AutomationThreadFinished()

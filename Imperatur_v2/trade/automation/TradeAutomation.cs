@@ -167,7 +167,7 @@ namespace Imperatur_v2.trade.automation
             {
                 NewOrders.AddRange(GetBuyOrderForSingleAccount(Accounts[i], TradingAnalysis, TradingForeCastPerSymbol));
             });
-            return NewOrders;
+            return NewOrders.Where(no=>no != null && no.Symbol != null).ToList();
         }
 
         private List<IOrder> GetBuyOrderForSingleAccount(IAccountInterface CustomerAccount, List<ISecurityAnalysis> TradingAnalysis, List<Tuple<string, string>> TradingForeCastPerSymbol)
@@ -222,7 +222,7 @@ namespace Imperatur_v2.trade.automation
                                            new Ninject.Parameters.ConstructorArgument("StopLossPercentage", 0.8m)
                                        )
                                   };
-            return BuyOrdersForAccountBySector.Select(i => i.Order).ToList();
+            return BuyOrdersForAccountBySector.Where(i=>i != null && i.Order != null && i.Order.Symbol != null).Select(i => i.Order).ToList();
         }
         
 
@@ -292,45 +292,6 @@ namespace Imperatur_v2.trade.automation
                     ActualSellPositions.Select(ab => ab.SecAnalysis).ToList(),
                     SellForecastMethods.Select(b => new Tuple<string, string>(b.Symbol, b.ForeCastMethod.ToString())).ToList()
                     );
-
-            /*
-            var ActualSellOrders = from ac in m_oAccountHandler.Accounts().Where(a => a.GetAccountType().Equals(AccountType.Customer))
-                                       from bp in ActualSellPositions
-                                       where
-                                         bp.SecAnalysis.HasValue
-                                         &&
-                                         ac.GetHoldings().Count() > 0
-                                         &&
-                                         ac.GetHoldings().Where(h => h.Symbol != null
-                                         &&
-                                         h.Symbol.Equals(bp.SecAnalysis.Instrument.Symbol)).Count() > 0
-                                         &&
-                                         ac.GetAverageAcquisitionCostFromHolding(bp.SecAnalysis.Instrument.Symbol).Multiply(1.02m).GreaterOrEqualThan(bp.SecAnalysis.QuoteFromInstrument.LastTradePrice)
-                                       select new
-                                       {
-                                           Order = ImperaturGlobal.Kernel.Get<IOrder>(
-                                                new Ninject.Parameters.ConstructorArgument("Symbol", bp.SecAnalysis.Instrument.Symbol),
-                                                new Ninject.Parameters.ConstructorArgument("Trigger", new List<ITrigger> {
-                                                ImperaturGlobal.Kernel.Get<ITrigger>(
-                                                        new Ninject.Parameters.ConstructorArgument("m_oOperator", TriggerOperator.EqualOrGreater),
-                                                        new Ninject.Parameters.ConstructorArgument("m_oValueType", TriggerValueType.TradePrice),
-                                                        new Ninject.Parameters.ConstructorArgument("m_oTradePriceValue", bp.SecAnalysis.QuoteFromInstrument.LastTradePrice.Amount),
-                                                        new Ninject.Parameters.ConstructorArgument("m_oPercentageValue", 0m)
-                                                        )
-                                                }),
-                                                new Ninject.Parameters.ConstructorArgument("AccountIdentifier", ac.Identifier),
-                                                new Ninject.Parameters.ConstructorArgument("Quantity",
-                                                Convert.ToInt32(ac.GetHoldings().Where(h => h.Symbol.Equals(bp.SecAnalysis.Instrument.Symbol)).Sum(ho => ho.Quantity))
-                                                ),
-                                                new Ninject.Parameters.ConstructorArgument("OrderType", OrderType.Sell),
-                                                new Ninject.Parameters.ConstructorArgument("ValidToDate", DateTime.Now.AddDays(2)),
-                                                new Ninject.Parameters.ConstructorArgument("ProcessCode", SellForecastMethods.Where(br => br.Symbol.Equals(bp.SecAnalysis.Instrument.Symbol)).First().ForeCastMethod.ToString()),
-                                                new Ninject.Parameters.ConstructorArgument("StopLossValidDays", 0),
-                                                new Ninject.Parameters.ConstructorArgument("StopLossAmount", 0m),
-                                                new Ninject.Parameters.ConstructorArgument("StopLossPercentage", 0m)
-                                      )
-                                       };
-            return ActualSellOrders.Select(i => i.Order).ToList();*/
         }
 
 
@@ -342,7 +303,7 @@ namespace Imperatur_v2.trade.automation
           {
               NewOrders.AddRange(GetSellOrderForSingleAccount(Accounts[i], TradingAnalysis, TradingForeCastPerSymbol));
           });
-            return NewOrders;
+            return NewOrders.Where(o=>o != null && o.Symbol != null).ToList();
         }
 
 

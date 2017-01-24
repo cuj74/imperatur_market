@@ -1,0 +1,40 @@
+<!doctype html>
+<html ng-app="imperatur"> 
+	<head>
+		<link rel="stylesheet" href="static/css/pure-min.css">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>Imperatur Market</title>
+		<script src="static/angular.min.js"></script>
+    	<script src="static/accounts2.js"></script>
+		
+	</head>
+
+	<body ng-controller="accountsection">
+<div class="pure-g" ng-repeat="account in accounts">
+	<div class="pure-u-1-3"><p>{{account.accountname}}</p></div>
+	<div class="pure-u-1-3"><p>{{account.availablefunds}}</p></div>
+	<div class="pure-u-1-3"><p>{{account.totalfunds}}</p></div>
+</div>
+
+
+	</body>
+</html>
+
+<!-- 
+	<table>
+        <theader>
+          <tr>
+			<td>Name</td>
+			<td>Available funds</td>
+			<td>totalfunds</td></tr>
+        </theader>
+        <tbody>
+			<tr ng-repeat="account in accounts" class="pure-g">
+				<td>{{account.accountname}}</td>
+				<td>{{account.availablefunds}}</td>
+				<td>{{account.totalfunds}}</td>				
+			 </tr>
+		 </tbody>
+		 </table>
+
+ -->

@@ -69,7 +69,7 @@ namespace Imperatur_v2.order
 
         private void SaveOrdersParallell(IOrder[] OrdersToSave)
         {
-            Parallel.For(0, OrdersToSave.Length - 1, new ParallelOptions { MaxDegreeOfParallelism = 100 },
+            Parallel.For(0, OrdersToSave.Length - 1, new ParallelOptions { MaxDegreeOfParallelism = 30 },
               i =>
               {
                   SaveSingleOrder(OrdersToSave[i]);
@@ -79,17 +79,17 @@ namespace Imperatur_v2.order
         
         public bool SaveOrders()
         {
-            if (m_oNewOrders.Count > 0)
+            if (m_oOrders.Count() > 0 && m_oNewOrders != null && m_oNewOrders.Count > 0 && m_oOrders.Where(x=>x==null).Count()==0)
             {
                 var OrdersToSave = from no in m_oNewOrders
                                    join eo in m_oOrders on no equals eo.Identifier
                                    select eo;
-                SaveOrdersParallell(OrdersToSave.ToArray());
+                if (OrdersToSave != null && OrdersToSave.Count() > 0)
+                {
+                    SaveOrdersParallell(OrdersToSave.ToArray());
+                }
             }
-            else
-            {
-                SaveOrdersParallell(m_oOrders.ToArray());
-            }
+            SaveOrdersParallell(m_oOrders.ToArray());
             m_oNewOrders.Clear();
             return true;
         }
@@ -97,14 +97,17 @@ namespace Imperatur_v2.order
 
         private bool SaveSingleOrder(IOrder oI)
         {
-            try
+            if (oI != null)
             {
-                json.SerializeJSONdata.SerializeObject((Order)oI,
-                  string.Format(@"{0}\{1}\{2}.json", ImperaturGlobal.SystemData.SystemDirectory, ImperaturGlobal.SystemData.OrderDirectory, oI.Identifier));
-            }
-            catch(Exception ex)
-            {
-                ImperaturGlobal.GetLog().Error("Couldn't save order", ex);
+                try
+                {
+                    json.SerializeJSONdata.SerializeObject((Order)oI,
+                      string.Format(@"{0}\{1}\{2}.json", ImperaturGlobal.SystemData.SystemDirectory, ImperaturGlobal.SystemData.OrderDirectory, oI.Identifier));
+                }
+                catch (Exception ex)
+                {
+                    ImperaturGlobal.GetLog().Error("Couldn't save order", ex);
+                }
             }
             return true;
         }
@@ -221,6 +224,8 @@ namespace Imperatur_v2.order
         public bool AddOrders(List<IOrder> Orders)
         {
             m_oNewOrders = Orders.Where(x=>x != null).Select(x => x.Identifier).ToList();
+
+
             m_oOrders.AddRange(Orders);
             m_oOrders.CollectionChanged -= M_oOrders_CollectionChanged;
             m_oOrders.CollectionChanged += M_oOrders_CollectionChanged;
@@ -229,7 +234,32 @@ namespace Imperatur_v2.order
 
         public List<IOrder> GetOrdersForAccount(Guid AccountIdentifier)
         {
-            return m_oOrders.Where(o => o.AccountIdentifier.Equals(AccountIdentifier)).ToList();
+            return m_oOrders.Where(o => o != null && o.AccountIdentifier != null && o.AccountIdentifier.Equals(AccountIdentifier)).ToList();
+        }
+
+        public bool QueueMaintence(IAccountHandlerInterface AccountHandler)
+        {
+            //remove sell orders where the holding dont exists on the account
+            try
+            {
+                var ObseleteOrders = from o in m_oOrders
+                                     join a in AccountHandler.Accounts() on o.AccountIdentifier equals a.Identifier
+                                     where a.GetHoldings().Where(h => h.Symbol != null && h.Symbol.Equals(o.Symbol)).Count() == 0
+                                     select o;
+                if (ObseleteOrders == null || ObseleteOrders.Count() == 0)
+                {
+                    return true;
+                }
+                m_oOrders.RemoveRange(ObseleteOrders.ToList());
+                RemoveFilesFromStorage(ObseleteOrders.ToList());
+            }
+            catch (Exception ex)
+            {
+                ImperaturGlobal.GetLog().Error("Error in OrderQueue.QueueMaintence", ex);
+            }
+
+            return true;
+
         }
     }
 }

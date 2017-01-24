@@ -19,7 +19,7 @@ namespace Imperatur_v2.trade.rss
         public int GetOccurancesOfString(string[] URLs, string[] SearchData)
         {
             //remove entries older than 10 minutes
-            m_oSearcCache.RemoveAll(x => x.Item1 < DateTime.Now.AddMinutes(-10));
+            m_oSearcCache.RemoveAll(x => x.Item1 != null && x.Item1 < DateTime.Now.AddMinutes(-10));
 
             int count = 0;
             var Search = SearchData.Select(s=>s.ToLower()).ToList();

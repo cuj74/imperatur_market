@@ -1,0 +1,24 @@
+<!doctype html>
+<html ng-app="imperatur"> 
+	<head>
+		<title>Imperatur Market</title>
+		<script src="angular.min.js"></script>
+    	<script src="accounts2.js"></script>
+	</head>
+
+	<body ng-controller="accountsection">
+	   <table>
+        <theader>
+          <tr><td>Name</td><td>Available funds</td></tr>
+        </theader>
+        <tbody>
+			<tr ng-repeat="account in accounts">
+				<td>{{account.accountname}}</td>
+				<td>{{account.availablefunds}}</td>
+			 </tr>
+		 </tbody>
+		 </table>
+			<div>sdfsdfs</div>
+
+	</body>
+</html>
