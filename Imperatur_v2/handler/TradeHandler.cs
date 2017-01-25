@@ -99,7 +99,7 @@ namespace Imperatur_v2.handler
             List<Quote> QuotesRet = new List<Quote>();
             string[] AllSymbolsToRetrieve = ImperaturGlobal.Instruments.Select(i => i.Symbol.Replace(" ", "-")).ToArray();
             URL = URL.Replace("{exchange}", ImperaturGlobal.SystemData.Exchange);
-            Parallel.For(0, AllSymbolsToRetrieve.Length - 1, new ParallelOptions { MaxDegreeOfParallelism = 100 },
+            Parallel.For(0, AllSymbolsToRetrieve.Length - 1, new ParallelOptions { MaxDegreeOfParallelism = 1 },
             i =>
             {
                 QuotesRet.AddRange(GetQuotesFromExternalSource(URL, AllSymbolsToRetrieve[i]));

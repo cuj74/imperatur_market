@@ -1,75 +1,195 @@
 <!doctype html>
-<html ng-app="imperatur"> 
-	<head>
-		<link rel="stylesheet" href="static/css/pure-min.css">
-		<meta name="viewport" content="width=device-width, initial-scale=1">
-		<title>Imperatur Market</title>
-		<script src="static/angular.min.js"></script>
-        <script src="static/accounts2.js"></script>
+<html ng-app="imperatur">
+<head>
+    <link rel="stylesheet" href="static/css/pure-min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Imperatur Market</title>
+    <script src="static/angular.min.js"></script>
+    <script src="static/accounts2.js"></script>
+    <link href='https://fonts.googleapis.com/css?family=Ubuntu:300,400,700' rel='stylesheet' type='text/css'>
+    <link rel="shortcut icon" href="/static/favicon.ico" />
 
-		
-	</head>
+    <style>
+    /*
+    When setting the primary font stack, apply it to the Pure grid units along
+    with `html`, `button`, `input`, `select`, and `textarea`. Pure Grids use
+    specific font stacks to ensure the greatest OS/browser compatibility.
+    */
+    html, button, input, select, textarea,
+    .pure-g [class *= "pure-u"] {
+        font-family: ubuntu;
+		font-size:11px;
+border
+    }
+    .pure-g > div {
+        -webkit-box-sizing: border-box;
+        -moz-box-sizing: border-box;
+        box-sizing: border-box;
+        }
+    .l-box {
+        padding: 1em;
+        border: 1px solid #99ccff;
+        border-radius: 3px;
+        margin: 5px;
+    }
+.hoverme:hover
+{
+background-color:#99ccff;
+}
+.clicked
+{
+background-color:#facfaa;
+}
+[ng-click],
+[data-ng-click],
+[x-ng-click] {
+    cursor: pointer;
+}
+             .button-success,
+        .button-error,
+        .button-warning,
+        .button-secondary {
+            color: white;
+            border-radius: 4px;
+            text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+        }
 
-	<body ng-controller="accountListController">
-        <div class="pure-menu pure-menu-horizontal">
-            <a href="#" class="pure-menu-heading pure-menu-link">Imperatur Market</a>
-            <ul class="pure-menu-list">
-                <li class="pure-menu-item"><a href="#" class="pure-menu-link">Account</a></li>
-                <li class="pure-menu-item"><a href="#" class="pure-menu-link">Setting</a></li>
-                <li class="pure-menu-item"><a href="#" class="pure-menu-link">System</a></li>
-            </ul>
+        .button-success {
+            background: rgb(28, 184, 65); /* this is a green */
+        }
+
+        .button-error {
+            background: rgb(202, 60, 60); /* this is a maroon */
+        }
+
+        .button-warning {
+            background: rgb(223, 117, 20); /* this is an orange */
+        }
+
+        .button-secondary {
+            background: rgb(66, 184, 221); /* this is a light blue */
+        }
+
+    </style>
+</head>
+
+<body ng-controller="accountListController">
+    <div class="pure-menu pure-menu-horizontal">
+        <a href="#" class="pure-menu-heading pure-menu-link">Imperatur Market</a>
+        <ul class="pure-menu-list">
+            <li class="pure-menu-item"><a href="#" class="pure-menu-link">Account</a></li>
+            <li class="pure-menu-item"><a href="#" class="pure-menu-link">Setting</a></li>
+            <li class="pure-menu-item"><a href="#" class="pure-menu-link">System</a></li>
+        </ul>
+    </div>
+    <!--Main body of account-->
+    <div class="pure-g">
+        <div class="pure-u-1-3 l-box" ng-show="showme" style="max-width: 370px;">
+            <img src="static/spin.gif" ng-if="dataLoading">
+            <!--The account search section-->
+            <form class="pure-form">
+                <fieldset>
+                    <input ng-model="searchstring" placeholder="Search" entersearch="accountsearchfunction(searchstring)">
+                    <button ng-click="accountsearchfunction(searchstring)" class="pure-button pure-button-primary">Search</button>
+                    <button ng-show="showme" ng-click="showme=false;changeClass()" class="pure-button pure-button-primary">Close search</button>
+                </fieldset>
+            </form>
+            <table class="pure-table pure-table-horizontal">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Available funds</th>
+                        <th>Total funds</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr ng-repeat="account in accounts" ng-click="select(account.identifier)" class="hoverme" ng-class="{clicked:selectedaccount.identifier==account.identifier}">
+                        <td>{{account.accountname}}</td>
+                        <td>{{account.availablefunds}}</td>
+                        <td>{{account.totalfunds}}</td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
 
+        <div ng-class="accountclass" style="max-width: 800px;">
+            <!--The account info section-->
+            <button ng-hide="showme" ng-click="showme=true;changeClass()" class="pure-button pure-button-primary">Search</button>
+            <div ng-show="selectedaccount">
+                <button style="position: absolute;right:0px" ng-click="account_info=!account_info" class="pure-button pure-button-primary">::</button>
+                <!--<div class="pure-g l-box" ng-show="account_info">-->
+                  <div class="pure-g l-box" ng-show="account_info" >
+                    <div class="pure-u-1-1">
+                        <h4>Account info</h4>
+                    </div>
 
-        <div class="pure-g">
-            <div class="pure-u-1-3" >
-                <table class="pure-table pure-table-horizontal">
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Available funds</th>
-                            <th>Total funds</th>
-                        </tr>
-                    </thead>
+                    <div class="pure-u-1-2 ">
+                        <p>Customer: {{selectedaccount.customername}}</p>
+                        <p>Account name: {{selectedaccount.accountname}}</p>
+                    </div>
 
-                    <tbody>
-                        <tr ng-repeat="account in accounts" ng-click="select(account.identifier)">
-                            <td>{{account.accountname}}</td>
-                            <td>{{account.availablefunds}}</td>
-                            <td>{{account.totalfunds}}</td>
-                        </tr>
-                    </tbody>
-                </table>
+                    <div class="pure-u-1-2 ">
+                        <p>Change: {{selectedaccount.change}}</p>
+                    </div>
+                </div>
+                <!--The holding info section-->
+                <div class="pure-g l-box">
+                    <div class="pure-u-1-1">
+                        <h4>Holdings</h4>
+                    </div>
+                    <div class="pure-u-1-1">
+                        <table class="pure-table pure-table-horizontal">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Change</th>
+                                    <th>AAC</th>
+                                    <th>Purchase amount</th>
+                                    <th>Buy</th>
+                                    <th>Sell</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr ng-repeat="holding in selectedaccount.holdings">
+                                    <td>{{holding.name}}</td>
+                                    <td>{{holding.change}}</td>
+                                    <td>{{holding.aac}}</td>
+                                    <td>{{holding.purchaseamount}}</td>
+                                    <td><button class="button-secondary pure-button">Buy</button></td>
+                                    <td><button class="button-warning pure-button">Sell</button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+
+                <!--The transaction info section-->
+                <div class="pure-g l-box">
+                    <div class="pure-u-1-1">
+                        <h4>Transactions</h4>
+                    </div>
+                    <div class="pure-u-1-1">
+                        <table class="pure-table pure-table-horizontal">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Amount</th>
+                                    <th>Type</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr ng-repeat="transaction in selectedaccount.transactions">
+                                    <td>{{transaction.transdate}}</td>
+                                    <td>{{transaction.amount}}</td>
+                                    <td>{{transaction.transactiontype}}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
-            <div class="pure-u-2-3" >
-                <p>
-                    {{selectedaccount.accountname}}
-                </p>
-                <p>
-                    {{selectedaccount.change}}
-                </p>
-                <table class="pure-table pure-table-horizontal">
-                    <thead>
-                        <tr>
-                            <th>Date</th>
-                            <th>Amount</th>
-                            <th>Type</th>
-                        </tr>
-                    </thead>
-
-                    <tbody>
-                        <tr ng-repeat="transaction in selectedaccount.transactions">
-                            <td>{{transaction.transdate}}</td>
-                            <td>{{transaction.amount}}</td>
-                            <td>{{transaction.transactiontype}}</td>
-                        </tr>
-                    </tbody>
-                </table>
-
-            </div>
-       </div>
-
-        
-
+        </div>
+    </div>
 </body>
 </html>

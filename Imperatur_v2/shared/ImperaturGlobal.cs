@@ -73,7 +73,7 @@ namespace Imperatur_v2.shared
             }
             //log4net.GlobalContext.Properties["LogFileName"] = string.Format("{0}\\{1}{2}", ImperaturGlobal.SystemData.SystemDirectory, "log\\imp", DateTime.Now.ToString("yyyy-mm-dd")); //log file path
             log4net.GlobalContext.Properties["LogFileName"] = string.Format("{0}\\{1}{2}", LogDirectory, "log\\imp", DateTime.Now.ToString("yyyy-MM-dd")); //log file path
-            log4net.Config.XmlConfigurator.Configure();
+            //log4net.Config.XmlConfigurator.Configure();
             ILog log = LogManager.GetLogger(logName);
             return log;
         }

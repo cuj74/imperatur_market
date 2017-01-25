@@ -20,6 +20,20 @@ namespace ImperaturService
 
             Get["/"] = _ => View["index"];
 
+            Get[RestBase + "/accountsearch/{search}"] = parameters =>
+            {
+                List<IAccountInterface> oIA = _imperaturMarket.GetAccountHandler().SearchAccount(parameters.search, AccountType.Customer);
+                var feeds2 = oIA.Select
+                (f => new
+                {
+                    accountname = f.AccountName,
+                    availablefunds = f.GetAvailableFunds().First().ToString(),
+                    identifier = f.Identifier,
+                    totalfunds = f.GetTotalFunds().First().ToString()
+                }).ToArray();
+                return Response.AsJson(feeds2);
+            };
+
             Get[RestBase + "/account"] = parameters =>
             {
                 List<IAccountInterface> oIA = _imperaturMarket.GetAccountHandler().Accounts();
@@ -59,7 +73,15 @@ namespace ImperaturService
                          transdate = t.TransactionDate,
                          amount = t.CreditAmount.ToString(),
                          transactiontype = t.TransactionType.ToString()
-                     }).ToArray()
+                     }).ToArray(),
+                     customername = oA.GetCustomer().FullName,
+                     holdings = oA.GetHoldings().Select(h => new
+                     {
+                         name = h.Name,
+                         change = h.Change.ToString(),
+                         aac = oA.GetAverageAcquisitionCostFromHolding(h.Name).ToString(),
+                         purchaseamount = h.PurchaseAmount.ToString()
+                     })
                  };
                 return Response.AsJson(feeds2);
             };

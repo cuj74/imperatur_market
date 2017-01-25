@@ -77,6 +77,9 @@
     <None Include="static\css\HISTORY.md" />
     <None Include="static\css\LICENSE.md" />
     <None Include="static\css\README.md" />
+    <None Include="system.imp">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="views\index.sshtml" />
   </ItemGroup>
   <ItemGroup>

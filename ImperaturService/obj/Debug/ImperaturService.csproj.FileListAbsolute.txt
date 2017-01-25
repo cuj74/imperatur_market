@@ -51,3 +51,7 @@ F:\visualstudioprojects\Imperatur\imperatur_market\ImperaturService\bin\Debug\Ni
 F:\visualstudioprojects\Imperatur\imperatur_market\ImperaturService\bin\Debug\views\index.html
 F:\visualstudioprojects\Imperatur\imperatur_market\ImperaturService\bin\Debug\static\angular.min.js
 F:\visualstudioprojects\Imperatur\imperatur_market\ImperaturService\bin\Debug\static\accounts2.js
+C:\temp\dev\imperatur_market\ImperaturService\bin\Debug\static\accounts2.js
+C:\temp\dev\imperatur_market\ImperaturService\bin\Debug\static\angular.min.js
+C:\temp\dev\imperatur_market\ImperaturService\bin\Debug\views\index.html
+C:\temp\dev\imperatur_market\ImperaturService\bin\Debug\system.imp
