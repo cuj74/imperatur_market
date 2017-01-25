@@ -88,7 +88,9 @@
       <Name>Imperatur_v2</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="static\angular-chart.js\" />
+  </ItemGroup>
   <ItemGroup>
     <Content Include="static\accounts2.js">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -96,6 +98,7 @@
     <Content Include="static\angular.min.js">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="static\chart.js\chart.js" />
     <Content Include="static\css\base-context-min.css" />
     <Content Include="static\css\base-context.css" />
     <Content Include="static\css\base-min.css" />

@@ -81,6 +81,13 @@ namespace ImperaturService
                          change = h.Change.ToString(),
                          aac = oA.GetAverageAcquisitionCostFromHolding(h.Name).ToString(),
                          purchaseamount = h.PurchaseAmount.ToString()
+                     }),
+                     orders = _imperaturMarket.OrderQueue.GetOrdersForAccount(new Guid(identifier.id)).Select(o=> new
+                     {
+                         ordertype = o.OrderType.ToString(),
+                         symbol = o.Symbol,
+                         quantity = o.Quantity.ToString(),
+                         validtodate = o.ValidToDate.ToString()
                      })
                  };
                 return Response.AsJson(feeds2);

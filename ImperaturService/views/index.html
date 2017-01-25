@@ -6,49 +6,55 @@
     <title>Imperatur Market</title>
     <script src="static/angular.min.js"></script>
     <script src="static/accounts2.js"></script>
-    <link href='https://fonts.googleapis.com/css?family=Ubuntu:300,400,700' rel='stylesheet' type='text/css'>
-    <link rel="shortcut icon" href="/static/favicon.ico" />
+    <script src="static/chart.js/Chart.min.js"></script>
+    <script src="static/angular-chart.js/angular-chart.min.js"></script>
 
+    <link href='https://fonts.googleapis.com/css?family=Ubuntu:300,400,700' rel='stylesheet' type='text/css'>
     <style>
-    /*
-    When setting the primary font stack, apply it to the Pure grid units along
-    with `html`, `button`, `input`, `select`, and `textarea`. Pure Grids use
-    specific font stacks to ensure the greatest OS/browser compatibility.
-    */
-    html, button, input, select, textarea,
-    .pure-g [class *= "pure-u"] {
-        font-family: ubuntu;
-		font-size:11px;
-border
-    }
-    .pure-g > div {
-        -webkit-box-sizing: border-box;
-        -moz-box-sizing: border-box;
-        box-sizing: border-box;
+        /*
+        When setting the primary font stack, apply it to the Pure grid units along
+        with `html`, `button`, `input`, `select`, and `textarea`. Pure Grids use
+        specific font stacks to ensure the greatest OS/browser compatibility.
+        */
+        html, button, input, select, textarea,
+        .pure-g [class *= "pure-u"] {
+            font-family: ubuntu;
+            font-size: 11px;
         }
-    .l-box {
-        padding: 1em;
-        border: 1px solid #99ccff;
-        border-radius: 3px;
-        margin: 5px;
-    }
-.hoverme:hover
-{
-background-color:#99ccff;
-}
-.clicked
-{
-background-color:#facfaa;
-}
-[ng-click],
-[data-ng-click],
-[x-ng-click] {
-    cursor: pointer;
-}
-             .button-success,
+
+        .pure-g > div {
+            -webkit-box-sizing: border-box;
+            -moz-box-sizing: border-box;
+            box-sizing: border-box;
+        }
+
+        .l-box {
+            padding: 1em;
+            border: 1px solid #bdddfc;
+            border-radius: 3px;
+            margin: 3px;
+        }
+        .pure-menu {
+            background-color: #bdddfc;
+            font-size: 14px;
+        }
+        .hoverme:hover {
+            background-color: #bdddfc;
+        }
+
+        .clicked {
+            background-color: #facfaa;
+        }
+
+        [ng-click],
+        [data-ng-click],
+        [x-ng-click] {
+            cursor: pointer;
+        }
+
+        .button-success,
         .button-error,
-        .button-warning,
-        .button-secondary {
+        .button-warning {
             color: white;
             border-radius: 4px;
             text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
@@ -62,14 +68,19 @@ background-color:#facfaa;
             background: rgb(202, 60, 60); /* this is a maroon */
         }
 
+        .header {
+            font-size: 14px;
+            font-weight: 900;
+            text-decoration: underline;
+        }
+
         .button-warning {
             background: rgb(223, 117, 20); /* this is an orange */
         }
 
         .button-secondary {
-            background: rgb(66, 184, 221); /* this is a light blue */
+            background: rgb(177, 200, 237); /* this is a light blue */
         }
-
     </style>
 </head>
 
@@ -77,21 +88,38 @@ background-color:#facfaa;
     <div class="pure-menu pure-menu-horizontal">
         <a href="#" class="pure-menu-heading pure-menu-link">Imperatur Market</a>
         <ul class="pure-menu-list">
-            <li class="pure-menu-item"><a href="#" class="pure-menu-link">Account</a></li>
-            <li class="pure-menu-item"><a href="#" class="pure-menu-link">Setting</a></li>
-            <li class="pure-menu-item"><a href="#" class="pure-menu-link">System</a></li>
+            <li class="pure-menu-item"><a ng-click="setpage('account')" class="pure-menu-link">Account</a></li>
+            <li class="pure-menu-item"><a ng-click="setpage('securities')" class="pure-menu-link">Securities</a></li>
+            <li class="pure-menu-item"><a ng-click="setpage('settings')" class="pure-menu-link">Settings</a></li>
+            <li class="pure-menu-item"><a ng-click="setpage('system')" class="pure-menu-link">System</a></li>
         </ul>
     </div>
+    <div class="pure-g" ng-show="showpage('system')">
+        <div class="pure-u-1-1 l-box">
+            <h1>test av system</h1>
+        </div>
+    </div>
+    <div class="pure-g" ng-show="showpage('settings')">
+        <div class="pure-u-1-1 l-box">
+            <h1>Settings</h1>
+        </div>
+    </div>
+    <div class="pure-g" ng-show="showpage('securities')">
+        <div class="pure-u-1-1 l-box">
+            <h1>securities</h1>
+        </div>
+    </div>
+
     <!--Main body of account-->
-    <div class="pure-g">
-        <div class="pure-u-1-3 l-box" ng-show="showme" style="max-width: 370px;">
+    <div class="pure-g" ng-show="showpage('account')">
+        <div class="pure-u-1-3 l-box" ng-show="showme" style="max-width:440px; min-width:400px;">
             <img src="static/spin.gif" ng-if="dataLoading">
             <!--The account search section-->
             <form class="pure-form">
                 <fieldset>
                     <input ng-model="searchstring" placeholder="Search" entersearch="accountsearchfunction(searchstring)">
                     <button ng-click="accountsearchfunction(searchstring)" class="pure-button pure-button-primary">Search</button>
-                    <button ng-show="showme" ng-click="showme=false;changeClass()" class="pure-button pure-button-primary">Close search</button>
+                    <button ng-show="showme" ng-click="showme=false;changeClass()" class="pure-button pure-button-primary" style="float: right;">Close search</button>
                 </fieldset>
             </form>
             <table class="pure-table pure-table-horizontal">
@@ -113,31 +141,36 @@ background-color:#facfaa;
         </div>
 
         <div ng-class="accountclass" style="max-width: 800px;">
-            <!--The account info section-->
+            <!--The account section-->
             <button ng-hide="showme" ng-click="showme=true;changeClass()" class="pure-button pure-button-primary">Search</button>
             <div ng-show="selectedaccount">
-                <button style="position: absolute;right:0px" ng-click="account_info=!account_info" class="pure-button pure-button-primary">::</button>
-                <!--<div class="pure-g l-box" ng-show="account_info">-->
-                  <div class="pure-g l-box" ng-show="account_info" >
+                <!--The account main info section-->
+                <div class="pure-g l-box">
                     <div class="pure-u-1-1">
-                        <h4>Account info</h4>
+                        <button style="float: right;" ng-click="account_info=!account_info" class="pure-button pure-button-primary">{{account_info ? 'less' : 'more'}}</button>
+                        <p class="header">Account info</p>
                     </div>
-
-                    <div class="pure-u-1-2 ">
-                        <p>Customer: {{selectedaccount.customername}}</p>
-                        <p>Account name: {{selectedaccount.accountname}}</p>
-                    </div>
-
-                    <div class="pure-u-1-2 ">
-                        <p>Change: {{selectedaccount.change}}</p>
+                    <div class="pure-u-1-1">
+                        <div class="pure-g" ng-show="account_info">
+                            <div class="pure-u-2-5">
+                                <p>Customer: {{selectedaccount.customername}}</p>
+                                <p>Account name: {{selectedaccount.accountname}}</p>
+                            </div>
+                            <div class="pure-u-2-5">
+                                <p>Change: {{selectedaccount.change}}</p>
+                                <p>Available funds: {{selectedaccount.availablefunds}}</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <!--The holding info section-->
                 <div class="pure-g l-box">
                     <div class="pure-u-1-1">
-                        <h4>Holdings</h4>
+                        <button style="float: right;" ng-click="account_holdings=!account_holdings" class="pure-button pure-button-primary">{{account_holdings ? 'less' : 'more'}}</button>
+                        <p class="header">Holdings</p>
                     </div>
-                    <div class="pure-u-1-1">
+
+                    <div class="pure-u-1-1" ng-show="account_holdings">
                         <table class="pure-table pure-table-horizontal">
                             <thead>
                                 <tr>
@@ -162,14 +195,42 @@ background-color:#facfaa;
                         </table>
                     </div>
                 </div>
+                <!--The order section-->
+                <div class="pure-g l-box">
+                    <div class="pure-u-1-1">
+                        <button style="float: right;" ng-click="account_orders=!account_orders" class="pure-button pure-button-primary">{{account_orders ? 'less' : 'more'}}</button>
+                        <p class="header">Orders in queue</p>
+                    </div>
+                    <div class="pure-u-1-1" ng-show="account_orders">
+                        <table class="pure-table pure-table-horizontal">
+                            <thead>
+                                <tr>
+                                    <th>Type</th>
+                                    <th>Symbol</th>
+                                    <th>Quantity</th>
+                                    <th>Valid to</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr ng-repeat="order in selectedaccount.orders">
+                                    <td>{{order.ordertype}}</td>
+                                    <td>{{order.symbol}}</td>
+                                    <td>{{order.quantity}}</td>
+                                    <td>{{order.validtodate}}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
 
 
                 <!--The transaction info section-->
                 <div class="pure-g l-box">
                     <div class="pure-u-1-1">
-                        <h4>Transactions</h4>
+                        <button style="float: right;" ng-click="account_transactions=!account_transactions" class="pure-button pure-button-primary">{{account_transactions ? 'less' : 'more'}}</button>
+                        <p class="header">Transactions</p>
                     </div>
-                    <div class="pure-u-1-1">
+                    <div class="pure-u-1-1" ng-show="account_transactions">
                         <table class="pure-table pure-table-horizontal">
                             <thead>
                                 <tr>
@@ -188,6 +249,7 @@ background-color:#facfaa;
                         </table>
                     </div>
                 </div>
+
             </div>
         </div>
     </div>

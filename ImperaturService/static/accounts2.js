@@ -1,8 +1,13 @@
 var app = angular.module('imperatur', [])
 
 app.controller('accountListController', function ($scope, $http) {
-    $scope.account_info = false;
+    $scope.account_info = true;
     $scope.account_transactions = false;
+    $scope.account_holdings = true;
+    $scope.account_orders = false;
+    $scope.showme = true;
+    $scope.currentpage = 'account';
+
 
     $scope.accountsearchfunction = function (searchstring) {
         $http.get('http://localhost:8090/api/accountsearch/' + searchstring).
@@ -26,6 +31,15 @@ app.controller('accountListController', function ($scope, $http) {
             then(function (response) {
                 $scope.selectedaccount = response.data;
             });
+    };
+
+    $scope.showpage = function (page) {
+        if (page == $scope.currentpage)
+            return true;
+    };
+
+    $scope.setpage = function (page) {
+        $scope.currentpage = page
     };
 
     $scope.accountclass = 'pure-u-1-1';
