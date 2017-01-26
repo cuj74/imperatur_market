@@ -283,5 +283,48 @@ namespace Imperatur_v2.handler
             return true;
         
         }
+
+        public List<Tuple<string, decimal>> GetProfitPerForecast()
+        {
+            List<TransactionType> BuySell = new List<TransactionType>();
+            BuySell.Add(TransactionType.Buy);
+            BuySell.Add(TransactionType.Sell);
+            try
+            {
+                var saleswithprofit = from t in m_oAccounts.SelectMany(a => a.Transactions)
+                                      join bs in BuySell on t.TransactionType equals bs
+                                      select new
+                                      {
+                                          date = t.TransactionDate,
+                                          type = t.TransactionType,
+                                          revenue = t.SecuritiesTrade.Revenue == null ? 0m : t.SecuritiesTrade.Revenue.Amount,
+                                          forecast = t.ProcessCode,
+                                          account = t.TransactionType.Equals(TransactionType.Sell) ? t.CreditAccount : t.DebitAccount
+                                      };
+                var summedprofit = saleswithprofit
+                                   .GroupBy(l => l.forecast)
+                                   .Select(cl => new
+                                   {
+                                       code = cl.First().forecast,
+                                       revenue = cl.Sum(c => c.revenue)
+                                   }).ToList();
+
+                var orderedprofit = summedprofit.OrderByDescending(s => s.revenue);
+                                return orderedprofit.Select(s =>
+                new Tuple<string, decimal>(s.code, s.revenue)
+                ).ToList();
+            }
+            catch(Exception ex)
+            {
+                int gg = 0;
+
+            }
+            return null;
+
+
+
+
+
+        }
     }
 }

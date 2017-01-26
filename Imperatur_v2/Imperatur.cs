@@ -272,7 +272,13 @@ namespace Imperatur_v2
             }
             catch (Exception ex)
             {
-                int ff = 0;
+                if (Directory.Exists(SystemLocation))
+                {
+                    ImperaturGlobal.GetLogWithDirectory(SystemLocation).Info("Could not read the system data file!");
+                    throw new Exception("SystemDataFile could not be read, major error!");
+                }
+                else
+                    throw new Exception("Systemlocation does not exists, major error!");
             }
             return oD;
          }
@@ -400,7 +406,7 @@ namespace Imperatur_v2
             CreateSystemNotification("Setting events");
             m_oQuoteTimer = new System.Timers.Timer();
             m_oQuoteTimer.Elapsed += M_oQuoteTimer_Elapsed;
-            m_oQuoteTimer.Interval = 1000 * 60 * 3; //Convert.ToInt32(m_oImperaturData.QuoteRefreshTime); //every 15 minutes
+            m_oQuoteTimer.Interval = 1000 * 60 * Convert.ToInt32(m_oImperaturData.QuoteRefreshTime); 
             m_oQuoteTimer.Enabled = true;
 
             m_oDisplayCurrency = ImperaturGlobal.Kernel.Get<ICurrency>(new Ninject.Parameters.ConstructorArgument("CurrencyCode", m_oImperaturData.SystemCurrency));
@@ -410,8 +416,9 @@ namespace Imperatur_v2
             m_oTradeAutomation = ImperaturGlobal.Kernel.Get<ITradeAutomation>(new Ninject.Parameters.ConstructorArgument("AccountHandler", GetAccountHandler()));
 
             m_oTradeAutomation.SystemNotificationEvent += M_oTradeAutomation_SystemNotificationEvent;
-
+            OrderQueue.QueueMaintence(m_oAccountHandler);
             ImperaturGlobal.GetLog().Info("End of the initialize sequence");
+            m_oAccountHandler.GetProfitPerForecast();
 
         }
 

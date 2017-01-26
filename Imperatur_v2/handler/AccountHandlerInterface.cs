@@ -27,6 +27,7 @@ namespace Imperatur_v2.handler
         bool CreateAccount(Customer customer, AccountType accountType, string AccountName);
         bool SaveAccounts();
         List<Money> GetTotalFundsOfAccount(Guid Identifier);
+        List<Tuple<string, decimal>> GetProfitPerForecast();
         //List<Guid> GetHouseAndBankAccountsGuid();
         List<IAccountInterface> Accounts();
         List<IAccountInterface> SearchAccount(string Search, AccountType AccountTypeToSearch);

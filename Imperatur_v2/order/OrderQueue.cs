@@ -137,7 +137,10 @@ namespace Imperatur_v2.order
         }
         private void RemoveFilesFromStorage(List<IOrder> ToRemove)
         {
-
+            if (ToRemove.Count() == 0)
+            {
+                return;
+            }
             DirectoryInfo di = new DirectoryInfo(string.Format(@"{0}\{1}\", ImperaturGlobal.SystemData.SystemDirectory, ImperaturGlobal.SystemData.OrderDirectory));
             var files = di.GetFiles();
 
@@ -163,8 +166,8 @@ namespace Imperatur_v2.order
             }
 
             List<IOrder> ToRemove = m_oOrders.Where(x => x!= null && x.ValidToDate < DateTime.Now).ToList();
-            m_oOrders.RemoveRange(ToRemove);
             RemoveFilesFromStorage(ToRemove);
+            m_oOrders.RemoveRange(ToRemove);
 
             if (m_oOrders.Count() == 0)
             {
@@ -199,8 +202,8 @@ namespace Imperatur_v2.order
                     }
 
                 }
-                m_oOrders.RemoveRange(ToRemove);
                 RemoveFilesFromStorage(ToRemove);
+                m_oOrders.RemoveRange(ToRemove);
                 m_oOrders.AddRange(ToAdd);
             }
             return bReturn;
@@ -216,8 +219,8 @@ namespace Imperatur_v2.order
                 &&
                 o.OrderType.Equals(Order.OrderType)
                 ).ToList();
-            m_oOrders.RemoveRange(DuplicateOrders);
             RemoveFilesFromStorage(DuplicateOrders);
+            m_oOrders.RemoveRange(DuplicateOrders);
             m_oNewOrders = new List<Guid>() { Order.Identifier };
             m_oOrders.Add(Order);
             m_oOrders.CollectionChanged -= M_oOrders_CollectionChanged;
@@ -243,19 +246,58 @@ namespace Imperatur_v2.order
 
         public bool QueueMaintence(IAccountHandlerInterface AccountHandler)
         {
+
             //remove sell orders where the holding dont exists on the account
             try
             {
-                var ObseleteOrders = from o in m_oOrders
-                                     join a in AccountHandler.Accounts() on o.AccountIdentifier equals a.Identifier
-                                     where a.GetHoldings().Where(h => h.Symbol != null && h.Symbol.Equals(o.Symbol)).Count() == 0
+                
+                List<OrderType> SellStoploss = new List<OrderType>();
+                SellStoploss.Add(OrderType.Sell);
+                SellStoploss.Add(OrderType.StopLoss);
+
+                var OrderQuery =
+                from t in m_oOrders
+                join ssl in SellStoploss on t.OrderType equals ssl
+                select t;
+
+
+                var ObseleteOrders = from o in OrderQuery
+                                     from a in AccountHandler.Accounts()
+                                     .Where(a => a.Identifier.Equals(o.AccountIdentifier)
+                                     &&
+                                     a.GetSymbolInHoldings().Contains(o.Symbol)
+                                     ).DefaultIfEmpty()
+                                     where a == null
                                      select o;
+
+                /*
+                var ObseleteOrders = from a in AccountHandler.Accounts()
+                                     from o in OrderQuery
+                                     .Where(x => a.Identifier.Equals(x.AccountIdentifier)
+                                     &&
+                                     a.GetSymbolInHoldings().Contains(x.Symbol)
+                                     ).DefaultIfEmpty() 
+                                     select o;
+                                     */
+                /*
+                var ObseleteOrders = from o in OrderQuery
+                                     from a in AccountHandler.Accounts()
+                                     .Where(a => a.Identifier.Equals(o.AccountIdentifier)
+                                     &&
+                                     a.GetSymbolInHoldings().Contains(o.Symbol)
+                                     ).DefaultIfEmpty()
+                                     select o;*/
+                int gfgf = ObseleteOrders.Count();
+                List<IOrder> sds = ObseleteOrders.ToList();
+                //string[] sdfsd = ObseleteOrders.Select(x => x.Identifier.ToString()).ToArray();
+
                 if (ObseleteOrders == null || ObseleteOrders.Count() == 0)
                 {
                     return true;
                 }
-                m_oOrders.RemoveRange(ObseleteOrders.ToList());
-                RemoveFilesFromStorage(ObseleteOrders.ToList());
+                RemoveFilesFromStorage(ObseleteOrders.Where(o=>o != null).ToList());
+                m_oOrders.RemoveRange(ObseleteOrders.Where(o=>o != null).ToList());
+                
             }
             catch (Exception ex)
             {

@@ -20,6 +20,7 @@ namespace Imperatur_v2.account
         List<IMoney> GetDepositedAmount(List<ICurrency> FilterCurrency);
         bool AddTransaction(ITransactionInterface oTrans);
         List<Holding> GetHoldings();
+        string[] GetSymbolInHoldings();
         List<IMoney> GetAvailableFunds();
         List<IMoney> GetTotalFunds();
         IMoney GetAverageAcquisitionCostFromHolding(string Symbol);

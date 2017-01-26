@@ -359,7 +359,7 @@ namespace Imperatur_v2.trade.automation
                     continue;
                 }
                 var holdings = from h in oA.GetHoldings()
-                               from tr in TradingRecommendations.Where(x => x.TradingRecommendations.Where(tr => tr.TradingForecastMethod != TradingForecastMethod.Undefined).Count() > 0).ToList().Where(t => t.InstrumentInfo.Symbol.Equals(h.Symbol)).DefaultIfEmpty()
+                               from tr in TradingRecommendations.Where(x => x.TradingRecommendations.Where(tr => tr.TradingForecastMethod != TradingForecastMethod.Undefined && tr.BuyPrice.Amount > 0).Count() > 0).ToList().Where(t => t.InstrumentInfo.Symbol.Equals(h.Symbol)).DefaultIfEmpty()
                                where h.ChangePercent > 1.5m
                                select h;
                 foreach (var holding in holdings.Where(h=>h.Symbol != null))

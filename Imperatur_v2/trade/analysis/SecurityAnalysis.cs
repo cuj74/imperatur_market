@@ -338,7 +338,7 @@ namespace Imperatur_v2.trade.analysis
                         continue;
                     }
                     var BDiffVariable =  oB.Where(bc=>bc.Count() > 1).Select(b => b[0] - b[2]).ToArray();
-                    if (BDiffVariable == null)
+                    if (BDiffVariable == null || BDiffVariable.Count() == 0)
                     {
                         continue;
                     }
@@ -640,16 +640,20 @@ namespace Imperatur_v2.trade.analysis
             
             //start by removing obselete cacheobjects
             m_oCache = m_oCache.Where(x => x.Item1.AddSeconds(CacheSeconds).CompareTo(DateTime.Now) > 0).ToList();
-            //find matching daterange and interval
-            //if range exists in cached range and interval exists return this
-            if (
-                m_oCache.Exists(x => x.Item2.Where(h=>h.Date>= Start).Count() > 0
-                && x.Item2.Where(h => h.Date <= End).Count() > 0
-                && x.Item3.Equals(Interval)))
+
+            if (m_oCache.Count() > 0)
             {
-                return m_oCache.Where(x => x.Item2.Where(h => h.Date >= Start).Count() > 0
-                && x.Item2.Where(h => h.Date <= End).Count() > 0
-                && x.Item3.Equals(Interval)).First().Item2;
+                //find matching daterange and interval
+                //if range exists in cached range and interval exists return this
+                if (
+                    m_oCache.Exists(x => x.Item2.Where(h => h.Date >= Start).Count() > 0
+                    && x.Item2.Where(h => h.Date <= End).Count() > 0
+                    && x.Item3.Equals(Interval)))
+                {
+                    return m_oCache.Where(x => x.Item2.Where(h => h.Date >= Start).Count() > 0
+                    && x.Item2.Where(h => h.Date <= End).Count() > 0
+                    && x.Item3.Equals(Interval)).First().Item2;
+                }
             }
             
             m_oCache.Add(new Tuple<DateTime, List<HistoricalQuoteDetails>, int>(DateTime.Now, GetExternalDataForRange(Start, End, Interval), Interval));
@@ -693,7 +697,11 @@ namespace Imperatur_v2.trade.analysis
 
                 if (Interval > 0)
                 {
-                    return GetCachedDataForRange(Start, End, Interval);
+                    var oCachedReturnValue = GetCachedDataForRange(Start, End, Interval);
+                    if (oCachedReturnValue != null)
+                        return oCachedReturnValue;
+
+                    //return GetCachedDataForRange(Start, End, Interval);
                 }
             }         
 

@@ -294,6 +294,43 @@ namespace Imperatur_v2.account
 
         }
 
+        public string[] GetSymbolInHoldings()
+        {
+            List<TransactionType> BuySell = new List<TransactionType>();
+            BuySell.Add(TransactionType.Buy);
+            BuySell.Add(TransactionType.Sell);
+
+            var HoldingQuery =
+                from t in m_oTransactions
+                join bs in BuySell on t.TransactionType equals bs
+                select t;
+
+            return HoldingQuery
+                    .Where(t1 => t1.SecuritiesTrade != null)
+                    .GroupBy(t2 => t2.SecuritiesTrade.Security.Symbol)
+                    .Select(st => new
+                    {
+                        symbol = st.First().SecuritiesTrade.Security.Symbol,
+                        quantity = st.Sum(i => i.TransactionType.Equals(TransactionType.Buy) ? i.SecuritiesTrade.Quantity : -i.SecuritiesTrade.Quantity)
+                    }
+                    ).Select(t3 => t3).Where(n => n.quantity > 0).Select(n => n.symbol).ToArray();
+
+            /*
+            return  m_oTransactions
+                .Where(t => t.SecuritiesTrade != null)
+                .GroupBy(t => t.SecuritiesTrade.Security.Symbol)
+                .Select(st => new
+                {
+                    symbol = st.First().SecuritiesTrade.Security.Symbol,
+                    quantity = st.Sum(i => i.SecuritiesTrade.Quantity)
+                }
+                )
+                .Where(n => n.quantity > 0).Select(n => n.symbol).ToArray();
+                */
+
+
+        }
+
         public List<Holding> GetHoldings()
         {
             List<TransactionType> BuySell = new List<TransactionType>();

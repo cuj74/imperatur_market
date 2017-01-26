@@ -206,6 +206,7 @@ namespace Imperatur_Market_Client.control
             {
                 return;
             }
+            MessageBox.Show(string.Join(", ", m_oA.GetSymbolInHoldings()));
 
             DataGridView TransactionGrid = new DataGridView();
 

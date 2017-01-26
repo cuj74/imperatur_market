@@ -20,6 +20,7 @@ namespace Imperatur_v2.monetary
         Decimal GetQuantity();
         IMoney GetCurrentValue();
         IMoney GetTradeAmount();
+        string ProcessCode { get; }
         
     }
 }

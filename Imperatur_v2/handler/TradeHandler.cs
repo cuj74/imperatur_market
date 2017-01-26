@@ -57,7 +57,9 @@ namespace Imperatur_v2.handler
                     {
                         string time = f.Substring(f.Length - 5).Replace(";", ":");
                         string date = f.Substring(f.Length - 15).Substring(0, 10);
-                        if (Convert.ToDateTime(string.Format("{0} {1}", date, time)).CompareTo(DateTime.Now.AddMinutes(-15)) > 0)
+                        if (Convert.ToDateTime(string.Format("{0} {1}", date, time)).CompareTo(DateTime.Now.AddMinutes(
+                            -Convert.ToDouble(ImperaturGlobal.SystemData.QuoteRefreshTime)
+                            )) > 0)
                         {
                             FileToRead = f;
                             break;
