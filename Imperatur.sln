@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Imperatur Market Client", "
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ImperaturService", "ImperaturService\ImperaturService.csproj", "{4A9341C0-746D-4D8B-8EFE-53294B684814}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Imperatur Market Core", "Imperatur Market Core\Imperatur Market Core.csproj", "{0AE80A9A-E5BA-4B88-B5D9-E8C8BD6EAB00}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{4A9341C0-746D-4D8B-8EFE-53294B684814}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4A9341C0-746D-4D8B-8EFE-53294B684814}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4A9341C0-746D-4D8B-8EFE-53294B684814}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0AE80A9A-E5BA-4B88-B5D9-E8C8BD6EAB00}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0AE80A9A-E5BA-4B88-B5D9-E8C8BD6EAB00}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0AE80A9A-E5BA-4B88-B5D9-E8C8BD6EAB00}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0AE80A9A-E5BA-4B88-B5D9-E8C8BD6EAB00}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

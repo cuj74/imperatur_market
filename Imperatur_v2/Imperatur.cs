@@ -19,7 +19,7 @@ using System.Threading;
 namespace Imperatur_v2
 {
     public static class ImperaturContainer
-    {
+    { 
         public delegate void SystemNotificationHandler(object sender, IMPSystemNotificationEventArg e);
 
         public static event SystemNotificationHandler SystemNotificationEvent = delegate { };
