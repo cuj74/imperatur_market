@@ -55,6 +55,10 @@
     <Compile Include="account\AccountHandler.cs" />
     <Compile Include="account\IAccount.cs" />
     <Compile Include="account\IAccountHandler.cs" />
+    <Compile Include="database\DatabaseEnum.cs" />
+    <Compile Include="database\DatabaseHandler.cs" />
+    <Compile Include="database\IDatabaseHandler.cs" />
+    <Compile Include="DIBinding.cs" />
     <Compile Include="entity\IEntity.cs" />
     <Compile Include="IImperaturMarket.cs" />
     <Compile Include="ImperaturMarket.cs" />
@@ -65,15 +69,22 @@
     <Compile Include="monetary\Money.cs" />
     <Compile Include="monetary\MoneyInterface.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="securities\ISecurityHandler.cs" />
+    <Compile Include="securities\SecurityHandler.cs" />
+    <Compile Include="shared\ImperaturGlobal.cs" />
+    <Compile Include="system\ISystemHandler.cs" />
+    <Compile Include="system\SystemHandler.cs" />
+    <Compile Include="trade\ITradeHandler.cs" />
+    <Compile Include="trade\TradeHandler.cs" />
     <Compile Include="user\IUser.cs" />
+    <Compile Include="user\IUserHandler.cs" />
     <Compile Include="user\User.cs" />
+    <Compile Include="user\UserHandler.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="event\" />
     <Folder Include="log\" />
     <Folder Include="order\" />
-    <Folder Include="securities\" />
-    <Folder Include="shared\" />
     <Folder Include="trade\analysis\" />
     <Folder Include="trade\automation\" />
     <Folder Include="trade\recommendation\" />
