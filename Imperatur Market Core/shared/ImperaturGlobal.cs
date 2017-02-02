@@ -14,15 +14,16 @@ namespace Imperatur_Market_Core.shared
 
     public sealed class ImperaturGlobal
     {
-        private static readonly Lazy<ImperaturGlobal> lazy =
-             new Lazy<ImperaturGlobal>(() => new ImperaturGlobal());
-        //private static ImperaturGlobal _instance;
+        private static readonly Lazy<ImperaturGlobal> lazy = new Lazy<ImperaturGlobal>(() => new ImperaturGlobal());
         private static readonly string _LogName = "log4net";
+        
+
         private static StandardKernel _kernel;
         private static IDatabaseHandler databaseHandler;
 
         public static List<Tuple<int, int>> _BankDays;
         public static List<Tuple<int, int>> _HalfDay;
+        public static readonly string DataBaseFileName = "imp.db";
 
         private ImperaturGlobal()
         {
@@ -60,7 +61,7 @@ namespace Imperatur_Market_Core.shared
             return true;
         }
 
-        public static readonly string DataBaseFileName = "imp.db";
+
 
 
         public static ILog GetLog()

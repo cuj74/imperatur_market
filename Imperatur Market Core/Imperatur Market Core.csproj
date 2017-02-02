@@ -52,6 +52,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="account\Account.cs" />
     <Compile Include="account\AccountHandler.cs" />
     <Compile Include="account\IAccount.cs" />
     <Compile Include="account\IAccountHandler.cs" />

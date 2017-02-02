@@ -9,6 +9,8 @@ namespace Imperatur_v2
         public override void Load()
         {
             Bind<IDatabaseHandler>().To<DatabaseHandler>();
+            Bind<IAccountHandler>().To<AccountHandler>();
+            //Bind<>().To<>();
             /*
             Bind<IImperaturMarket>().To<ImperaturMarket>();
             Bind<ITransactionInterface>().To<Transaction>();

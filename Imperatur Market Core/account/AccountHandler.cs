@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Imperatur_Market_Core.shared;
 
 namespace Imperatur_Market_Core.account
 {
@@ -20,6 +21,7 @@ namespace Imperatur_Market_Core.account
 
         public IAccount GetAccount(IAccount Account)
         {
+            ImperaturGlobal.DatabaseHandler<Account>()
             throw new NotImplementedException();
         }
 
