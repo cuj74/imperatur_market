@@ -5,11 +5,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Imperatur_Market_Core.user;
+using LiteDB;
+using Imperatur_Market_Core.database;
 
 namespace Imperatur_Market_Core.account
 {
-    public interface IAccount 
+    public interface IAccount : IEntity
     {
-       // IUser Owner { get; set; }
+        IUser Owner { get; set; }
+        AccountType AccountType { get; set; }
     }
 }

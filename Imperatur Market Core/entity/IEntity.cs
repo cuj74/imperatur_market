@@ -8,7 +8,8 @@ namespace Imperatur_Market_Core.entity
 {
     public interface IEntity
     {
-        string EntityIdentifier { get; }
-        IEntity SubEntity { get; }
+        string EntityIdentifier { get; set; }
+        string EntityType { get; set; }
+        IEntity SubEntity { get; set; }
     }
 }

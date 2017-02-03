@@ -9,9 +9,9 @@ namespace Imperatur_Market_Core.monetary
 {
     public interface ITransaction
     {
-        IEntity SuperEntity { get; }
-        IEntity InterEntity { get; }
-        string TransactionType { get; }
-        IMoney Monetary { get; }
+        IEntity SuperEntity { get; set; }
+        IEntity InterEntity { get; set; }
+        string TransactionType { get; set; }
+        IMoney Monetary { get; set; }
     }
 }

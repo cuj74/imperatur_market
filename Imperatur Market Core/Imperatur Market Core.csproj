@@ -67,8 +67,10 @@
     <Compile Include="monetary\CurrencyConverterInterface.cs" />
     <Compile Include="monetary\ILogicalTransaction.cs" />
     <Compile Include="monetary\ITransaction.cs" />
+    <Compile Include="monetary\LogicalTransaction.cs" />
     <Compile Include="monetary\Money.cs" />
     <Compile Include="monetary\MoneyInterface.cs" />
+    <Compile Include="monetary\Transaction.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="securities\ISecurityHandler.cs" />
     <Compile Include="securities\SecurityHandler.cs" />
