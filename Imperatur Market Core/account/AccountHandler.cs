@@ -21,7 +21,7 @@ namespace Imperatur_Market_Core.account
 
         public IAccount GetAccount(IAccount Account)
         {
-            ImperaturGlobal.DatabaseHandler<Account>()
+            ImperaturGlobal.DatabaseHandler.GetCollectionFromDataBase<Account>().FindById(Account.)
             throw new NotImplementedException();
         }
 

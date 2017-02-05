@@ -22,8 +22,5 @@ namespace Imperatur_Market_Core.account
         [BsonRef("Users")]
         public IUser Owner { get; set; }
         public AccountType AccountType { get; set; }
-        public string EntityIdentifier { get; set; }
-        public string EntityType { get; set; }
-        public IEntity SubEntity { get; set; }
     }
 }
