@@ -9,14 +9,15 @@ namespace Imperatur_Market_Core.user
 {
     public class User : IUser
     {
-        private string _firstName;
-        private string _lastName;
-        private string _idNumber;
-        private string _city;
-        private string _street;
-        private string _postalCode;
-        private CultureInfo _cultureInfo;
-        private string _hashedPassword;
-        private byte[] _salt;
+        public int Id { get; set; }
+        public string _firstName { get; set; }
+        public string _lastName { get; set; }
+        public string _idNumber { get; set; }
+        public string _city { get; set; }
+        public string _street { get; set; }
+        public string _postalCode { get; set; }
+        public string _cultureInfo { get; set; }
+        public string _hashedPassword { get; set; }
+        public byte[] _salt { get; set; }
     }
 }

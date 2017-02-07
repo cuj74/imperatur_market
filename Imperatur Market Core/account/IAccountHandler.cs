@@ -8,8 +8,8 @@ namespace Imperatur_Market_Core.account
 {
     public interface IAccountHandler : IDisposable
     {
-        ICollection<IAccount> Accounts();
-        IAccount GetAccount(IAccount Account);
-        bool AddAccount(IAccount Account);
+        ICollection<Account> Accounts();
+        Account GetAccount(int Id);
+        int AddAccount(Account AccountToAdd);
     }
 }

@@ -8,5 +8,7 @@ namespace Imperatur_Market_Core.user
 {
     public interface IUserHandler
     {
+        int AddUser(User UserToAdd);
+        User GetUser(int Id);
     }
 }

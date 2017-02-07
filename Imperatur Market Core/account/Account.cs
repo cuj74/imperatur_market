@@ -19,8 +19,10 @@ namespace Imperatur_Market_Core.account
 
     public class Account : IAccount
     {
-        [BsonRef("Users")]
-        public IUser Owner { get; set; }
+       
+        public int Id { get; set; }
+        [BsonRef("User")]
+        public User Owner { get; set; }
         public AccountType AccountType { get; set; }
     }
 }

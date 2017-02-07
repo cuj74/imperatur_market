@@ -16,6 +16,7 @@ namespace Imperatur_Market_Core.shared
     {
         private static readonly Lazy<ImperaturGlobal> lazy = new Lazy<ImperaturGlobal>(() => new ImperaturGlobal());
         private static readonly string _LogName = "log4net";
+        private static string _SystemLocation;
         
 
         private static StandardKernel _kernel;
@@ -29,6 +30,12 @@ namespace Imperatur_Market_Core.shared
         {
         }
         public static ImperaturGlobal Instance { get { return lazy.Value; } }
+        public static string GetDataBaseFilePath {
+            get
+            {
+                return string.Format(@"{0}\{1}", _SystemLocation, DataBaseFileName);
+            }
+        }
 
         #region public methods
         public static StandardKernel Kernel
@@ -52,12 +59,13 @@ namespace Imperatur_Market_Core.shared
             }
         }
 
-        public static bool InitHandlers(IDatabaseHandler DataBaseHandler)
+        public static bool InitHandlers(IDatabaseHandler DataBaseHandler, string SystemLocation)
         {
             if (databaseHandler == null)
             {
                 databaseHandler = DataBaseHandler;
             }
+            _SystemLocation = SystemLocation;
             return true;
         }
 

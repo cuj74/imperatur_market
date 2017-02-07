@@ -31,7 +31,7 @@ namespace Imperatur_Market_Core.system
 
         public bool VerifySystem(string SystemLocation)
         {
-            throw new NotImplementedException();
+            return Directory.Exists(SystemLocation);
         }
     }
 }

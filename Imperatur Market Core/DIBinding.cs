@@ -1,6 +1,10 @@
 ﻿using Ninject.Modules;
 using Imperatur_Market_Core.database;
 using Imperatur_Market_Core.account;
+using Imperatur_Market_Core.user;
+using Imperatur_Market_Core.trade;
+using Imperatur_Market_Core.securities;
+using Imperatur_Market_Core.system;
 
 namespace Imperatur_v2
 {
@@ -10,6 +14,12 @@ namespace Imperatur_v2
         {
             Bind<IDatabaseHandler>().To<DatabaseHandler>();
             Bind<IAccountHandler>().To<AccountHandler>();
+            Bind<IUserHandler>().To<UserHandler>();
+            Bind<ITradeHandler>().To<TradeHandler>();
+            Bind<ISecurityHandler>().To<SecurityHandler>();
+            Bind<ISystemHandler>().To<SystemHandler>();
+            Bind<IAccount>().To<Account>();
+
             //Bind<>().To<>();
             /*
             Bind<IImperaturMarket>().To<ImperaturMarket>();

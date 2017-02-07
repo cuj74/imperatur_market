@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Imperatur_Market_Core.trade
 {
-    class TradeHandler
+    public class TradeHandler : ITradeHandler
     {
     }
 }

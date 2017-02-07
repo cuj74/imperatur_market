@@ -8,20 +8,12 @@ namespace Imperatur_Market_Core.monetary
 {
     public class LogicalTransaction : ILogicalTransaction
     {
-        public DateTime LogDateTime
-        {
-            get; set;
-        }
+        public DateTime LogDateTime  {get; set;}
 
-        public string LogicalTransactionType
-        {
-            get; set;
-        }
+        public string LogicalTransactionType{get; set;}
 
 
-        public ICollection<ITransaction> Transactions
-        {
-            get; set;
+        public ICollection<ITransaction> Transactions{get; set;
         }
 
 

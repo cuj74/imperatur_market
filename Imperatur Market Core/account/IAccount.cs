@@ -10,9 +10,9 @@ using Imperatur_Market_Core.database;
 
 namespace Imperatur_Market_Core.account
 {
-    public interface IAccount 
+    public interface IAccount
     {
-        IUser Owner { get; set; }
+        User Owner { get; set; }
         AccountType AccountType { get; set; }
     }
 }

@@ -4,25 +4,30 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Imperatur_Market_Core.shared;
+using LiteDB;
 
 namespace Imperatur_Market_Core.account
 {
     public class AccountHandler : IAccountHandler
     {
-        public ICollection<IAccount> Accounts()
+        public ICollection<Account> Accounts()
         {
-            throw new NotImplementedException();
+            return  GetUserCollection().Include(c=>c.Owner).FindAll().ToList();
         }
 
-        public bool AddAccount(IAccount Account)
+        public int AddAccount(Account AccountToAdd)
         {
-            throw new NotImplementedException();
+            return GetUserCollection().Insert(AccountToAdd);
         }
 
-        public IAccount GetAccount(IAccount Account)
+        public Account GetAccount(int Id)
         {
-            ImperaturGlobal.DatabaseHandler.GetCollectionFromDataBase<Account>().FindById(Account.)
-            throw new NotImplementedException();
+            return GetUserCollection().Include(c => c.Owner).FindById(Id);
+        }
+
+        private LiteDB.LiteCollection<Account> GetUserCollection()
+        {
+            return ImperaturGlobal.DatabaseHandler.GetCollectionFromDataBase<Account>();
         }
 
         #region IDisposable Support

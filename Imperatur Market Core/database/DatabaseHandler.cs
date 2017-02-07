@@ -12,35 +12,14 @@ namespace Imperatur_Market_Core.database
     public class DatabaseHandler : IDatabaseHandler
     {
         private LiteDatabase liteDatabase;
-        /*
-        public static T ConfigSetting<T>(string settingName)
-        {
-            object value = ConfigurationManager.AppSettings[settingName];
-            return (T)Convert.ChangeType(value, typeof(T));
-        }*/
 
         public LiteCollection<T> GetCollectionFromDataBase<T>()
         {
             if (liteDatabase == null)
             {
-                liteDatabase = new LiteDatabase(ImperaturGlobal.DataBaseFileName);
+                liteDatabase = new LiteDatabase(ImperaturGlobal.GetDataBaseFilePath);
             }
             return liteDatabase.GetCollection<T>(typeof(T).Name);
-            /*
-            using (var db = new LiteDatabase(ImperaturGlobal.DataBaseFileName))
-            {
-                var col = db.GetCollection<Customer>("customer");
-
-                using (var trans = db.BeginTrans())
-                {
-                    col.Insert(new Customer { Name = "John Doe" });
-                    col.Insert(new Customer { Name = "Joanna Doe" });
-                    col.Insert(new Customer { Name = "Foo Bar" });
-
-                    trans.Commit();
-                } // all or none!
-            }*/
-
         }
 
     }
