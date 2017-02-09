@@ -5,6 +5,7 @@ using Imperatur_Market_Core.user;
 using Imperatur_Market_Core.trade;
 using Imperatur_Market_Core.securities;
 using Imperatur_Market_Core.system;
+using Imperatur_Market_Core.monetary;
 
 namespace Imperatur_v2
 {
@@ -19,6 +20,8 @@ namespace Imperatur_v2
             Bind<ISecurityHandler>().To<SecurityHandler>();
             Bind<ISystemHandler>().To<SystemHandler>();
             Bind<IAccount>().To<Account>();
+            Bind<ILogicalTransactionHandler>().To<LogicalTransactionHandler>();
+            
 
             //Bind<>().To<>();
             /*

@@ -11,6 +11,7 @@ using Imperatur_Market_Core.trade;
 using Imperatur_Market_Core.securities;
 using Imperatur_Market_Core.system;
 using Imperatur_Market_Core.database;
+using Imperatur_Market_Core.monetary;
 using Ninject;
 
 
@@ -24,6 +25,7 @@ namespace Imperatur_Market_Core
         private ISecurityHandler _securityHandler;
         private ISystemHandler _systemHandler;
         private IDatabaseHandler _databaseHandler;
+        private ILogicalTransactionHandler _logicalTransactionHandler;
 
         public IAccountHandler AccountHandler
         {
@@ -80,6 +82,14 @@ namespace Imperatur_Market_Core
 
         }
 
+        public ILogicalTransactionHandler LogicalTransactionHandler
+        {
+            get
+            {
+                return _logicalTransactionHandler;
+            }
+        }
+
         public ImperaturMarket(string SystemLocation)
         {
             _databaseHandler = ImperaturGlobal.Kernel.Get<IDatabaseHandler>();
@@ -88,8 +98,9 @@ namespace Imperatur_Market_Core
             _tradeHandler = ImperaturGlobal.Kernel.Get<ITradeHandler>();
             _securityHandler = ImperaturGlobal.Kernel.Get<ISecurityHandler>();
             _systemHandler = ImperaturGlobal.Kernel.Get<ISystemHandler>();
-            
-            ImperaturGlobal.InitHandlers(DatabaseHandler, SystemLocation);
+            _logicalTransactionHandler = ImperaturGlobal.Kernel.Get<ILogicalTransactionHandler>();
+
+            ImperaturGlobal.InitHandlers(DatabaseHandler, AccountHandler, SystemLocation);
 
 
             if (!_systemHandler.VerifySystem(SystemLocation))
@@ -121,7 +132,17 @@ namespace Imperatur_Market_Core
             };
 
             _accountHandler.AddAccount(AccountToAdd);
-            
+
+            AccountToAdd = new Account
+            {
+                AccountType = AccountType.Bank,
+            };
+            _accountHandler.AddAccount(AccountToAdd);
+
+            AccountToAdd = new Account
+            {
+                AccountType = AccountType.House,
+            };
 
         }
     

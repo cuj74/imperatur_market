@@ -10,6 +10,8 @@ namespace Imperatur_Market_Core.account
     {
         ICollection<Account> Accounts();
         Account GetAccount(int Id);
+        Account GetHouseAccount();
+        Account GetBankAccount();
         int AddAccount(Account AccountToAdd);
     }
 }

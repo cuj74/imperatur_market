@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Imperatur_Market_Core;
+using Imperatur_Market_Core.monetary;
 
 namespace ImperaturConsole
 {
@@ -12,6 +13,27 @@ namespace ImperaturConsole
         static void Main(string[] args)
         {
             Imperatur_Market_Core.ImperaturMarket oM = new ImperaturMarket(@"f:\dev\test10");
+            var t1 = new Transaction
+            {
+                Account = oM.AccountHandler.GetAccount(1),
+                Monetary = new Money(120, "SEK"),
+                TransactionType = "Transfer"
+            };
+            var t2 = new Transaction
+            {
+                Account = oM.AccountHandler.GetBankAccount(),
+                Monetary = new Money(-120, "SEK"),
+                TransactionType = "Transfer"
+            };
+            var t = new List<Transaction> { t1, t2 };
+            oM.LogicalTransactionHandler.AddLogicalTransaction(
+                new LogicalTransaction
+                {
+                    LogDateTime = DateTime.Now,
+                    LogicalTransactionType = "Tjolahopp",
+                    Transactions = t
+                }
+                );
             Console.WriteLine(oM.UserHandler.GetUser(1)._firstName + "sdfsdf");
            // Console.ReadLine();
             //oM.AccountHandler.GetAccount()

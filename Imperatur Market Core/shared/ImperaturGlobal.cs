@@ -7,6 +7,8 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Imperatur_Market_Core.database;
+using Imperatur_Market_Core.account;
+using Imperatur_Market_Core.monetary;
 
 namespace Imperatur_Market_Core.shared
 {
@@ -21,6 +23,7 @@ namespace Imperatur_Market_Core.shared
 
         private static StandardKernel _kernel;
         private static IDatabaseHandler databaseHandler;
+        private static IAccountHandler accountHandler;
 
         public static List<Tuple<int, int>> _BankDays;
         public static List<Tuple<int, int>> _HalfDay;
@@ -59,17 +62,31 @@ namespace Imperatur_Market_Core.shared
             }
         }
 
-        public static bool InitHandlers(IDatabaseHandler DataBaseHandler, string SystemLocation)
+        public static bool InitHandlers(
+            IDatabaseHandler DataBaseHandler, 
+            IAccountHandler AccountHandler,
+            string SystemLocation)
         {
             if (databaseHandler == null)
             {
                 databaseHandler = DataBaseHandler;
             }
+            if (accountHandler == null)
+            {
+                accountHandler = AccountHandler;
+            }
+            
             _SystemLocation = SystemLocation;
             return true;
         }
 
-
+        public static IMoney GetMoney(decimal Amount)
+        {
+            return Kernel.Get<IMoney>(
+                        new Ninject.Parameters.ConstructorArgument("amount", Amount),
+                        new Ninject.Parameters.ConstructorArgument("currencyCode", "SEK")
+                   );
+        }
 
 
         public static ILog GetLog()

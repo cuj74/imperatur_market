@@ -12,22 +12,36 @@ namespace Imperatur_Market_Core.account
     {
         public ICollection<Account> Accounts()
         {
-            return  GetUserCollection().Include(c=>c.Owner).FindAll().ToList();
+            return  GetAccounCollection().Include(c=>c.Owner).FindAll().ToList();
         }
 
         public int AddAccount(Account AccountToAdd)
         {
-            return GetUserCollection().Insert(AccountToAdd);
+            return GetAccounCollection().Insert(AccountToAdd);
         }
 
         public Account GetAccount(int Id)
         {
-            return GetUserCollection().Include(c => c.Owner).FindById(Id);
+            return GetAccounCollection().Include(c => c.Owner).FindById(Id);
         }
 
-        private LiteDB.LiteCollection<Account> GetUserCollection()
+        private LiteDB.LiteCollection<Account> GetAccounCollection()
         {
             return ImperaturGlobal.DatabaseHandler.GetCollectionFromDataBase<Account>();
+        }
+
+        public Account GetHouseAccount()
+        {
+            return GetFirstAccountOfType(AccountType.House);
+        }
+
+        public Account GetBankAccount()
+        {
+            return GetFirstAccountOfType(AccountType.Bank);
+        }
+        private Account GetFirstAccountOfType(AccountType accounttype)
+        {
+            return GetAccounCollection().Find(x => x.AccountType.Equals(accounttype)).First();
         }
 
         #region IDisposable Support
@@ -63,6 +77,8 @@ namespace Imperatur_Market_Core.account
             // TODO: uncomment the following line if the finalizer is overridden above.
             // GC.SuppressFinalize(this);
         }
+
+
         #endregion
     }
 }

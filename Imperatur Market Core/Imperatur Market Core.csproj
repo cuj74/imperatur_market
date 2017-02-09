@@ -65,10 +65,9 @@
     <Compile Include="ImperaturMarket.cs" />
     <Compile Include="monetary\Currency.cs" />
     <Compile Include="monetary\CurrencyConverterInterface.cs" />
-    <Compile Include="monetary\ILogicalTransaction.cs" />
     <Compile Include="monetary\ILogicalTransactionHandler.cs" />
-    <Compile Include="monetary\ITransaction.cs" />
     <Compile Include="monetary\LogicalTransaction.cs" />
+    <Compile Include="monetary\LogicalTransactionHandler.cs" />
     <Compile Include="monetary\Money.cs" />
     <Compile Include="monetary\MoneyInterface.cs" />
     <Compile Include="monetary\Transaction.cs" />
