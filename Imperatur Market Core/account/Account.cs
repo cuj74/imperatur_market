@@ -19,7 +19,6 @@ namespace Imperatur_Market_Core.account
 
     public class Account : IAccount
     {
-       
         public int Id { get; set; }
         [BsonRef("User")]
         public User Owner { get; set; }

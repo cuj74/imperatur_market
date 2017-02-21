@@ -12,7 +12,7 @@ namespace Imperatur_Market_Core.account
     {
         public ICollection<Account> Accounts()
         {
-            return  GetAccounCollection().Include(c=>c.Owner).FindAll().ToList();
+            return  GetAccounCollection().FindAll().ToList();
         }
 
         public int AddAccount(Account AccountToAdd)
@@ -22,12 +22,12 @@ namespace Imperatur_Market_Core.account
 
         public Account GetAccount(int Id)
         {
-            return GetAccounCollection().Include(c => c.Owner).FindById(Id);
+            return GetAccounCollection().FindById(Id);
         }
 
         private LiteDB.LiteCollection<Account> GetAccounCollection()
         {
-            return ImperaturGlobal.DatabaseHandler.GetCollectionFromDataBase<Account>();
+            return ImperaturGlobal.DatabaseHandler.GetCollectionFromDataBase<Account>().Include(c => c.Owner);
         }
 
         public Account GetHouseAccount()

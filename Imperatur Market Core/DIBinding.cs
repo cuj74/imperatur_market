@@ -21,8 +21,9 @@ namespace Imperatur_v2
             Bind<ISystemHandler>().To<SystemHandler>();
             Bind<IAccount>().To<Account>();
             Bind<ILogicalTransactionHandler>().To<LogicalTransactionHandler>();
-            
-
+            Bind<IMoney>().To<Money>();
+            Bind<ISecurityFromExchange>().To<SecurityFromExchange>();
+           
             //Bind<>().To<>();
             /*
             Bind<IImperaturMarket>().To<ImperaturMarket>();

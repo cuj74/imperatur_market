@@ -5,6 +5,9 @@ using System.Text;
 using System.Threading.Tasks;
 using System.IO;
 using Imperatur_Market_Core.shared;
+using Imperatur_Market_Core.user;
+using System.Globalization;
+using Imperatur_Market_Core.account;
 
 namespace Imperatur_Market_Core.system
 {
@@ -21,6 +24,7 @@ namespace Imperatur_Market_Core.system
                 ImperaturGlobal.GetLog().Error(string.Format("Could not create directory {0}", SystemLocation), ex);
                 return false;
             }
+
             return true;
         }
 
@@ -33,5 +37,37 @@ namespace Imperatur_Market_Core.system
         {
             return Directory.Exists(SystemLocation);
         }
+
+        private void CreateSystemAccounts()
+        {
+
+
+            int AdminUserId = ImperaturGlobal.UserHandler.AddUser(
+                 new User
+                 {
+                     FirstName = "Admin",
+                     CultureInfo = CultureInfo.CurrentCulture.Name,
+                     UserType = UserType.Admin
+                 }
+             );
+            ImperaturGlobal.AccountHandler.AddAccount(
+                new Account
+                {
+                    AccountType = AccountType.House,
+                    Owner = ImperaturGlobal.UserHandler.GetUser(AdminUserId)
+                }
+            );
+            ImperaturGlobal.AccountHandler.AddAccount(
+                new Account
+                {
+                    AccountType = AccountType.Bank,
+                    Owner = ImperaturGlobal.UserHandler.GetUser(AdminUserId)
+                }
+            );
+
+
+        }
+
+
     }
 }

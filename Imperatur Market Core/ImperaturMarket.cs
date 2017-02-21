@@ -100,7 +100,7 @@ namespace Imperatur_Market_Core
             _systemHandler = ImperaturGlobal.Kernel.Get<ISystemHandler>();
             _logicalTransactionHandler = ImperaturGlobal.Kernel.Get<ILogicalTransactionHandler>();
 
-            ImperaturGlobal.InitHandlers(DatabaseHandler, AccountHandler, SystemLocation);
+            ImperaturGlobal.InitHandlers(DatabaseHandler, AccountHandler, UserHandler, SystemLocation);
 
 
             if (!_systemHandler.VerifySystem(SystemLocation))
@@ -110,7 +110,7 @@ namespace Imperatur_Market_Core
             //var t = _accountHandler.Accounts();
             //int gg = 0;
 
-            
+            /*
             
             var UserToAdd = new User
             {
@@ -133,18 +133,41 @@ namespace Imperatur_Market_Core
 
             _accountHandler.AddAccount(AccountToAdd);
 
+            var HouseUserToAdd = new User
+            {
+                _firstName = "New Shiny Bolaget AB",
+                _city = "Stockholm",
+                _lastName = "",
+                _postalCode = "11040",
+                _cultureInfo = "sv-se",
+                _hashedPassword = "sdf2qfwefwse3fwsf",
+                _idNumber = "7451651",
+                _salt = new byte[] { 22 },
+                _street = "fina gatan 22B"
+            };
+
+            int Houseid = _userHandler.AddUser(HouseUserToAdd);
+
+            var HouseAccountToAdd = new Account
+            {
+                AccountType = AccountType.House,
+                Owner =_userHandler.GetUser(Houseid)
+            };
+            int HouseAccountId = _accountHandler.AddAccount(HouseAccountToAdd);
+
+            var sdf = _userHandler.GetUser(Houseid);
+
             AccountToAdd = new Account
             {
                 AccountType = AccountType.Bank,
+                Owner = _userHandler.GetUser(Houseid)
             };
             _accountHandler.AddAccount(AccountToAdd);
-
-            AccountToAdd = new Account
-            {
-                AccountType = AccountType.House,
-            };
+            */
 
         }
+
+
     
     }
 }

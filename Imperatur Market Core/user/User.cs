@@ -7,17 +7,24 @@ using System.Globalization;
 
 namespace Imperatur_Market_Core.user
 {
-    public class User : IUser
+    public enum UserType
+    {
+        Admin,
+        Regular
+    }
+
+    public class User
     {
         public int Id { get; set; }
-        public string _firstName { get; set; }
-        public string _lastName { get; set; }
-        public string _idNumber { get; set; }
-        public string _city { get; set; }
-        public string _street { get; set; }
-        public string _postalCode { get; set; }
-        public string _cultureInfo { get; set; }
-        public string _hashedPassword { get; set; }
-        public byte[] _salt { get; set; }
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+        public string IdNumber { get; set; }
+        public string City { get; set; }
+        public string Street { get; set; }
+        public string PostalCode { get; set; }
+        public string CultureInfo { get; set; }
+        public string HashedPassword { get; set; }
+        public byte[] Salt { get; set; }
+        public UserType UserType { get; set; }
     }
 }

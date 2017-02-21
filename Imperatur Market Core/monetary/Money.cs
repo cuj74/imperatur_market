@@ -19,6 +19,7 @@ namespace Imperatur_Market_Core.monetary
         public Money(string currencyCode) : this((CurrencyCodes)Enum.Parse(typeof(CurrencyCodes), currencyCode)) { }
         public Money(CurrencyCodes currencyCode) : this(0d, currencyCode) { }
         public Money(long amount) : this(amount, LocalCurrencyCode) { }
+        [Inject]
         public Money(decimal amount) : this(amount, LocalCurrencyCode) { }
         public Money(double amount) : this(amount, LocalCurrencyCode) { }
         public Money(long amount, string currencyCode) : this(amount, (CurrencyCodes)Enum.Parse(typeof(CurrencyCodes), currencyCode)) { }

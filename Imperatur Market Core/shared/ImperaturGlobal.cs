@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Imperatur_Market_Core.database;
 using Imperatur_Market_Core.account;
 using Imperatur_Market_Core.monetary;
+using Imperatur_Market_Core.user;
 
 namespace Imperatur_Market_Core.shared
 {
@@ -23,6 +24,7 @@ namespace Imperatur_Market_Core.shared
 
         private static StandardKernel _kernel;
         private static IDatabaseHandler databaseHandler;
+        private static IUserHandler userHandler;
         private static IAccountHandler accountHandler;
 
         public static List<Tuple<int, int>> _BankDays;
@@ -61,10 +63,25 @@ namespace Imperatur_Market_Core.shared
                 return databaseHandler;
             }
         }
+        public static IUserHandler UserHandler
+        {
+            get
+            {
+                return userHandler;
+            }
+        }
+        public static IAccountHandler AccountHandler
+        {
+            get
+            {
+                return accountHandler;
+            }
+        }
 
         public static bool InitHandlers(
             IDatabaseHandler DataBaseHandler, 
             IAccountHandler AccountHandler,
+            IUserHandler UserHandler,
             string SystemLocation)
         {
             if (databaseHandler == null)
@@ -75,7 +92,10 @@ namespace Imperatur_Market_Core.shared
             {
                 accountHandler = AccountHandler;
             }
-            
+            if (userHandler == null)
+            {
+                userHandler = UserHandler;
+            }
             _SystemLocation = SystemLocation;
             return true;
         }

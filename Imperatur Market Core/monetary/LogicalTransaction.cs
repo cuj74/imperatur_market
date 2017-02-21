@@ -8,8 +8,9 @@ namespace Imperatur_Market_Core.monetary
 {
     public class LogicalTransaction
     {
+        public int Id { get; set; }
         public DateTime LogDateTime  {get; set;}
         public string LogicalTransactionType{get; set;}
-        public ICollection<Transaction> Transactions{get; set;}
+        public List<Transaction> Transactions{get; set;}
     }
 }
